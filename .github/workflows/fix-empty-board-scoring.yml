@@ -1,0 +1,47 @@
+name: Fix empty board scoring
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-empty-board-scoring.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply scoring corrections
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          ui_path = Path('acidic_rain_ui_score_spell_drag.js')
+          ui_text = ui_path.read_text(encoding='utf-8')
+          old_ui = "if (!card || card.type === 'spell' || index < 1) return sum;"
+          new_ui = "if (!card || card.type === 'spell' || index < 2) return sum;"
+          if old_ui not in ui_text:
+              raise SystemExit('Expected board score condition was not found.')
+          ui_path.write_text(ui_text.replace(old_ui, new_ui, 1), encoding='utf-8')
+
+          game_path = Path('acidic_rain_battleground.html')
+          game_text = game_path.read_text(encoding='utf-8')
+          old_game = "        buffRain(state, 1 + Math.floor(state.tavernTier / 2), 1);\n"
+          new_game = "        // Acidic Rain grows only through card effects; ending a turn alone grants no stats.\n"
+          if old_game not in game_text:
+              raise SystemExit('Expected automatic Acidic Rain growth was not found.')
+          game_path.write_text(game_text.replace(old_game, new_game, 1), encoding='utf-8')
+
+          Path('.github/workflows/fix-empty-board-scoring.yml').unlink()
+          PY
+
+      - name: Commit scoring fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add acidic_rain_ui_score_spell_drag.js acidic_rain_battleground.html .github/workflows/fix-empty-board-scoring.yml
+          git commit -m 'Fix empty board score gain'
+          git push
