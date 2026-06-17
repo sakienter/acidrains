@@ -58,8 +58,8 @@ window.addEventListener("load", () => {
     magicfin: 6,
   };
 
-  // The source card id is "uremental".
-  AUTO_TIER_ASSIGNMENTS.uremental = 1;
+  AUTO_TIER_ASSIGNMENTS["uremental"] = 1;
+  delete AUTO_TIER_ASSIGNMENTS["u remental"];
 
   const tierCounts = new Map();
   MINIONS.forEach(card => {
