@@ -45,3 +45,4 @@ document.write('<script defer src="./acidic_rain_mode_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_discover_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_tier3_spell_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_tier2_spell_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_gift_rules.js"><\/script>');
