@@ -1,16 +1,14 @@
 /* Automatic Tier 1-6 assignment based on effect strength, scaling, and engine value. */
 window.addEventListener("load", () => {
   const AUTO_TIER_ASSIGNMENTS = {
-    // Tier 1: small one-shot economy, basic tokens, and low-impact generation.
     prophet: 1,
     busker: 1,
-    u remental: 1,
+    "uremental": 1,
     drake: 1,
     alleycat: 1,
     coldlight: 1,
     brewmaster: 1,
 
-    // Tier 2: modest generation, shop consistency, and narrow utility.
     sakamaki: 2,
     shark: 2,
     okamon: 2,
@@ -21,7 +19,6 @@ window.addEventListener("load", () => {
     beacon: 2,
     shell_whistler: 2,
 
-    // Tier 3: repeatable value, Discover effects, and medium-strength engines.
     scout: 3,
     lucky_wind: 3,
     rodeo: 3,
@@ -35,7 +32,6 @@ window.addEventListener("load", () => {
     draconic_deathscale_naga: 3,
     draconic_deathscale_dragon: 3,
 
-    // Tier 4: strong board engines, premium generation, and large tempo effects.
     engine: 4,
     trumpeter: 4,
     lyrak: 4,
@@ -45,21 +41,16 @@ window.addEventListener("load", () => {
     maxwell: 4,
     reno: 4,
 
-    // Tier 5: build-defining multipliers and high-output persistent engines.
     minion_brann: 5,
     air_revenant: 5,
     lantern_larva: 5,
     timewarped_seer: 5,
 
-    // Tier 6: strongest scaling, spell-copy engines, and direct Awakening access.
     tauren: 6,
     acidic_rain_copy: 6,
     surprise_elemental: 6,
     magicfin: 6,
   };
-
-  AUTO_TIER_ASSIGNMENTS["uremental"] = 1;
-  delete AUTO_TIER_ASSIGNMENTS["u remental"];
 
   const tierCounts = new Map();
   MINIONS.forEach(card => {
