@@ -17,12 +17,12 @@
         top: 50%;
         left: 50%;
         width: 1280px;
-        height: 720px;
+        height: 600px;
         transform-origin: center center;
       }
       iframe {
         width: 1280px;
-        height: 720px;
+        height: 600px;
         border: 0;
         display: block;
       }
@@ -37,7 +37,7 @@
       const game = document.querySelector("#game");
 
       function fitStage() {
-        const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720, 1);
+        const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 600, 1);
         stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
       }
 
