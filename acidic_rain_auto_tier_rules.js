@@ -58,9 +58,8 @@ window.addEventListener("load", () => {
     magicfin: 6,
   };
 
-  // Correct the intentionally spaced key above without relying on duplicate object syntax.
+  // The source card id is "uremental".
   AUTO_TIER_ASSIGNMENTS.uremental = 1;
-  delete AUTO_TIER_ASSIGNMENTS["u remental"];
 
   const tierCounts = new Map();
   MINIONS.forEach(card => {
@@ -72,7 +71,6 @@ window.addEventListener("load", () => {
 
   window.AUTO_TIER_ASSIGNMENTS = AUTO_TIER_ASSIGNMENTS;
 
-  // Refresh the current shop so the new Tier rules take effect immediately.
   if (!state.gameOver) {
     state.frozen = false;
     drawShop();
