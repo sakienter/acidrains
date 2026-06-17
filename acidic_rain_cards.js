@@ -22,10 +22,10 @@ document.write(`<script>
     { id:"dream_essence", name:"夢のエッセンス", emoji:"💭", tier:2, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
     { id:"chip_bin", name:"チップビン", emoji:"🪙", tier:2, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
 
-    { id:"sindragosa_mode", name:"シンドラゴサモード", emoji:"🐉", tier:3, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
-    { id:"millhouse_mode", name:"ミルハウスモード", emoji:"⚡", tier:3, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
-    { id:"time_transcendence", name:"時空の超越", emoji:"⏳", tier:3, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
-    { id:"awakening", name:"覚醒化", emoji:"✨", tier:3, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} }
+    { id:"temporary_time_rewrite", name:"一時的な時間改竄", emoji:"🕰️", tier:3, cost:5, text:"このターン、次に使う3回のスペルは追加で1回発動される。", type:"spell", cast(state){ activateTemporaryTimeRewrite(state); } },
+    { id:"zerek", name:"ゼレク", emoji:"🧬", tier:3, cost:6, text:"自陣のカードのコピーを1枚得る。", type:"spell", cast(state){ castZerek(state); } },
+    { id:"time_transcendence", name:"時空の超越", emoji:"⏳", tier:3, cost:7, text:"リミットターンの猶予を1増やす。", type:"spell", cast(state){ extendTurnLimit(state); } },
+    { id:"awakening", name:"覚醒化", emoji:"✨", tier:3, cost:4, text:"自陣のTier1カードを1枚選んで覚醒させる。", type:"spell", cast(state){ castAwakeningSpell(state); } }
   );
 <\/script>`);
 document.write('<script defer src="./acidic_rain_rules.js"><\/script>');
@@ -42,3 +42,4 @@ document.write('<script defer src="./acidic_rain_turn_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_hud_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_mode_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_discover_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_tier3_spell_rules.js"><\/script>');
