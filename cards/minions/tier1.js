@@ -165,20 +165,14 @@
       }),
 
       '苔マン': () => ({
+        text: 'ターン終了時：この対戦中に酒場を入替した後、その右端のミニオン1体に+1/+2を付与する。',
+        awakenedText: 'ターン終了時：この対戦中に酒場を入替した後、その右端のミニオン1体に+2/+2を付与する。',
         onTurnEnd(gameState) {
-          const turn = number(gameState.turn);
-          if (this.mossLastCountedTurn !== turn) {
-            this.mossLastCountedTurn = turn;
-            this.mossTurns = number(this.mossTurns) + 1;
-            this.mossTriggersThisTurn = this.mossTurns % 2 === 0;
-          }
-          if (!this.mossTriggersThisTurn) return;
-          gainRandom(
-            gameState,
-            currentTierMinions(gameState, card => card.tribe === 'エレメンタル'),
-            amount(this, 1, 2),
-            '苔マンがエレメンタルを得た。',
-          );
+          const atk = amount(this, 1, 2);
+          const hp = 2;
+          gameState.tier1DuneAfterRerollAtk = number(gameState.tier1DuneAfterRerollAtk) + atk;
+          gameState.tier1DuneAfterRerollHp = number(gameState.tier1DuneAfterRerollHp) + hp;
+          writeLog(`苔マン：以後の酒場入替後バフが +${gameState.tier1DuneAfterRerollAtk}/+${gameState.tier1DuneAfterRerollHp} になった。`);
         },
       }),
 
