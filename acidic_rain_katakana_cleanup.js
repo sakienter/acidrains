@@ -54,6 +54,12 @@
 
   const finalRules = document.createElement('script');
   finalRules.src = './acidic_rain_final_rules.js';
-  finalRules.defer = true;
+  finalRules.async = false;
+  finalRules.onload = () => {
+    const scoreRules = document.createElement('script');
+    scoreRules.src = './acidic_rain_score_rules.js';
+    scoreRules.async = false;
+    document.head.appendChild(scoreRules);
+  };
   document.head.appendChild(finalRules);
 })();
