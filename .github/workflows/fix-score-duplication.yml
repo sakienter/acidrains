@@ -1,0 +1,89 @@
+name: Fix score duplication
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-score-duplication.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Consolidate scoring and end-turn handling
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          # Stop loading the legacy cumulative scorer. The final UI scorer is authoritative.
+          cleanup_path = Path('acidic_rain_katakana_cleanup.js')
+          cleanup = cleanup_path.read_text(encoding='utf-8')
+          old_loader = """  finalRules.onload = () => {
+    const scoreRules = document.createElement('script');
+    scoreRules.src = './acidic_rain_score_rules.js';
+    scoreRules.async = false;
+    document.head.appendChild(scoreRules);
+  };
+"""
+          if old_loader not in cleanup:
+              raise SystemExit('Legacy score loader block was not found.')
+          cleanup = cleanup.replace(old_loader, '', 1)
+          cleanup_path.write_text(cleanup, encoding='utf-8')
+
+          # Keep the old file only as an opt-in reference so it cannot double-score.
+          legacy_path = Path('acidic_rain_score_rules.js')
+          legacy = legacy_path.read_text(encoding='utf-8')
+          old_start = "window.addEventListener('load', () => {"
+          new_start = "if (window.__acidEnableLegacyScoreRules === true) window.addEventListener('load', () => {"
+          if old_start not in legacy:
+              raise SystemExit('Legacy score entry point was not found.')
+          legacy_path.write_text(legacy.replace(old_start, new_start, 1), encoding='utf-8')
+
+          # Ending a turn alone must not grant Acidic Rain stats.
+          turn_path = Path('acidic_rain_turn_rules.js')
+          turn = turn_path.read_text(encoding='utf-8')
+          old_growth = "    buffRain(state, 1 + Math.floor(state.tavernTier / 2), 1);\n"
+          if old_growth not in turn:
+              raise SystemExit('Automatic Acidic Rain turn growth was not found.')
+          turn_path.write_text(
+              turn.replace(old_growth, "    // Acidic Rain grows only through explicit card effects.\n", 1),
+              encoding='utf-8'
+          )
+
+          # Capture the click at document level before older target listeners can fire.
+          ui_path = Path('acidic_rain_ui_score_spell_drag.js')
+          ui = ui_path.read_text(encoding='utf-8')
+          old_click = """  endTurnBtn?.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    window.endTurn();
+  }, true);
+"""
+          new_click = """  document.addEventListener('click', event => {
+    const button = event.target.closest?.('#endTurnBtn');
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    window.endTurn();
+  }, true);
+"""
+          if old_click not in ui:
+              raise SystemExit('Final end-turn click handler was not found.')
+          ui_path.write_text(ui.replace(old_click, new_click, 1), encoding='utf-8')
+
+          Path('.github/workflows/fix-score-duplication.yml').unlink()
+          PY
+
+      - name: Commit score fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add acidic_rain_katakana_cleanup.js acidic_rain_score_rules.js acidic_rain_turn_rules.js acidic_rain_ui_score_spell_drag.js .github/workflows/fix-score-duplication.yml
+          git commit -m 'Fix duplicate turn-end scoring'
+          git push
