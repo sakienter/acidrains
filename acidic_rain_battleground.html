@@ -1093,7 +1093,7 @@
       function endTurn() {
         if (state.gameOver) return;
         const rain = state.board[1];
-        buffRain(state, 1 + Math.floor(state.tavernTier / 2), 1);
+        // Acidic Rain grows only through card effects; ending a turn alone grants no stats.
         state.turn += 1;
         if (state.turn > state.maxTurns) {
           finishRun();
