@@ -86,7 +86,7 @@
     return target && target.type !== 'spell' ? target : null;
   }
 
-  function applyDuneBuffAfterRefresh(gameState) {
+  function applyDuneBuffAfterReroll(gameState) {
     const atk = number(gameState.tier1DuneAfterRerollAtk);
     const hp = number(gameState.tier1DuneAfterRerollHp);
     if (!atk && !hp) return;
@@ -135,7 +135,6 @@
 
       '船頭': () => ({
         onSell(gameState) {
-          // ランダム獲得なので、船頭自身も候補に含める。
           gainRandom(
             gameState,
             tierOneMinions(),
@@ -153,7 +152,6 @@
 
       '甲板磨き': () => ({
         battlecry(gameState) {
-          // 実際のグレード上げ処理が参照する変数へ加算する。
           gameState.tavernUpgradeDiscount = number(gameState.tavernUpgradeDiscount) + amount(this, 1, 2);
         },
       }),
@@ -161,7 +159,6 @@
       'もりもり砂丘': () => ({
         battlecry(gameState) {
           const buff = amount(this, 1, 2);
-          // 現在の酒場には付与せず、次回以降の酒場入替後に適用する。
           gameState.tier1DuneAfterRerollAtk = number(gameState.tier1DuneAfterRerollAtk) + buff;
           gameState.tier1DuneAfterRerollHp = number(gameState.tier1DuneAfterRerollHp) + buff;
         },
@@ -175,7 +172,6 @@
             this.mossTurns = number(this.mossTurns) + 1;
             this.mossTriggersThisTurn = this.mossTurns % 2 === 0;
           }
-          // ドラッカリ等で同じターンに複数回呼ばれた場合、発動ターンなら効果を複数回処理する。
           if (!this.mossTriggersThisTurn) return;
           gainRandom(
             gameState,
@@ -208,15 +204,20 @@
       if (typeof state !== 'undefined') {
         state.tier1DuneAfterRerollAtk = number(state.tier1DuneAfterRerollAtk);
         state.tier1DuneAfterRerollHp = number(state.tier1DuneAfterRerollHp);
+        state.tier1DuneLastAppliedReroll = number(state.rerolls);
       }
 
       if (!window.__tier1DuneDrawShopPatched && typeof drawShop === 'function') {
         window.__tier1DuneDrawShopPatched = true;
         const previousDrawShop = drawShop;
         drawShop = function() {
-          const previousShop = state.shop;
           const result = previousDrawShop();
-          if (state.shop !== previousShop) applyDuneBuffAfterRefresh(state);
+          const rerolls = number(state.rerolls);
+          const lastApplied = number(state.tier1DuneLastAppliedReroll);
+          if (rerolls > lastApplied) {
+            applyDuneBuffAfterReroll(state);
+            state.tier1DuneLastAppliedReroll = rerolls;
+          }
           return result;
         };
       }
@@ -228,6 +229,7 @@
           const result = previousInitialState();
           state.tier1DuneAfterRerollAtk = 0;
           state.tier1DuneAfterRerollHp = 0;
+          state.tier1DuneLastAppliedReroll = 0;
           return result;
         };
       }
