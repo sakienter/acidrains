@@ -47,4 +47,5 @@ document.write('<script defer src="./acidic_rain_tier3_spell_rules.js"><\/script
 document.write('<script defer src="./acidic_rain_tier2_spell_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_gift_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_targeting_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_auto_tier_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_tier6_progression_rules.js"><\/script>');
