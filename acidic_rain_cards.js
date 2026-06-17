@@ -34,3 +34,4 @@ document.write('<script defer src="./acidic_rain_stat_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_awaken_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_progress_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_performance_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_layout_rules.js"><\/script>');
