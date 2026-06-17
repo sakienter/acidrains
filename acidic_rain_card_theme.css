@@ -1,0 +1,287 @@
+/* Card theme based on acidic_rain_card_design.css.
+ * Loaded after the gameplay/UI patch so the visual theme wins without changing card logic.
+ */
+
+:is(.shop-card, .board-card, .hand-card) {
+  --tribe-hi: rgba(102, 237, 255, 0.95);
+  --tribe-mid: rgba(34, 73, 113, 0.94);
+  --tribe-deep: rgba(19, 29, 41, 0.98);
+  --tribe-border: rgba(125, 211, 255, 0.48);
+  --tribe-glow: rgba(112, 249, 255, 0.46);
+
+  position: relative !important;
+  overflow: visible !important;
+  border: 2px solid var(--tribe-border) !important;
+  background:
+    radial-gradient(circle at 50% 25%, var(--tribe-hi), var(--tribe-mid) 50%, var(--tribe-deep) 76%) !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.035),
+    0 14px 28px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.17) !important;
+  color: #fff6d6 !important;
+}
+
+:is(.shop-card, .board-card) {
+  min-height: 188px !important;
+  border-radius: 48% 48% 22% 22% / 22% 22% 12% 12% !important;
+  padding: 19px 10px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.hand-card {
+  min-height: 180px !important;
+  border-radius: 42% 42% 18% 18% / 18% 18% 11% 11% !important;
+  padding: 16px 10px 11px !important;
+}
+
+/* Tier badge: centered tab from the supplied reference design. */
+:is(.shop-card, .board-card, .hand-card) .tier-number-badge {
+  position: absolute !important;
+  top: -9px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 30 !important;
+  width: auto !important;
+  min-width: 34px !important;
+  height: auto !important;
+  padding: 5px 10px !important;
+  border-radius: 10px 10px 4px 4px !important;
+  border: 2px solid rgba(255, 225, 120, 0.72) !important;
+  background: linear-gradient(180deg, #bd347f, #7b1855) !important;
+  color: #ffe16f !important;
+  font-size: 0.82rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+  box-shadow: 0 4px 9px rgba(0, 0, 0, 0.42) !important;
+}
+
+.card-tier {
+  display: none !important;
+}
+
+:is(.shop-card, .board-card, .hand-card) .card-emoji {
+  margin-top: 8px !important;
+  text-align: center !important;
+  font-size: 46px !important;
+  line-height: 1 !important;
+  filter: drop-shadow(0 0 11px var(--tribe-glow)) !important;
+}
+
+:is(.shop-card, .board-card, .hand-card) .card-name {
+  color: #fff6d6 !important;
+  text-align: center !important;
+  font-size: 0.94rem !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.72) !important;
+}
+
+:is(.shop-card, .board-card, .hand-card) .card-text {
+  min-height: 42px !important;
+  color: rgba(245, 243, 240, 0.90) !important;
+  text-align: center !important;
+  font-size: 0.70rem !important;
+  font-weight: 700 !important;
+  line-height: 1.38 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.82) !important;
+}
+
+:is(.shop-card, .board-card, .hand-card) .tagline {
+  color: rgba(255, 244, 220, 0.76) !important;
+  text-align: center !important;
+  font-size: 0.70rem !important;
+  font-weight: 800 !important;
+}
+
+:is(.shop-card, .board-card, .hand-card) .stats {
+  width: 100% !important;
+  margin-top: auto !important;
+  padding: 0 4px 1px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+:is(.shop-card, .board-card, .hand-card) .stat-orb {
+  min-width: 39px !important;
+  height: 33px !important;
+  padding: 0 7px !important;
+  border-radius: 999px !important;
+  border: 2px solid rgba(255, 255, 255, 0.72) !important;
+  background: rgba(8, 14, 22, 0.84) !important;
+  color: #ffffff !important;
+  font-size: 1.08rem !important;
+  font-weight: 1000 !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.48) !important;
+}
+
+:is(.shop-card, .board-card, .hand-card) .atk-orb {
+  border-color: rgba(255, 157, 110, 0.94) !important;
+  color: #ffc2a2 !important;
+}
+
+:is(.shop-card, .board-card, .hand-card) .hp-orb {
+  border-color: rgba(125, 228, 149, 0.94) !important;
+  color: #b7f5c5 !important;
+}
+
+:is(.shop-card, .board-card, .hand-card) .stat-label {
+  font-size: 0.55rem !important;
+  opacity: 0.78 !important;
+}
+
+.cost {
+  position: absolute !important;
+  top: 7px !important;
+  right: 7px !important;
+  z-index: 22 !important;
+  padding: 4px 8px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 225, 120, 0.34) !important;
+  background: rgba(41, 28, 14, 0.78) !important;
+  color: #f4cf66 !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.38) !important;
+}
+
+.shop-card.frozen {
+  border-color: rgba(135, 225, 255, 0.92) !important;
+  box-shadow:
+    0 0 0 3px rgba(125, 211, 255, 0.22),
+    0 0 20px rgba(125, 211, 255, 0.34),
+    0 14px 28px rgba(0, 0, 0, 0.38) !important;
+}
+
+.shop-card.cant-buy {
+  opacity: 0.48 !important;
+}
+
+.board-card.empty,
+.hand-card.empty {
+  opacity: 0.24 !important;
+  border-style: dashed !important;
+  background: rgba(22, 28, 34, 0.52) !important;
+}
+
+.board-card.drop-target,
+.shop-card.drop-target,
+.hand-card.drop-target {
+  outline: 2px solid rgba(125, 228, 149, 0.92) !important;
+  outline-offset: 3px !important;
+}
+
+.board-card.reorder-target {
+  outline: 3px solid rgba(255, 219, 121, 0.96) !important;
+  outline-offset: 3px !important;
+}
+
+/* Tribe palette */
+:is(.tribe-elemental) {
+  --tribe-hi: rgba(112, 239, 255, 0.97);
+  --tribe-mid: rgba(38, 88, 128, 0.94);
+  --tribe-deep: rgba(17, 32, 48, 0.98);
+  --tribe-border: rgba(106, 218, 248, 0.68);
+  --tribe-glow: rgba(102, 237, 255, 0.58);
+}
+
+:is(.tribe-beast) {
+  --tribe-hi: rgba(190, 255, 145, 0.97);
+  --tribe-mid: rgba(73, 116, 47, 0.94);
+  --tribe-deep: rgba(27, 48, 21, 0.98);
+  --tribe-border: rgba(143, 216, 112, 0.66);
+  --tribe-glow: rgba(180, 255, 130, 0.52);
+}
+
+:is(.tribe-naga) {
+  --tribe-hi: rgba(202, 173, 255, 0.97);
+  --tribe-mid: rgba(84, 62, 136, 0.94);
+  --tribe-deep: rgba(31, 25, 53, 0.98);
+  --tribe-border: rgba(176, 149, 238, 0.68);
+  --tribe-glow: rgba(190, 158, 255, 0.52);
+}
+
+:is(.tribe-dragon) {
+  --tribe-hi: rgba(255, 171, 151, 0.97);
+  --tribe-mid: rgba(126, 55, 45, 0.94);
+  --tribe-deep: rgba(48, 22, 21, 0.98);
+  --tribe-border: rgba(238, 121, 105, 0.68);
+  --tribe-glow: rgba(255, 137, 120, 0.52);
+}
+
+:is(.tribe-murloc) {
+  --tribe-hi: rgba(125, 255, 218, 0.97);
+  --tribe-mid: rgba(38, 114, 91, 0.94);
+  --tribe-deep: rgba(18, 46, 37, 0.98);
+  --tribe-border: rgba(91, 221, 187, 0.68);
+  --tribe-glow: rgba(107, 242, 205, 0.52);
+}
+
+:is(.tribe-pirate) {
+  --tribe-hi: rgba(255, 214, 140, 0.97);
+  --tribe-mid: rgba(131, 84, 35, 0.94);
+  --tribe-deep: rgba(53, 33, 17, 0.98);
+  --tribe-border: rgba(225, 165, 91, 0.68);
+  --tribe-glow: rgba(255, 199, 111, 0.50);
+}
+
+:is(.tribe-demon) {
+  --tribe-hi: rgba(255, 148, 205, 0.97);
+  --tribe-mid: rgba(111, 39, 80, 0.94);
+  --tribe-deep: rgba(43, 17, 32, 0.98);
+  --tribe-border: rgba(225, 92, 164, 0.68);
+  --tribe-glow: rgba(255, 119, 192, 0.50);
+}
+
+:is(.tribe-undead) {
+  --tribe-hi: rgba(208, 192, 248, 0.97);
+  --tribe-mid: rgba(76, 64, 105, 0.94);
+  --tribe-deep: rgba(30, 27, 42, 0.98);
+  --tribe-border: rgba(171, 151, 211, 0.68);
+  --tribe-glow: rgba(196, 176, 235, 0.48);
+}
+
+:is(.tribe-mech) {
+  --tribe-hi: rgba(220, 231, 241, 0.97);
+  --tribe-mid: rgba(91, 107, 121, 0.94);
+  --tribe-deep: rgba(31, 39, 46, 0.98);
+  --tribe-border: rgba(181, 201, 218, 0.70);
+  --tribe-glow: rgba(208, 224, 236, 0.46);
+}
+
+:is(.tribe-quilboar) {
+  --tribe-hi: rgba(255, 184, 160, 0.97);
+  --tribe-mid: rgba(130, 69, 55, 0.94);
+  --tribe-deep: rgba(49, 27, 22, 0.98);
+  --tribe-border: rgba(219, 139, 113, 0.68);
+  --tribe-glow: rgba(249, 160, 133, 0.50);
+}
+
+:is(.tribe-none) {
+  --tribe-hi: rgba(244, 222, 170, 0.97);
+  --tribe-mid: rgba(115, 88, 51, 0.94);
+  --tribe-deep: rgba(44, 35, 22, 0.98);
+  --tribe-border: rgba(217, 190, 129, 0.64);
+  --tribe-glow: rgba(235, 209, 151, 0.46);
+}
+
+:is(.tribe-spell) {
+  --tribe-hi: rgba(248, 183, 255, 0.97);
+  --tribe-mid: rgba(92, 59, 127, 0.94);
+  --tribe-deep: rgba(39, 28, 51, 0.98);
+  --tribe-border: rgba(213, 141, 234, 0.72);
+  --tribe-glow: rgba(229, 157, 245, 0.56);
+}
+
+/* Hero cards retain a distinct identity while using the same silhouette. */
+.board-card.hero-minion {
+  --tribe-hi: rgba(225, 190, 255, 0.97);
+  --tribe-mid: rgba(80, 54, 100, 0.94);
+  --tribe-deep: rgba(39, 26, 48, 0.98);
+  --tribe-border: rgba(217, 184, 255, 0.66);
+  --tribe-glow: rgba(217, 184, 255, 0.50);
+}
