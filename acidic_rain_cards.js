@@ -52,3 +52,4 @@ document.write('<script defer src="./acidic_rain_rightmost_slot_rules.js"><\/scr
 document.write('<script defer src="./acidic_rain_start_screen_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_shop_size_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_excel_cards.js"><\/script>');
+document.write('<script defer src="./acidic_rain_display_fix.js"><\/script>');
