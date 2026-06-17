@@ -7,9 +7,16 @@
       MINIONS.some(card => String(card?.id || '').startsWith('excel_'));
     if (!excelReady && attempts < 200) return;
     clearInterval(timer);
-    const script = document.createElement('script');
-    script.src = `./acidic_rain_authoritative_patch.js?v=${Date.now()}`;
-    script.async = false;
-    document.head.appendChild(script);
+
+    const rules = document.createElement('script');
+    rules.src = './acidic_rain_authoritative_patch.js';
+    rules.async = false;
+    rules.onload = () => {
+      const ui = document.createElement('script');
+      ui.src = './acidic_rain_ui_score_spell_drag.js';
+      ui.async = false;
+      document.head.appendChild(ui);
+    };
+    document.head.appendChild(rules);
   }, 25);
 })();
