@@ -1,306 +1,159 @@
-/* Drag-arrow targeting for spells that require a specific card target. */
-window.addEventListener("load", () => {
-  const TARGETED_SPELLS = new Set([
-    "chef_recommendation",
-    "zerek",
-    "awakening",
-    "dream_essence",
+/* Arrow targeting for cards that explicitly choose a target. */
+window.addEventListener('load', () => {
+  const TARGET_NAMES = new Set([
+    'シェフのおすすめ',
+    '夢のエッセンス',
+    '超覚醒化',
+    '覚醒化',
+    'ドッペルゲンガーの奇策',
+    'ゼレク'
   ]);
 
-  let activeTargeting = null;
+  let active = null;
   let suppressClickUntil = 0;
 
-  const style = document.createElement("style");
+  const style = document.createElement('style');
   style.textContent = `
-    .targeting-valid {
-      outline: 3px solid rgba(255, 213, 92, .98) !important;
-      outline-offset: 4px;
-      box-shadow: 0 0 24px rgba(255, 190, 58, .72) !important;
-      transform: translateY(-3px);
-    }
-    .targeting-hover {
-      outline-color: rgba(113, 255, 166, 1) !important;
-      box-shadow: 0 0 30px rgba(92, 255, 151, .88) !important;
-    }
-    .targeting-source {
-      outline: 3px solid rgba(125, 211, 255, .95) !important;
-      outline-offset: 4px;
-    }
-    #targetingArrowLayer {
-      position: fixed;
-      inset: 0;
-      z-index: 5000;
-      pointer-events: none;
-      overflow: visible;
-    }
-    #targetingArrowPath {
-      fill: none;
-      stroke: #ffd35a;
-      stroke-width: 8;
-      stroke-linecap: round;
-      filter: drop-shadow(0 0 7px rgba(255, 174, 31, .9));
-    }
-    #targetingArrowHead {
-      fill: #ffd35a;
-      filter: drop-shadow(0 0 6px rgba(255, 174, 31, .9));
-    }
+    .targeting-valid{outline:3px solid rgba(255,213,92,.98)!important;outline-offset:4px;box-shadow:0 0 24px rgba(255,190,58,.72)!important}
+    .targeting-hover{outline-color:rgba(113,255,166,1)!important;box-shadow:0 0 30px rgba(92,255,151,.88)!important}
+    .targeting-source{outline:3px solid rgba(125,211,255,.95)!important;outline-offset:4px}
+    #targetingArrowLayer{position:fixed;inset:0;z-index:5000;pointer-events:none;overflow:visible}
+    #targetingArrowPath{fill:none;stroke:#ffd35a;stroke-width:8;stroke-linecap:round;filter:drop-shadow(0 0 7px rgba(255,174,31,.9))}
+    #targetingArrowHead{fill:#ffd35a;filter:drop-shadow(0 0 6px rgba(255,174,31,.9))}
   `;
   document.head.appendChild(style);
 
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.id = "targetingArrowLayer";
-  svg.setAttribute("width", "100%");
-  svg.setAttribute("height", "100%");
-  svg.innerHTML = `
-    <defs>
-      <marker id="targetingArrowMarker" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto" markerUnits="strokeWidth">
-        <path id="targetingArrowHead" d="M 0 0 L 12 5 L 0 10 z"></path>
-      </marker>
-    </defs>
-    <path id="targetingArrowPath" marker-end="url(#targetingArrowMarker)"></path>
-  `;
-  svg.style.display = "none";
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.id = 'targetingArrowLayer';
+  svg.setAttribute('width','100%');
+  svg.setAttribute('height','100%');
+  svg.innerHTML = `<defs><marker id="targetingArrowMarker" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto" markerUnits="strokeWidth"><path id="targetingArrowHead" d="M 0 0 L 12 5 L 0 10 z"></path></marker></defs><path id="targetingArrowPath" marker-end="url(#targetingArrowMarker)"></path>`;
+  svg.style.display = 'none';
   document.body.appendChild(svg);
-  const arrowPath = svg.querySelector("#targetingArrowPath");
+  const path = svg.querySelector('#targetingArrowPath');
 
-  function isTargetedSpell(card) {
-    return Boolean(card && card.type === "spell" && TARGETED_SPELLS.has(card.id));
-  }
+  function nameOf(card){ return String(card?.name || '').trim(); }
+  function isTargeted(card){ return Boolean(card && card.type === 'spell' && TARGET_NAMES.has(nameOf(card))); }
 
-  function isValidTarget(card, zone) {
-    if (!activeTargeting || !card) return false;
-    switch (activeTargeting.spell.id) {
-      case "chef_recommendation":
-        return (zone === "shop" || zone === "board") &&
-          card.type !== "spell" &&
-          card.tribe &&
-          card.tribe !== "なし" &&
-          card.tribe !== "育成" &&
-          card.tribe !== "贈り物";
-      case "zerek":
-        return zone === "board" && card.type !== "spell";
-      case "awakening":
-        return zone === "board" &&
-          card.type !== "spell" &&
-          Number(card.tier) === 1 &&
-          !card.awakened &&
-          !card.gift;
-      case "dream_essence":
-        return zone === "board" && typeof card.battlecry === "function";
+  function validTarget(spell, card, zone){
+    if (!spell || !card) return false;
+    switch(nameOf(spell)){
+      case 'シェフのおすすめ':
+        return (zone==='shop'||zone==='board') && card.type!=='spell' && card.tribe && !['なし','育成','贈り物'].includes(card.tribe);
+      case '夢のエッセンス':
+        return zone==='board' && typeof card.battlecry==='function';
+      case '超覚醒化':
+      case '覚醒化':
+        return zone==='board' && card.type!=='spell' && !card.awakened && !card.gift;
+      case 'ドッペルゲンガーの奇策':
+        return zone==='board' && card.type!=='spell' && typeof card.battlecry==='function';
+      case 'ゼレク':
+        return zone==='board' && card.type!=='spell';
       default:
         return false;
     }
   }
 
-  function getTargetFromElement(element) {
-    const shopNode = element?.closest?.(".shop-card[data-shop-index]");
-    if (shopNode) {
-      const index = Number(shopNode.dataset.shopIndex);
-      const card = state.shop[index];
-      if (isValidTarget(card, "shop")) return { zone: "shop", index, card, node: shopNode };
+  function targetAt(element){
+    const shopNode = element?.closest?.('.shop-card[data-shop-index]');
+    if (shopNode){
+      const index=Number(shopNode.dataset.shopIndex), card=state.shop[index];
+      if(validTarget(active?.spell,card,'shop')) return {zone:'shop',index,card,node:shopNode};
     }
-
-    const boardNode = element?.closest?.(".board-card[data-board-slot]");
-    if (boardNode) {
-      const index = Number(boardNode.dataset.boardSlot);
-      const card = state.board[index];
-      if (isValidTarget(card, "board")) return { zone: "board", index, card, node: boardNode };
+    const boardNode = element?.closest?.('.board-card[data-board-slot]');
+    if (boardNode){
+      const index=Number(boardNode.dataset.boardSlot), card=state.board[index];
+      if(validTarget(active?.spell,card,'board')) return {zone:'board',index,card,node:boardNode};
     }
     return null;
   }
 
-  function clearHighlights() {
-    document.querySelectorAll(".targeting-valid, .targeting-hover, .targeting-source").forEach(node => {
-      node.classList.remove("targeting-valid", "targeting-hover", "targeting-source");
-    });
+  function clear(){ document.querySelectorAll('.targeting-valid,.targeting-hover,.targeting-source').forEach(n=>n.classList.remove('targeting-valid','targeting-hover','targeting-source')); }
+  function highlight(){
+    clear();
+    if(!active)return;
+    active.source.classList.add('targeting-source');
+    document.querySelectorAll('.shop-card[data-shop-index]').forEach(n=>{const c=state.shop[Number(n.dataset.shopIndex)];if(validTarget(active.spell,c,'shop'))n.classList.add('targeting-valid')});
+    document.querySelectorAll('.board-card[data-board-slot]').forEach(n=>{const c=state.board[Number(n.dataset.boardSlot)];if(validTarget(active.spell,c,'board'))n.classList.add('targeting-valid')});
+  }
+  function arrow(x,y){
+    if(!active)return;
+    const {x:sx,y:sy}=active.start, bend=Math.max(40,Math.abs(x-sx)*.25);
+    path.setAttribute('d',`M ${sx} ${sy} C ${sx} ${sy-bend}, ${x} ${y+bend}, ${x} ${y}`);
   }
 
-  function refreshHighlights() {
-    clearHighlights();
-    if (!activeTargeting) return;
-    activeTargeting.sourceNode.classList.add("targeting-source");
-    document.querySelectorAll(".shop-card[data-shop-index]").forEach(node => {
-      const card = state.shop[Number(node.dataset.shopIndex)];
-      if (isValidTarget(card, "shop")) node.classList.add("targeting-valid");
-    });
-    document.querySelectorAll(".board-card[data-board-slot]").forEach(node => {
-      const card = state.board[Number(node.dataset.boardSlot)];
-      if (isValidTarget(card, "board")) node.classList.add("targeting-valid");
-    });
-  }
-
-  function updateArrow(x, y) {
-    if (!activeTargeting) return;
-    const sx = activeTargeting.startX;
-    const sy = activeTargeting.startY;
-    const dx = x - sx;
-    const dy = y - sy;
-    const curve = Math.max(40, Math.abs(dx) * 0.25);
-    const c1x = sx;
-    const c1y = sy - curve * Math.sign(dy || -1);
-    const c2x = x;
-    const c2y = y + curve * Math.sign(dy || -1);
-    arrowPath.setAttribute("d", `M ${sx} ${sy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${x} ${y}`);
-  }
-
-  function beginTargeting(handIndex, sourceNode, event) {
-    const spell = state.hand[handIndex];
-    if (!isTargetedSpell(spell) || state.gameOver) return false;
-
-    const rect = sourceNode.getBoundingClientRect();
-    activeTargeting = {
-      handIndex,
-      spell,
-      sourceNode,
-      startX: rect.left + rect.width / 2,
-      startY: rect.top + rect.height / 2,
-      hovered: null,
-    };
-
-    refreshHighlights();
-    if (!document.querySelector(".targeting-valid")) {
-      log(`${spell.name} の対象にできるカードがない。`);
-      activeTargeting = null;
-      clearHighlights();
-      return false;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-    sourceNode.setPointerCapture?.(event.pointerId);
-    svg.style.display = "block";
-    updateArrow(event.clientX, event.clientY);
-    log(`${spell.name}：矢印を対象カードまで伸ばして離してください。`);
+  function begin(index,node,event){
+    const spell=state.hand[index];
+    if(!isTargeted(spell)||state.gameOver)return false;
+    const r=node.getBoundingClientRect();
+    active={index,spell,source:node,start:{x:r.left+r.width/2,y:r.top+r.height/2}};
+    highlight();
+    if(!document.querySelector('.targeting-valid')){log(`${spell.name}の対象にできるカードがない。`);active=null;clear();return false;}
+    event.preventDefault();event.stopPropagation();
+    svg.style.display='block';arrow(event.clientX,event.clientY);
+    log(`${spell.name}：対象まで矢印を伸ばして離してください。`);
     return true;
   }
 
-  function moveTargeting(event) {
-    if (!activeTargeting) return;
-    event.preventDefault();
-    updateArrow(event.clientX, event.clientY);
-    document.querySelectorAll(".targeting-hover").forEach(node => node.classList.remove("targeting-hover"));
-    const target = getTargetFromElement(document.elementFromPoint(event.clientX, event.clientY));
-    activeTargeting.hovered = target;
-    if (target) target.node.classList.add("targeting-hover");
+  function move(event){
+    if(!active)return;
+    event.preventDefault();arrow(event.clientX,event.clientY);
+    document.querySelectorAll('.targeting-hover').forEach(n=>n.classList.remove('targeting-hover'));
+    targetAt(document.elementFromPoint(event.clientX,event.clientY))?.node.classList.add('targeting-hover');
   }
 
-  function finishTargeting(event) {
-    if (!activeTargeting) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const targeting = activeTargeting;
-    const target = getTargetFromElement(document.elementFromPoint(event.clientX, event.clientY));
-    activeTargeting = null;
-    svg.style.display = "none";
-    arrowPath.setAttribute("d", "");
-    clearHighlights();
-    suppressClickUntil = Date.now() + 500;
-
-    if (!target) {
-      log(`${targeting.spell.name} の対象指定をキャンセルした。`);
-      render();
+  function resolveTarget(spell,target){
+    const name=nameOf(spell);
+    if(name==='シェフのおすすめ'){
+      const pool=MINIONS.filter(c=>c.tribe===target.card.tribe && c.name!==target.card.name && Number(c.tier)<=Number(state.tavernTier));
+      if(pool.length) gainCardToHand(state,randomFrom(pool),`${target.card.tribe}のカードを1枚得た。`);
       return;
     }
-
-    state.forcedTargetContext = {
-      spellId: targeting.spell.id,
-      zone: target.zone,
-      index: target.index,
-      card: target.card,
-    };
-    try {
-      playHandCardToSlot(targeting.handIndex, -1);
-    } finally {
-      delete state.forcedTargetContext;
+    if(name==='夢のエッセンス'){
+      target.card.battlecry?.(state);return;
+    }
+    if(name==='超覚醒化'||name==='覚醒化'){
+      target.card.awakened=true;
+      if(target.card.awakenedText)target.card.text=target.card.awakenedText;
+      log(`${target.card.name}を覚醒させた。`);return;
+    }
+    if(name==='ゼレク'){
+      if(state.hand.length<HAND_LIMIT)state.hand.push(typeof initializedClone==='function'?initializedClone(target.card):cloneCard(target.card));
+      return;
+    }
+    if(name==='ドッペルゲンガーの奇策'){
+      if(state.hand.length>=HAND_LIMIT)return;
+      const original=MINIONS.find(c=>c.name===target.card.name) || target.card;
+      state.hand.push(typeof initializedClone==='function'?initializedClone(original):cloneCard(original));
+      state.hand.push(typeof initializedClone==='function'?initializedClone(original):cloneCard(original));
+      state.board[target.index]=null;
     }
   }
 
-  const oldRenderShop = renderShop;
-  renderShop = function() {
-    oldRenderShop();
-    [...shopGridEl.children].forEach((node, index) => {
-      node.dataset.shopIndex = index;
-    });
-  };
+  function finish(event){
+    if(!active)return;
+    event.preventDefault();event.stopPropagation();
+    const targeting=active, target=targetAt(document.elementFromPoint(event.clientX,event.clientY));
+    active=null;svg.style.display='none';path.setAttribute('d','');clear();suppressClickUntil=Date.now()+500;
+    if(!target){log(`${targeting.spell.name}の対象指定をキャンセルした。`);render();return;}
+    resolveTarget(targeting.spell,target);
+    state.hand.splice(targeting.index,1);
+    updateAuras();
+    render();
+  }
 
-  const oldRenderHand = renderHand;
-  renderHand = function() {
-    oldRenderHand();
-    [...handGridEl.children].forEach((node, index) => {
-      node.dataset.handIndex = index;
-      const card = state.hand[index];
-      if (isTargetedSpell(card)) {
-        node.draggable = false;
-        node.title = "カードから対象へ矢印を伸ばして使用";
-      }
-    });
-  };
+  const oldShop=renderShop;
+  renderShop=function(){oldShop();[...shopGridEl.children].forEach((n,i)=>n.dataset.shopIndex=i)};
+  const oldBoard=renderBoard;
+  renderBoard=function(){oldBoard();[...boardSlotsEl.children].forEach(n=>{if(n.dataset.boardSlot==null)return;})};
+  const oldHand=renderHand;
+  renderHand=function(){oldHand();[...handGridEl.children].forEach((n,i)=>{n.dataset.handIndex=i;const c=state.hand[i];if(isTargeted(c)){n.draggable=false;n.title='カードから対象へ矢印を伸ばして使用'}})};
 
-  const originalChef = castChefRecommendation;
-  castChefRecommendation = function(gameState) {
-    const context = gameState.forcedTargetContext;
-    if (!context || context.spellId !== "chef_recommendation") return originalChef(gameState);
-    const selected = context.card;
-    const pool = MINIONS.filter(card => card.tribe === selected.tribe && card.id !== selected.id);
-    if (!pool.length) {
-      log("同じ種族の別名カードがないため、シェフのおすすめは不発だった。");
-      return;
-    }
-    gainCardToHand(gameState, randomFrom(pool), `${selected.tribe}のカードを1枚得た。`);
-  };
-
-  const originalZerek = castZerek;
-  castZerek = function(gameState) {
-    const context = gameState.forcedTargetContext;
-    if (!context || context.spellId !== "zerek") return originalZerek(gameState);
-    if (gameState.hand.length >= HAND_LIMIT) {
-      log("手札がいっぱいのため、ゼレクは不発だった。");
-      return;
-    }
-    const copy = typeof initializedClone === "function" ? initializedClone(context.card) : cloneCard(context.card);
-    delete copy.frozen;
-    gameState.hand.push(copy);
-    log(`${context.card.name} のコピーを1枚得た。`);
-  };
-
-  const originalAwakening = castAwakeningSpell;
-  castAwakeningSpell = function(gameState) {
-    const context = gameState.forcedTargetContext;
-    if (!context || context.spellId !== "awakening") return originalAwakening(gameState);
-    const target = context.card;
-    target.awakened = true;
-    if (target.awakenedText) target.text = target.awakenedText;
-    log(`✨ ${target.name} を覚醒させた。`);
-  };
-
-  const originalDreamEssence = castDreamEssence;
-  castDreamEssence = function(gameState) {
-    const context = gameState.forcedTargetContext;
-    if (!context || context.spellId !== "dream_essence") return originalDreamEssence(gameState);
-    if (typeof context.card.battlecry === "function") context.card.battlecry(gameState);
-  };
-
-  document.addEventListener("pointerdown", event => {
-    const handNode = event.target.closest?.(".hand-card[data-hand-index]");
-    if (!handNode) return;
-    const index = Number(handNode.dataset.handIndex);
-    if (isTargetedSpell(state.hand[index])) beginTargeting(index, handNode, event);
-  }, true);
-
-  document.addEventListener("pointermove", moveTargeting, true);
-  document.addEventListener("pointerup", finishTargeting, true);
-  document.addEventListener("pointercancel", finishTargeting, true);
-
-  document.addEventListener("click", event => {
-    const handNode = event.target.closest?.(".hand-card[data-hand-index]");
-    if (!handNode) return;
-    const card = state.hand[Number(handNode.dataset.handIndex)];
-    if (isTargetedSpell(card) || Date.now() < suppressClickUntil) {
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-    }
-  }, true);
+  document.addEventListener('pointerdown',event=>{const n=event.target.closest?.('.hand-card[data-hand-index]');if(n)begin(Number(n.dataset.handIndex),n,event)},true);
+  document.addEventListener('pointermove',move,true);
+  document.addEventListener('pointerup',finish,true);
+  document.addEventListener('pointercancel',finish,true);
+  document.addEventListener('click',event=>{const n=event.target.closest?.('.hand-card[data-hand-index]');if(!n)return;const c=state.hand[Number(n.dataset.handIndex)];if(isTargeted(c)||Date.now()<suppressClickUntil){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation()}},true);
 
   render();
-}, { once: true });
+},{once:true});
