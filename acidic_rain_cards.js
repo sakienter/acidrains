@@ -14,13 +14,14 @@ document.write(`<script>
     { id:"catalog_flip", name:"カタログパラパラ", emoji:"📖", tier:1, cost:1, text:"リロールを2回分0コストにする。", type:"spell", cast(state){ state.freeRerolls=(state.freeRerolls||0)+2; } },
     { id:"losing_ticket", name:"はずれくじ", emoji:"🎟️", tier:1, cost:1, text:"ランダムなTier1カードを1枚得る。", type:"spell", cast(state){ gainRandomTierOneCard(state); } },
 
-    { id:"brann_spell", name:"ブランスペル", emoji:"🦁", tier:2, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
-    { id:"war_drum", name:"陣太鼓", emoji:"🥁", tier:2, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
-    { id:"flowing_branch", name:"流れ枝", emoji:"🌿", tier:2, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
-    { id:"remember_the_beginning", name:"初心を忘れない", emoji:"🌱", tier:2, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
-    { id:"scroll", name:"スクロール", emoji:"📜", tier:2, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
-    { id:"dream_essence", name:"夢のエッセンス", emoji:"💭", tier:2, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
-    { id:"chip_bin", name:"チップビン", emoji:"🪙", tier:2, cost:0, text:"コスト・効果未設定", type:"spell", cast(state){} },
+    { id:"brann_spell", name:"ブランスペル", emoji:"🦁", tier:2, cost:3, text:"このターン中、雄叫びが2回発動する。", type:"spell", cast(state){ activateBrannSpell(state); } },
+    { id:"war_drum", name:"陣太鼓", emoji:"🥁", tier:2, cost:1, text:"このターン中、次に使う雄叫びは追加で2回発動する。", type:"spell", cast(state){ activateWarDrum(state); } },
+    { id:"headhunter", name:"ヘッドハンター", emoji:"🎯", tier:2, cost:3, text:"雄叫びミニオンを1体発見する。", type:"spell", cast(state){ castHeadhunter(state); } },
+    { id:"remember_the_beginning", name:"初心を忘れない", emoji:"🌱", tier:2, cost:4, text:"「贈り物」カードを1枚ランダムに得る。", type:"spell", cast(state){ castRememberTheBeginning(state); } },
+    { id:"scroll", name:"スクロール", emoji:"📜", tier:2, cost:5, text:"現在の自分のTierのミニオン1枚と、スペル1枚を発見する。", type:"spell", cast(state){ castScroll(state); } },
+    { id:"dream_essence", name:"夢のエッセンス", emoji:"💭", tier:2, cost:2, text:"自陣の雄叫びミニオンを選ぶ。その雄叫びを発動する。", type:"spell", cast(state){ castDreamEssence(state); } },
+    { id:"chip_bin", name:"チップビン", emoji:"🪙", tier:2, cost:3, text:"2コイン得る。このゲームの上限コインが2コイン増える。", type:"spell", cast(state){ castChipBin(state); } },
+    { id:"drakkari", name:"ドラッカリ", emoji:"🌙", tier:2, cost:3, text:"このターン、ターン終了時効果が2回発動する。", type:"spell", cast(state){ activateDrakkari(state); } },
 
     { id:"temporary_time_rewrite", name:"一時的な時間改竄", emoji:"🕰️", tier:3, cost:5, text:"このターン、次に使う3回のスペルは追加で1回発動される。", type:"spell", cast(state){ activateTemporaryTimeRewrite(state); } },
     { id:"zerek", name:"ゼレク", emoji:"🧬", tier:3, cost:6, text:"自陣のカードのコピーを1枚得る。", type:"spell", cast(state){ castZerek(state); } },
@@ -43,3 +44,4 @@ document.write('<script defer src="./acidic_rain_hud_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_mode_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_discover_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_tier3_spell_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_tier2_spell_rules.js"><\/script>');
