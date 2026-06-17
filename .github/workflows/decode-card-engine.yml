@@ -1,0 +1,37 @@
+name: Decode card engine
+
+on:
+  push:
+    paths:
+      - '.github/workflows/decode-card-engine.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  decode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Decode generated card engine
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const zlib = require('zlib');
+          const source = fs.readFileSync('acidic_rain_excel_cards.js', 'utf8');
+          const match = source.match(/const b64="([A-Za-z0-9+/=]+)"/);
+          if (!match) throw new Error('Compressed card payload was not found.');
+          const decoded = zlib.gunzipSync(Buffer.from(match[1], 'base64')).toString('utf8');
+          fs.mkdirSync('tools', { recursive: true });
+          fs.writeFileSync('tools/acidic_rain_excel_cards.decoded.js', decoded);
+          NODE
+      - name: Commit decoded source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/acidic_rain_excel_cards.decoded.js
+          git diff --cached --quiet || git commit -m 'Decode generated card engine for tier migration'
+          git push
