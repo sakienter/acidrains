@@ -7,3 +7,4 @@ document.write('<script src="https://cdn.jsdelivr.net/gh/sakienter/acidrains@ecc
 document.write('<script defer src="./acidic_rain_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_hotfix.js"><\/script>');
 document.write('<script defer src="./acidic_rain_stat_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_awaken_rules.js"><\/script>');
