@@ -1,4 +1,82 @@
 /* Loaded after the main engine and advanced rules, before window.load. */
+const handLayoutStyle = document.createElement("style");
+handLayoutStyle.textContent = `
+  .hand-grid {
+    display: grid !important;
+    grid-template-columns: repeat(10, minmax(88px, 1fr)) !important;
+    align-items: end !important;
+    justify-content: stretch !important;
+    gap: 8px !important;
+    min-height: 206px !important;
+    padding: 14px 8px 10px !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+  }
+
+  .hand-card,
+  .hand-grid .hand-card:first-child {
+    width: 100% !important;
+    min-width: 88px !important;
+    max-width: 138px !important;
+    min-height: 180px !important;
+    margin-left: 0 !important;
+    transform: none !important;
+    padding: 12px 8px 10px !important;
+    border-radius: 18px 18px 12px 12px !important;
+    transition: transform 150ms ease, filter 150ms ease, box-shadow 150ms ease !important;
+  }
+
+  .hand-card:not(.empty):hover {
+    position: relative;
+    z-index: 20;
+    transform: translateY(-12px) scale(1.05) !important;
+    filter: brightness(1.08);
+    box-shadow: 0 20px 38px rgba(0, 0, 0, 0.48) !important;
+  }
+
+  .hand-card .card-emoji {
+    font-size: clamp(32px, 3vw, 46px) !important;
+    margin-top: 4px !important;
+  }
+
+  .hand-card .card-name {
+    font-size: clamp(.72rem, 1vw, .9rem) !important;
+    line-height: 1.22 !important;
+    min-height: 2.45em;
+    overflow-wrap: anywhere;
+  }
+
+  .hand-card .card-text {
+    min-height: 48px !important;
+    max-height: 62px;
+    overflow: hidden;
+    font-size: clamp(.58rem, .76vw, .7rem) !important;
+    line-height: 1.35 !important;
+  }
+
+  .hand-card .stats {
+    font-size: clamp(.88rem, 1.4vw, 1.15rem) !important;
+  }
+
+  .hand-card.empty {
+    min-height: 156px !important;
+    align-self: end;
+    opacity: .16 !important;
+  }
+
+  .hand-card.empty .card-text {
+    display: none;
+  }
+
+  @media (max-width: 1050px) {
+    .hand-grid {
+      grid-template-columns: repeat(10, 108px) !important;
+      justify-content: start !important;
+    }
+  }
+`;
+document.head.appendChild(handLayoutStyle);
+
 const discoverUiScript = document.createElement("script");
 discoverUiScript.src = "./acidic_rain_discover_ui.js";
 discoverUiScript.async = false;
