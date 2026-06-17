@@ -48,12 +48,12 @@ window.addEventListener("load", () => {
   function allNormalOwnedMinions() {
     const owned = [];
     state.hand.forEach((card, index) => {
-      if (card && card.type !== "spell" && !card.awakened) {
+      if (card && card.type !== "spell" && !card.awakened && !card.gift) {
         owned.push({ zone: "hand", index, card });
       }
     });
     state.board.forEach((card, index) => {
-      if (index >= 2 && card && card.type !== "spell" && !card.awakened) {
+      if (index >= 2 && card && card.type !== "spell" && !card.awakened && !card.gift) {
         owned.push({ zone: "board", index, card });
       }
     });
@@ -61,30 +61,17 @@ window.addEventListener("load", () => {
   }
 
   function removeOwnedEntries(entries) {
-    const handIndexes = entries
-      .filter(entry => entry.zone === "hand")
-      .map(entry => entry.index)
-      .sort((a, b) => b - a);
-    const boardIndexes = entries
-      .filter(entry => entry.zone === "board")
-      .map(entry => entry.index);
-
+    const handIndexes = entries.filter(entry => entry.zone === "hand").map(entry => entry.index).sort((a, b) => b - a);
+    const boardIndexes = entries.filter(entry => entry.zone === "board").map(entry => entry.index);
     handIndexes.forEach(index => state.hand.splice(index, 1));
-    boardIndexes.forEach(index => {
-      state.board[index] = null;
-    });
+    boardIndexes.forEach(index => { state.board[index] = null; });
   }
 
   function awakenedCopyFrom(template, consumed) {
     const awakened = initializedClone(template);
     awakened.awakened = true;
     awakened.text = awakened.awakenedText || awakened.text;
-
-    // Preserve the strongest current stats among the consumed copies.
-    // Surprise Elemental wildcards do not contribute their own stats.
-    const realCopies = consumed
-      .map(entry => entry.card)
-      .filter(card => card.id === template.id);
+    const realCopies = consumed.map(entry => entry.card).filter(card => card.id === template.id);
     if (realCopies.length) {
       awakened.atk = Math.max(...realCopies.map(card => Number(card.atk || 0)));
       awakened.hp = Math.max(...realCopies.map(card => Number(card.hp || 0)));
@@ -102,8 +89,6 @@ window.addEventListener("load", () => {
       if (!groups.has(entry.card.id)) groups.set(entry.card.id, []);
       groups.get(entry.card.id).push(entry);
     });
-
-    // Prefer ordinary exact triples before consuming Surprise Elementals as wildcards.
     for (const [id, group] of groups.entries()) {
       if (group.length >= 3) {
         const template = MINIONS.find(card => card.id === id);
@@ -116,7 +101,6 @@ window.addEventListener("load", () => {
   function findElementalWildcardTriple(entries) {
     const surprises = entries.filter(entry => entry.card.id === SURPRISE_ID);
     if (!surprises.length) return null;
-
     const elementalGroups = new Map();
     entries.forEach(entry => {
       const card = entry.card;
@@ -124,27 +108,17 @@ window.addEventListener("load", () => {
       if (!elementalGroups.has(card.id)) elementalGroups.set(card.id, []);
       elementalGroups.get(card.id).push(entry);
     });
-
-    // Two matching Elementals + one Surprise Elemental.
     for (const [id, group] of elementalGroups.entries()) {
       if (group.length >= 2 && surprises.length >= 1) {
         const template = MINIONS.find(card => card.id === id);
-        if (template) return {
-          template,
-          consumed: [group[0], group[1], surprises[0]],
-        };
+        if (template) return { template, consumed: [group[0], group[1], surprises[0]] };
       }
     }
-
-    // One Elemental + two Surprise Elementals.
     if (surprises.length >= 2) {
       for (const [id, group] of elementalGroups.entries()) {
         if (group.length >= 1) {
           const template = MINIONS.find(card => card.id === id);
-          if (template) return {
-            template,
-            consumed: [group[0], surprises[0], surprises[1]],
-          };
+          if (template) return { template, consumed: [group[0], surprises[0], surprises[1]] };
         }
       }
     }
@@ -159,11 +133,9 @@ window.addEventListener("load", () => {
       do {
         combined = false;
         if (state.hand.length >= HAND_LIMIT) break;
-
         const entries = allNormalOwnedMinions();
         const match = findExactTriple(entries) || findElementalWildcardTriple(entries);
         if (!match) break;
-
         const awakened = awakenedCopyFrom(match.template, match.consumed);
         removeOwnedEntries(match.consumed);
         state.hand.push(awakened);
@@ -207,8 +179,6 @@ window.addEventListener("load", () => {
     priorRender();
   };
 
-  // Surprise Elemental no longer uses a targeted battlecry. It is consumed as
-  // an Elemental-only wildcard by the automatic three-card awakening resolver.
   const surprise = MINIONS.find(card => card.id === SURPRISE_ID);
   if (surprise) {
     surprise.text = "このカードは、エレメンタルを覚醒させる際、同名カード1枚分として扱える。";
