@@ -167,7 +167,7 @@
     const result = originalEndTurn();
     if (state.turn > beforeTurn && !state.gameOver) {
       state.nextTurnGoldBonus = 0;
-      state.gold = Math.min(Number(state.maxGold || 10), turnGold(state.turn) + pendingBonus);
+      state.gold = turnGold(state.turn) + pendingBonus;
       startTurnTimer(true);
       render();
     } else if (state.gameOver) {
