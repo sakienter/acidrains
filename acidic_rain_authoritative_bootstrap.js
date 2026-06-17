@@ -27,6 +27,11 @@
         cardTheme.href = './acidic_rain_card_theme.css';
         cardTheme.dataset.acidCardTheme = 'true';
         document.head.appendChild(cardTheme);
+
+        const scoreController = document.createElement('script');
+        scoreController.src = './acidic_rain_score_controller.js';
+        scoreController.async = false;
+        document.head.appendChild(scoreController);
       };
       document.head.appendChild(ui);
     };
