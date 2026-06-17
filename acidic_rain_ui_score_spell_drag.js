@@ -77,7 +77,7 @@
 
   function boardStatTotal() {
     return (state.board || []).reduce((sum, card, index) => {
-      if (!card || card.type === 'spell' || index < 2) return sum;
+      if (!card || card.type === 'spell' || index < 1) return sum;
       return sum + stat(card.atk) + stat(card.hp);
     }, 0);
   }
