@@ -166,10 +166,10 @@
 
       '苔マン': () => ({
         text: 'ターン終了時：この対戦中に酒場を入替した後、その右端のミニオン1体に+1/+2を付与する。',
-        awakenedText: 'ターン終了時：この対戦中に酒場を入替した後、その右端のミニオン1体に+2/+2を付与する。',
+        awakenedText: 'ターン終了時：この対戦中に酒場を入替した後、その右端のミニオン1体に+2/+4を付与する。',
         onTurnEnd(gameState) {
           const atk = amount(this, 1, 2);
-          const hp = 2;
+          const hp = amount(this, 2, 4);
           gameState.tier1DuneAfterRerollAtk = number(gameState.tier1DuneAfterRerollAtk) + atk;
           gameState.tier1DuneAfterRerollHp = number(gameState.tier1DuneAfterRerollHp) + hp;
           writeLog(`苔マン：以後の酒場入替後バフが +${gameState.tier1DuneAfterRerollAtk}/+${gameState.tier1DuneAfterRerollHp} になった。`);
