@@ -50,3 +50,4 @@ document.write('<script defer src="./acidic_rain_tier6_progression_rules.js"><\/
 document.write('<script defer src="./acidic_rain_discover_ui_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_rightmost_slot_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_start_screen_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_shop_size_rules.js"><\/script>');
