@@ -68,6 +68,26 @@ handLayoutStyle.textContent = `
     display: none;
   }
 
+  .stat-bonus {
+    display: block;
+    margin-top: 2px;
+    color: #8dff9d;
+    font-size: .62rem;
+    font-weight: 900;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(85,255,117,.65);
+  }
+
+  .buff-flash {
+    animation: buffFlash .55s ease-out;
+  }
+
+  @keyframes buffFlash {
+    0% { transform: scale(1); filter: brightness(1); }
+    45% { transform: scale(1.045); filter: brightness(1.45); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+
   @media (max-width: 1050px) {
     .hand-grid {
       grid-template-columns: repeat(10, 108px) !important;
@@ -90,6 +110,30 @@ const ACID_ORIGINAL_HANDLERS = {
 };
 
 window.addEventListener("load", () => {
+  function ensureBaseStats(card){
+    if(!card || card.type === "spell") return card;
+    if(card.baseAtk == null) card.baseAtk = Number(card.atk || 0);
+    if(card.baseHp == null) card.baseHp = Number(card.hp || 0);
+    if(card.bonusAtk == null) card.bonusAtk = Math.max(0, Number(card.atk || 0) - card.baseAtk);
+    if(card.bonusHp == null) card.bonusHp = Math.max(0, Number(card.hp || 0) - card.baseHp);
+    return card;
+  }
+
+  function addStats(card, atk = 0, hp = 0){
+    if(!card || card.type === "spell") return false;
+    ensureBaseStats(card);
+    const attackGain = Number(atk || 0);
+    const healthGain = Number(hp || 0);
+    card.atk = Number(card.atk || 0) + attackGain;
+    card.hp = Number(card.hp || 0) + healthGain;
+    card.bonusAtk = Number(card.bonusAtk || 0) + attackGain;
+    card.bonusHp = Number(card.bonusHp || 0) + healthGain;
+    card.lastBuffAt = Date.now();
+    return true;
+  }
+
+  window.addStats = addStats;
+
   function patchRainInstances(){
     const template=MINIONS.find(c=>c.id==="acidic_rain_copy");
     if(!template)return;
@@ -97,13 +141,123 @@ window.addEventListener("load", () => {
       if(!card)return;
       const atk=card.atk||6,hp=card.hp||6;
       Object.assign(card,initializedClone(template),{atk,hp});
+      ensureBaseStats(card);
     });
   }
+
+  const originalCloneCard = cloneCard;
+  cloneCard = function(card){
+    const cloned = originalCloneCard(card);
+    return ensureBaseStats(cloned);
+  };
+
+  buffRain = function(gameState, atk, hp){
+    const rain = gameState.board[1];
+    addStats(rain, atk, hp);
+  };
+
+  buffAllRains = function(gameState, atk, hp){
+    gameState.board.forEach((card,index)=>{
+      if(card && (index===1 || card.id==="acidic_rain_copy")) addStats(card,atk,hp);
+    });
+  };
+
+  const engine = MINIONS.find(c=>c.id==="engine");
+  if(engine){
+    engine.battlecry=function(gameState){
+      const target=getRightmostShopCard(gameState);
+      const amount=A(this,7,14);
+      if(target&&target.type!=="spell") addStats(target,amount,amount);
+    };
+  }
+
+  const waverling = MINIONS.find(c=>c.id==="waverling");
+  if(waverling){
+    waverling.onSpellCast=function(gameState){
+      const target=getRightmostShopCard(gameState);
+      const amount=A(this,3,6);
+      if(target&&target.type!=="spell") addStats(target,amount,amount);
+    };
+  }
+
+  const rainTemplate = MINIONS.find(c=>c.id==="acidic_rain_copy");
+  if(rainTemplate){
+    rainTemplate.onRerollCount=function(gameState){
+      this.rerollProgress=(this.rerollProgress||0)+1;
+      while(this.rerollProgress>=4){
+        this.rerollProgress-=4;
+        const target=getRightmostShopCard(gameState);
+        const multiplier=A(this,1,2);
+        if(target&&target.type!=="spell") addStats(this,(target.atk||0)*multiplier,(target.hp||0)*multiplier);
+      }
+    };
+  }
+
+  const acidburst = SPELLS.find(c=>c.id==="acidburst");
+  if(acidburst){
+    acidburst.cast=function(gameState){
+      gameState.board.forEach((card,index)=>{
+        if(card&&(index===1||card.id==="acidic_rain_copy")) addStats(card,4,4);
+      });
+    };
+  }
+
+  const tavernstorm = SPELLS.find(c=>c.id==="tavernstorm");
+  if(tavernstorm){
+    tavernstorm.cast=function(gameState){
+      gameState.shop.forEach(card=>{
+        if(card&&card.type!=="spell") addStats(card,3,3);
+      });
+    };
+  }
+
+  function decorateStats(container,cards){
+    const nodes=[...container.children];
+    nodes.forEach((node,index)=>{
+      const card=cards[index];
+      if(!card||card.type==="spell")return;
+      ensureBaseStats(card);
+      const stats=node.querySelector(".stats");
+      if(!stats)return;
+      const old=stats.querySelector(".stat-bonus");
+      if(old)old.remove();
+      if(card.bonusAtk||card.bonusHp){
+        const bonus=document.createElement("span");
+        bonus.className="stat-bonus";
+        bonus.textContent=`累積 +${card.bonusAtk || 0}/+${card.bonusHp || 0}`;
+        stats.appendChild(bonus);
+      }
+      if(card.lastBuffAt&&Date.now()-card.lastBuffAt<700){
+        node.classList.add("buff-flash");
+      }
+    });
+  }
+
+  const originalRenderBoard=renderBoard;
+  renderBoard=function(){
+    originalRenderBoard();
+    decorateStats(boardSlotsEl,state.board.slice(2));
+  };
+
+  const originalRenderShop=renderShop;
+  renderShop=function(){
+    originalRenderShop();
+    decorateStats(shopGridEl,state.shop);
+  };
+
+  const originalRenderHand=renderHand;
+  renderHand=function(){
+    originalRenderHand();
+    decorateStats(handGridEl,state.hand.slice(0,HAND_LIMIT));
+  };
 
   // Restart must create the full individual-counter version of Acidic Rain too.
   setupRun=function(){
     const result=ACID_ORIGINAL_HANDLERS.setup();
     patchRainInstances();
+    state.board.forEach(ensureBaseStats);
+    state.hand.forEach(ensureBaseStats);
+    state.shop.forEach(ensureBaseStats);
     updateAuras();
     return result;
   };
@@ -123,6 +277,7 @@ window.addEventListener("load", () => {
     const before=state.rerolls;
     const result=ACID_ORIGINAL_HANDLERS.reroll();
     if(state.rerolls>before){
+      state.shop.forEach(ensureBaseStats);
       notifyGoldSpent(cost);
       notifyBoard("onRerollCount",state);
     }
@@ -152,6 +307,7 @@ window.addEventListener("load", () => {
       tauren=state.board.find(c=>c&&c.id==="tauren"&&(c.turnTriggers||0)<A(c,1,2))||null;
     }
     const result=advancedPlay(index,targetIndex);
+    if(result&&!isSpell&&state.board[targetIndex]) ensureBaseStats(state.board[targetIndex]);
     if(result&&isSpell&&tauren){
       tauren.turnTriggers=(tauren.turnTriggers||0)+1;
       card.cast(state);
@@ -164,6 +320,9 @@ window.addEventListener("load", () => {
   };
 
   patchRainInstances();
+  state.board.forEach(ensureBaseStats);
+  state.hand.forEach(ensureBaseStats);
+  state.shop.forEach(ensureBaseStats);
   updateAuras();
   render();
 },{once:true});
