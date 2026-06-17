@@ -49,3 +49,4 @@ document.write('<script defer src="./acidic_rain_gift_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_targeting_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_auto_tier_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_tier6_progression_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_discover_ui_rules.js"><\/script>');
