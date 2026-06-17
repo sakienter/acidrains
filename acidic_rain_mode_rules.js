@@ -26,8 +26,6 @@
       state.maxTurns = Number.POSITIVE_INFINITY;
       return;
     }
-
-    // Preserve extensions granted by 時空の超越. Only a new run resets to 16.
     if (resetLimit || !Number.isFinite(state.maxTurns) || state.maxTurns < LIMIT_TURNS) {
       state.maxTurns = LIMIT_TURNS;
     }
@@ -165,12 +163,11 @@
   const originalEndTurn = endTurn;
   endTurn = function() {
     const beforeTurn = state.turn;
+    const pendingBonus = Number(state.nextTurnGoldBonus || 0);
     const result = originalEndTurn();
     if (state.turn > beforeTurn && !state.gameOver) {
-      const bonus = Number(state.nextTurnGoldBonus || 0);
-      // Other turn handlers may already consume the bonus, so only add it when still pending.
-      if (state.nextTurnGoldBonus) state.nextTurnGoldBonus = 0;
-      state.gold = Math.min(Number(state.maxGold || 10), turnGold(state.turn) + bonus);
+      state.nextTurnGoldBonus = 0;
+      state.gold = Math.min(Number(state.maxGold || 10), turnGold(state.turn) + pendingBonus);
       startTurnTimer(true);
       render();
     } else if (state.gameOver) {
