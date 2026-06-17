@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acidic Rain Battleground</title>
+    <style>
+      :root {
+        --bg-1: #120d08;
+        --bg-2: #261810;
+        --panel: rgba(38, 26, 18, 0.9);
+        --panel-2: rgba(61, 41, 28, 0.88);
+        --stroke: rgba(230, 198, 145, 0.2);
+        --gold: #e3bb56;
+        --cream: #f9ebcf;
+        --muted: #cebca0;
+        --emerald: #7de495;
+        --rain: #7dd3ff;
+        --danger: #ff9d6e;
+        --hero: #d9b8ff;
+        --shadow: rgba(0, 0, 0, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--cream);
+        font-family: Georgia, "Hiragino Mincho ProN", serif;
+        background:
+          radial-gradient(circle at top, rgba(255, 218, 122, 0.08), transparent 20%),
+          linear-gradient(180deg, #3b305f 0%, #2c2448 20%, #53392b 20.5%, #8a623f 62%, #5c412f 100%);
+      }
+
+      .shell {
+        width: min(1400px, calc(100% - 16px));
+        margin: 0 auto;
+        padding: 12px 0 24px;
+      }
+
+      .table-board,
+      .shop-card,
+      .board-card,
+      .hero-card,
+      .reroll-chip {
+        border: 1px solid var(--stroke);
+        box-shadow: 0 18px 40px var(--shadow);
+      }
+
+      .hero-select {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .hero-card {
+        background: linear-gradient(180deg, rgba(70, 41, 91, 0.96), rgba(44, 29, 58, 0.96));
+        border-radius: 20px;
+        padding: 14px;
+        cursor: pointer;
+        transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+      }
+
+      .hero-card:hover,
+      .shop-card.can-buy:hover,
+      .reroll-chip:hover {
+        transform: translateY(-2px);
+      }
+
+      .hero-card.selected {
+        border-color: rgba(217, 184, 255, 0.9);
+        background: linear-gradient(180deg, rgba(84, 58, 104, 0.96), rgba(41, 27, 50, 0.96));
+      }
+
+      .hero-top,
+      .stat-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .hero-emoji {
+        font-size: 28px;
+      }
+
+      .hero-name {
+        font-weight: 700;
+        font-size: 1.08rem;
+      }
+
+      .hero-power {
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.55;
+        min-height: 58px;
+        margin: 10px 0 12px;
+      }
+
+      .hero-tag {
+        display: inline-flex;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--hero);
+        font-size: 0.8rem;
+      }
+
+      .table-board {
+        margin-top: 16px;
+        border-radius: 34px;
+        padding: 18px 18px 22px;
+        background:
+          radial-gradient(circle at 50% 28%, rgba(219, 181, 126, 0.14), transparent 34%),
+          linear-gradient(180deg, rgba(144, 105, 67, 0.97), rgba(96, 66, 43, 0.98));
+      }
+
+      .board-tools {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .board-stats {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .inline-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(44, 28, 18, 0.28);
+        border: 1px solid rgba(255, 240, 214, 0.08);
+        font-size: 0.88rem;
+      }
+
+      .inline-stat .icon {
+        opacity: 0.9;
+      }
+
+      .inline-stat strong {
+        font-size: 1rem;
+      }
+
+      .inline-stat.gold strong {
+        color: var(--gold);
+      }
+
+      .inline-stat.rain strong {
+        color: var(--rain);
+      }
+
+      .reroll-chip {
+        border: 0;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #c1924f, #845829);
+        color: #fff6d6;
+        padding: 10px 16px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .reroll-chip:disabled {
+        opacity: 0.45;
+        cursor: default;
+        transform: none;
+      }
+
+      .board-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .board-status {
+        min-height: 22px;
+        margin: 6px 2px 14px;
+        color: #f4e4bb;
+        font-size: 0.92rem;
+      }
+
+      .board-meta {
+        margin: 0 2px 10px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .board-slots,
+      .shop-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .judge-line {
+        height: 8px;
+        border-radius: 999px;
+        background: #0f0b08;
+        box-shadow: 0 2px 0 rgba(255, 240, 214, 0.18);
+        margin: 18px 0;
+        position: relative;
+      }
+
+      .judge-line::after {
+        content: attr(data-label);
+        position: absolute;
+        right: 0;
+        top: -22px;
+        font-size: 0.74rem;
+        color: #f3e2b5;
+      }
+
+      .market-gap {
+        padding: 18px 0 10px;
+      }
+
+      .board-card,
+      .shop-card {
+        min-height: 188px;
+        border-radius: 48% 48% 22% 22% / 22% 22% 12% 12%;
+        padding: 18px 10px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: visible;
+        background:
+          radial-gradient(circle at 50% 26%, rgba(102, 237, 255, 0.95), rgba(34, 73, 113, 0.92) 50%, rgba(19, 29, 41, 0.96) 74%),
+          linear-gradient(180deg, rgba(89, 89, 99, 0.96), rgba(39, 39, 47, 0.96));
+      }
+
+      .dragging-card {
+        position: fixed;
+        z-index: 1000;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(1.04);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      }
+
+      .board-card.drop-target,
+      .shop-card.drop-target,
+      .hand-card.drop-target {
+        outline: 2px solid rgba(125, 228, 149, 0.9);
+        outline-offset: 2px;
+      }
+
+      .board-card.reorder-target {
+        outline: 3px solid rgba(255, 219, 121, 0.95);
+        outline-offset: 3px;
+      }
+
+      .board-card.rain {
+        background:
+          radial-gradient(circle at 50% 26%, rgba(158, 255, 214, 0.95), rgba(42, 100, 62, 0.92) 54%, rgba(26, 41, 30, 0.96) 74%),
+          linear-gradient(180deg, rgba(89, 89, 99, 0.96), rgba(39, 39, 47, 0.96));
+        border-color: rgba(125, 211, 255, 0.38);
+      }
+
+      .board-card.seed {
+        background:
+          radial-gradient(circle at 50% 26%, rgba(180, 255, 140, 0.95), rgba(79, 117, 39, 0.92) 54%, rgba(36, 51, 18, 0.96) 74%),
+          linear-gradient(180deg, rgba(89, 89, 99, 0.96), rgba(39, 39, 47, 0.96));
+        border-color: rgba(125, 228, 149, 0.38);
+      }
+
+      .board-card.empty {
+        opacity: 0.28;
+        border-style: dashed;
+      }
+
+      .board-card.hero-minion {
+        background: linear-gradient(180deg, rgba(64, 43, 79, 0.95), rgba(40, 27, 48, 0.96));
+        border-color: rgba(217, 184, 255, 0.3);
+      }
+
+      .card-tier {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 5px 8px;
+        border-radius: 10px 10px 4px 4px;
+        background: #a32678;
+        color: #ffd95c;
+        font-size: 0.72rem;
+        font-weight: 700;
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .card-emoji {
+        text-align: center;
+        font-size: 48px;
+        margin-top: 8px;
+        filter: drop-shadow(0 0 10px rgba(112, 249, 255, 0.5));
+      }
+
+      .card-name {
+        text-align: center;
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1.3;
+        color: #fff6d6;
+      }
+
+      .card-text {
+        color: #d6d2d1;
+        text-align: center;
+        font-size: 0.7rem;
+        line-height: 1.4;
+        min-height: 42px;
+      }
+
+      .stats {
+        text-align: center;
+        font-weight: 900;
+        font-size: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 0 6px;
+      }
+
+      .stats .atk {
+        color: var(--rain);
+      }
+
+      .stats .hp {
+        color: var(--emerald);
+      }
+
+      .shop-card.spell {
+        background:
+          radial-gradient(circle at 50% 26%, rgba(248, 183, 255, 0.94), rgba(92, 59, 127, 0.92) 50%, rgba(39, 28, 51, 0.96) 74%),
+          linear-gradient(180deg, rgba(89, 89, 99, 0.96), rgba(39, 39, 47, 0.96));
+      }
+
+      .shop-card.frozen {
+        border-color: rgba(125, 211, 255, 0.7);
+      }
+
+      .shop-card.cant-buy {
+        opacity: 0.45;
+      }
+
+      .cost {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(227, 187, 86, 0.15);
+        color: var(--gold);
+        font-size: 0.85rem;
+        font-weight: 700;
+      }
+
+      .tagline {
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .hand-grid {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 0;
+        margin-top: 10px;
+        min-height: 220px;
+        padding: 0 18px 10px;
+        overflow-x: auto;
+        overflow-y: visible;
+        scrollbar-width: thin;
+      }
+
+      .hand-card {
+        border-radius: 18px 18px 12px 12px;
+        width: 140px;
+        min-width: 140px;
+        min-height: 180px;
+        padding: 12px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(180deg, rgba(149, 154, 113, 0.96), rgba(89, 95, 63, 0.96));
+        color: var(--cream);
+        cursor: pointer;
+        transform-origin: bottom center;
+        margin-left: -38px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.34);
+        flex: 0 0 auto;
+      }
+
+      .hand-card.spell {
+        background: linear-gradient(180deg, rgba(68, 48, 84, 0.95), rgba(41, 31, 53, 0.96));
+      }
+
+      .hand-card.empty {
+        opacity: 0.22;
+        cursor: default;
+        border-style: dashed;
+      }
+
+      .hand-grid .hand-card:first-child {
+        margin-left: 0;
+      }
+
+      .result {
+        display: none;
+        margin-top: 14px;
+        border-radius: 20px;
+        padding: 18px;
+        background: linear-gradient(180deg, rgba(43, 67, 51, 0.95), rgba(24, 40, 31, 0.95));
+        border: 1px solid rgba(125, 228, 149, 0.4);
+      }
+
+      .result.show {
+        display: block;
+      }
+
+      .result-score {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: #f3f8af;
+      }
+
+      @media (max-width: 1080px) {
+        .shop-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 760px) {
+        .hero-select,
+        .shop-grid,
+        .board-slots {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .hand-grid {
+          justify-content: flex-start;
+          overflow-x: auto;
+          padding-bottom: 12px;
+        }
+
+        .hand-card {
+          min-width: 126px;
+        }
+
+        .board-slots .board-card:first-child {
+          grid-column: span 2;
+        }
+
+        .board-tools,
+        .board-meta {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <section class="table-board">
+          <div class="board-tools">
+            <div class="board-stats">
+              <span class="inline-stat gold"><span class="icon">🪙</span><strong id="goldValue">3</strong></span>
+              <span class="inline-stat rain"><span class="icon">🌧️</span><strong id="growthValue">0</strong></span>
+              <span class="inline-stat"><span class="icon">🏚️</span><strong id="tavernTierValue">1</strong></span>
+            </div>
+            <div class="board-actions">
+              <button class="reroll-chip" id="upgradeBtn">酒場 1 → 2</button>
+              <button class="reroll-chip" id="rerollBtn">リロール</button>
+              <button class="reroll-chip" id="endTurnBtn">ターンエンド</button>
+            </div>
+          </div>
+
+          <div class="board-status" id="boardStatus">ヒーローを選ぶと開始します。</div>
+          <div class="board-meta">
+            <span id="seedStageLabel">苗床 / 段階 1</span>
+            <span id="seedStageHint">次の変異まで 2</span>
+          </div>
+
+          <div class="shop-grid" id="shopGrid"></div>
+          <div class="market-gap">
+            <div class="judge-line" id="tradeLine" data-label="下に越えると購入 / 上に越えると売却"></div>
+          </div>
+          <div class="board-slots" id="boardSlots"></div>
+          <div class="hand-grid" id="handGrid"></div>
+
+          <div class="result" id="resultBox">
+            <div class="tagline">酒場閉店</div>
+            <div class="result-score" id="resultScore">0</div>
+            <div id="resultText"></div>
+            <button class="reroll-chip" id="restartBtn" style="margin-top: 12px;">もう一度遊ぶ</button>
+          </div>
+      </section>
+    </div>
+
+    <script src="./acidic_rain_cards.js"></script>
+    <script>
+      const state = {};
+      const HAND_LIMIT = 10;
+      const SELL_TRIGGER_BUFFER = 34;
+
+      const boardSlotsEl = document.querySelector("#boardSlots");
+      const shopGridEl = document.querySelector("#shopGrid");
+      const handGridEl = document.querySelector("#handGrid");
+      const boardStatusEl = document.querySelector("#boardStatus");
+      const resultBoxEl = document.querySelector("#resultBox");
+      const resultScoreEl = document.querySelector("#resultScore");
+      const resultTextEl = document.querySelector("#resultText");
+      const tradeLineEl = document.querySelector("#tradeLine");
+      const goldValueEl = document.querySelector("#goldValue");
+      const growthValueEl = document.querySelector("#growthValue");
+      const tavernTierValueEl = document.querySelector("#tavernTierValue");
+      const seedStageLabelEl = document.querySelector("#seedStageLabel");
+      const seedStageHintEl = document.querySelector("#seedStageHint");
+
+      const upgradeBtn = document.querySelector("#upgradeBtn");
+      const rerollBtn = document.querySelector("#rerollBtn");
+      const endTurnBtn = document.querySelector("#endTurnBtn");
+      const restartBtn = document.querySelector("#restartBtn");
+
+      function createSeedCard() {
+        return {
+          id: "seed",
+          name: "雨宿りの苗床",
+          emoji: "🫧",
+          tier: 1,
+          atk: 1,
+          hp: 4,
+          text: "左隣でリロールされるたび育つ。",
+          tribe: "育成",
+          growth: true,
+        };
+      }
+
+      function createRainCard() {
+        return {
+          id: "acidic_rain_copy",
+          name: "酸性降雨",
+          emoji: "🌧️",
+          tier: 3,
+          cost: 3,
+          atk: 6,
+          hp: 6,
+          tribe: "エレメンタル",
+          text: "盤面にある間、4回リロールするたび酒場右端のミニオンのスタッツを得る。",
+          aura(state) {
+            state.acidRainEchoMultiplier = Math.max(state.acidRainEchoMultiplier, 1);
+          },
+        };
+      }
+
+      function initialState() {
+        state.hero = null;
+        state.turn = 1;
+        state.maxTurns = 8;
+        state.gold = 10;
+        state.tavernTier = 1;
+        state.rerolls = 0;
+        state.seedGrowth = 0;
+        state.board = [createSeedCard(), createRainCard(), null, null, null, null, null, null, null];
+        state.shop = [];
+        state.hand = [createRainCard()];
+        state.frozen = false;
+        state.freeRerolls = 0;
+        state.firstRerollFree = false;
+        state.extraSeedGrowth = 0;
+        state.nextBattlecryMultiplier = 0;
+        state.extraSpellShop = 0;
+        state.extraElementalShop = 0;
+        state.nextSpellDiscount = 0;
+        state.pendingSellRainAbsorb = 0;
+        state.elementalRerollBonus = 0;
+        state.battlecryMultiplier = 1;
+        state.eliseCopies = 0;
+        state.acidRainEchoMultiplier = 0;
+        state.dragging = null;
+        state.gameOver = false;
+        state.statusMessage = "カードを購入して盤面を育てよう。";
+      }
+
+      function getRerollCost(gameState = state) {
+        if (gameState.freeRerolls > 0 || gameState.firstRerollFree) {
+          return 0;
+        }
+        return 1;
+      }
+
+      function setupRun() {
+        initialState();
+        drawShop();
+        updateAuras();
+        resultBoxEl.classList.remove("show");
+        log("カードを購入して盤面を育てよう。");
+      }
+
+      function cloneCard(card) {
+        return { ...card };
+      }
+
+      function availablePool() {
+        return [...MINIONS.filter((card) => card.tier <= state.tavernTier), ...SPELLS.filter((card) => card.tier <= state.tavernTier)];
+      }
+
+      function drawShop() {
+        if (state.frozen) {
+          state.shop.forEach((card) => {
+            if (card) {
+              card.frozen = true;
+            }
+          });
+          return;
+        }
+
+        const minionPool = MINIONS.filter((card) => card.tier <= state.tavernTier);
+        const spellPool = SPELLS.filter((card) => card.tier <= state.tavernTier);
+        state.shop = [];
+        const minionCount = Math.min(6, 3 + state.tavernTier);
+        for (let i = 0; i < minionCount; i += 1) {
+          state.shop.push(createWeightedMinionCard(minionPool));
+        }
+        state.shop.push(createSpecificShopCard(spellPool));
+        for (let i = 0; i < state.extraSpellShop; i += 1) {
+          state.shop.push(createSpecificShopCard(spellPool));
+        }
+        for (let i = 0; i < state.extraElementalShop; i += 1) {
+          state.shop.push(createSpecificShopCard(minionPool.filter((card) => card.tribe === "エレメンタル")));
+        }
+      }
+
+      function createWeightedMinionCard(pool) {
+        if (!pool.length) return null;
+        const weightedPool = [];
+        pool.forEach((card) => {
+          const weight = Math.max(1, state.tavernTier - card.tier + 2);
+          for (let i = 0; i < weight; i += 1) {
+            weightedPool.push(card);
+          }
+        });
+        if (!weightedPool.length) {
+          return createSpecificShopCard(pool);
+        }
+        return cloneCard(weightedPool[Math.floor(Math.random() * weightedPool.length)]);
+      }
+
+      function createSpecificShopCard(pool) {
+        if (!pool.length) return null;
+        const pick = cloneCard(pool[Math.floor(Math.random() * pool.length)]);
+        pick.frozen = false;
+        return pick;
+      }
+
+      function getEvolutionStage(growth) {
+        let index = 0;
+        EVOLUTION_STAGES.forEach((stage, stageIndex) => {
+          if (growth >= stage.at) {
+            index = stageIndex;
+          }
+        });
+        return { ...EVOLUTION_STAGES[index], index };
+      }
+
+      function nextStageThreshold(growth) {
+        const nextStage = EVOLUTION_STAGES.find((stage) => stage.at > growth);
+        return nextStage ? nextStage.at : EVOLUTION_STAGES[EVOLUTION_STAGES.length - 1].at;
+      }
+
+      function buffRain(gameState, atk, hp) {
+        const rain = gameState.board[1];
+        rain.atk += atk;
+        rain.hp += hp;
+      }
+
+      function buffAllRains(gameState, atk, hp) {
+        gameState.board.forEach((card, index) => {
+          if (!card) return;
+          if (index === 1 || card.id === "acidic_rain_copy") {
+            card.atk += atk;
+            card.hp += hp;
+          }
+        });
+      }
+
+      function getRightmostShopCard(gameState) {
+        for (let i = gameState.shop.length - 1; i >= 0; i -= 1) {
+          if (gameState.shop[i]) return gameState.shop[i];
+        }
+        return null;
+      }
+
+      function randomFrom(array) {
+        return array[Math.floor(Math.random() * array.length)];
+      }
+
+      function getFirstEmptyBoardSlot() {
+        return state.board.findIndex((slot, slotIndex) => slotIndex >= 2 && slot === null);
+      }
+
+      function gainCardToHand(gameState, card, message) {
+        if (!card) return;
+        if (gameState.hand.length >= HAND_LIMIT) {
+          log("手札がいっぱい。");
+          return false;
+        }
+        gameState.hand.push(cloneCard(card));
+        if (message) {
+          log(message);
+        }
+        return true;
+      }
+
+      function gainRandomMinionToHand(gameState, predicate, message) {
+        const pool = MINIONS.filter((card) => card.tier <= Math.max(gameState.tavernTier, 1) && predicate(card));
+        if (pool.length) {
+          gainCardToHand(gameState, randomFrom(pool), message);
+        }
+      }
+
+      function gainRandomSpellToHand(gameState, predicate, message) {
+        const pool = SPELLS.filter((card) => predicate(card));
+        if (pool.length) {
+          gainCardToHand(gameState, randomFrom(pool), message);
+        }
+      }
+
+      function gainRandomCardToHand(gameState, predicate, message) {
+        const pool = availablePool().filter((card) => predicate(card));
+        if (pool.length) {
+          gainCardToHand(gameState, randomFrom(pool), message);
+        }
+      }
+
+      function updateAuras() {
+        state.extraSeedGrowth = 0;
+        state.firstRerollFree = false;
+        state.extraSpellShop = 0;
+        state.extraElementalShop = 0;
+        state.elementalRerollBonus = 0;
+        state.battlecryMultiplier = state.hero?.battlecryMultiplier || 1;
+        state.eliseCopies = 0;
+        state.acidRainEchoMultiplier = 0;
+        for (const card of state.board) {
+          if (card && typeof card.aura === "function") {
+            card.aura(state);
+          }
+          if (card && typeof card.passive === "function") {
+            card.passive(state);
+          }
+        }
+      }
+
+      function resolveRerollMilestones() {
+        if (state.eliseCopies > 0 && state.rerolls > 0 && state.rerolls % 6 === 0) {
+          for (let i = 0; i < state.eliseCopies; i += 1) {
+            gainRandomMinionToHand(state, (card) => card.tier === 3, "エリーズがTier3カードを届けた。");
+          }
+        }
+        if (state.acidRainEchoMultiplier > 0 && state.rerolls > 0 && state.rerolls % 4 === 0) {
+          const target = getRightmostShopCard(state);
+          if (target) {
+            buffAllRains(state, target.atk || 0, target.hp || 0);
+          }
+        }
+      }
+
+      function growSeed(baseGrowth) {
+        const seed = state.board[0];
+        const beforeStage = getEvolutionStage(state.seedGrowth).index;
+        state.seedGrowth += baseGrowth;
+        seed.atk += baseGrowth;
+        seed.hp += baseGrowth;
+
+        const stage = getEvolutionStage(state.seedGrowth);
+        if (stage.index === 0) {
+          buffRain(state, 0, 1);
+        } else if (stage.index === 1) {
+          buffRain(state, baseGrowth, baseGrowth);
+        } else if (stage.index === 2) {
+          buffRain(state, baseGrowth * 2, baseGrowth * 2);
+        } else {
+          buffRain(state, baseGrowth * 3, baseGrowth * 3);
+        }
+
+        seed.name = `雨宿りの${stage.name}`;
+        seed.emoji = stage.emoji;
+        seed.text = stage.text;
+
+        if (stage.index > beforeStage) {
+          log(`苗床が ${stage.name} に変異。酸性降雨が大きく育った。`);
+        }
+      }
+
+      function rerollShop() {
+        if (state.gameOver) return;
+        const cost = getRerollCost(state);
+        if (state.freeRerolls > 0) {
+          state.freeRerolls -= 1;
+        } else if (state.firstRerollFree) {
+          state.firstRerollFree = false;
+        }
+        if (state.gold < cost) {
+          log("コインが足りない。");
+          return;
+        }
+        state.gold -= cost;
+        state.rerolls += 1;
+        if (state.hero?.onReroll) {
+          state.hero.onReroll(state);
+        }
+        resolveRerollMilestones();
+        const growthGain = 1 + state.extraSeedGrowth;
+        growSeed(growthGain);
+        state.frozen = false;
+        drawShop();
+        updateAuras();
+        log(`リロールで苗床が ${growthGain} 成長。左隣育成ループが進んだ。`);
+        render();
+      }
+
+      function buyCard(index) {
+        if (state.gameOver) return;
+        const card = state.shop[index];
+        if (!card) return;
+        const effectiveCost = card.type === "spell" ? Math.max(0, card.cost - state.nextSpellDiscount) : card.cost;
+        if (state.gold < effectiveCost) return false;
+        if (state.hand.length >= HAND_LIMIT) {
+          log("手札がいっぱい。");
+          return false;
+        }
+        state.gold -= effectiveCost;
+        if (card.type === "spell") {
+          state.nextSpellDiscount = 0;
+        }
+        state.hand.push({ ...card });
+        state.shop[index] = null;
+        log(`${card.emoji} ${card.name} を購入して手札に加えた。`);
+        render();
+        return true;
+      }
+
+      function playHandCard(index) {
+        return playHandCardToSlot(index, getFirstEmptyBoardSlot());
+      }
+
+      function playHandCardToSlot(index, targetIndex) {
+        const card = state.hand[index];
+        if (!card || state.gameOver) return;
+
+        if (card.type === "spell") {
+          card.cast(state);
+          state.hand.splice(index, 1);
+          updateAuras();
+          log(`${card.emoji} ${card.name} を手札から使用。`);
+          render();
+          return true;
+        }
+
+        if (targetIndex == null || targetIndex < 2 || state.board[targetIndex]) {
+          log("盤面がいっぱい。");
+          return false;
+        }
+
+        const multiplier = state.battlecryMultiplier + state.nextBattlecryMultiplier;
+        state.nextBattlecryMultiplier = 0;
+        for (let i = 0; i < multiplier; i += 1) {
+          if (typeof card.battlecry === "function") {
+            card.battlecry(state);
+          }
+        }
+        state.board[targetIndex] = { ...card };
+        if (card.tribe === "エレメンタル" && state.elementalRerollBonus > 0) {
+          state.freeRerolls += state.elementalRerollBonus;
+        }
+        state.hand.splice(index, 1);
+        updateAuras();
+        log(`${card.emoji} ${card.name} を手札から場に出した。`);
+        render();
+        return true;
+      }
+
+      function sellBoardCard(index) {
+        const card = state.board[index];
+        if (!card || index < 2 || state.gameOver) return;
+        state.gold += 1;
+        if (state.pendingSellRainAbsorb > 0) {
+          buffAllRains(state, card.atk || 0, card.hp || 0);
+          state.pendingSellRainAbsorb -= 1;
+        }
+        if (typeof card.onSell === "function") {
+          card.onSell(state);
+        }
+        state.board[index] = null;
+        updateAuras();
+        log(`${card.emoji} ${card.name} を売却した。`);
+        render();
+      }
+
+      function moveBoardCard(fromIndex, toIndex) {
+        if (fromIndex < 2 || toIndex < 2 || fromIndex === toIndex) return false;
+        const fromCard = state.board[fromIndex];
+        if (!fromCard) return false;
+        const temp = state.board[toIndex];
+        state.board[toIndex] = fromCard;
+        state.board[fromIndex] = temp;
+        log(`${fromCard.emoji} ${fromCard.name} を並べ替えた。`);
+        render();
+        return true;
+      }
+
+      function startThresholdDrag(sourceKind, index, element, event) {
+        if (state.gameOver) return;
+        if (sourceKind === "shop" && !state.shop[index]) return;
+        if (sourceKind === "board" && !state.board[index]) return;
+
+        event.preventDefault();
+        const rect = element.getBoundingClientRect();
+        const clone = element.cloneNode(true);
+        clone.classList.add("dragging-card");
+        clone.style.width = `${rect.width}px`;
+        clone.style.height = `${rect.height}px`;
+        clone.style.left = `${event.clientX}px`;
+        clone.style.top = `${event.clientY}px`;
+        document.body.appendChild(clone);
+
+        state.dragging = {
+          sourceKind,
+          index,
+          sourceElement: element,
+          clone,
+          startY: event.clientY,
+          lastY: event.clientY,
+          lastX: event.clientX,
+          boardTargetIndex: null,
+        };
+
+        window.addEventListener("pointermove", onThresholdDragMove);
+        window.addEventListener("pointerup", onThresholdDragEnd);
+      }
+
+      function onThresholdDragMove(event) {
+        if (!state.dragging) return;
+        const drag = state.dragging;
+        drag.lastY = event.clientY;
+        drag.lastX = event.clientX;
+        drag.clone.style.left = `${event.clientX}px`;
+        drag.clone.style.top = `${event.clientY}px`;
+
+        const tradeLineRect = tradeLineEl.getBoundingClientRect();
+        const sellTriggerY = tradeLineRect.top - SELL_TRIGGER_BUFFER;
+        const buyTriggerY = tradeLineRect.bottom;
+        tradeLineEl.classList.toggle(
+          "drop-target",
+          (drag.sourceKind === "shop" && event.clientY > buyTriggerY) ||
+          (drag.sourceKind === "board" && event.clientY < sellTriggerY)
+        );
+
+        document.querySelectorAll(".board-card.reorder-target").forEach((node) => node.classList.remove("reorder-target"));
+        drag.boardTargetIndex = null;
+        if (drag.sourceKind === "board" && event.clientY >= sellTriggerY) {
+          const hovered = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-board-slot]");
+          if (hovered) {
+            const targetIndex = Number(hovered.dataset.boardSlot);
+            if (targetIndex >= 2 && targetIndex !== drag.index) {
+              drag.boardTargetIndex = targetIndex;
+              hovered.classList.add("reorder-target");
+            }
+          }
+        }
+      }
+
+      function onThresholdDragEnd() {
+        if (!state.dragging) return;
+        const drag = state.dragging;
+        const tradeLineRect = tradeLineEl.getBoundingClientRect();
+        const sellTriggerY = tradeLineRect.top - SELL_TRIGGER_BUFFER;
+        const buyTriggerY = tradeLineRect.bottom;
+
+        if (drag.sourceKind === "shop" && drag.lastY > buyTriggerY) {
+          buyCard(drag.index);
+        } else if (drag.sourceKind === "board" && drag.lastY < sellTriggerY) {
+          sellBoardCard(drag.index);
+        } else if (drag.sourceKind === "board" && drag.boardTargetIndex != null) {
+          moveBoardCard(drag.index, drag.boardTargetIndex);
+        }
+
+        tradeLineEl.classList.remove("drop-target");
+        document.querySelectorAll(".board-card.reorder-target").forEach((node) => node.classList.remove("reorder-target"));
+        drag.clone.remove();
+        state.dragging = null;
+        window.removeEventListener("pointermove", onThresholdDragMove);
+        window.removeEventListener("pointerup", onThresholdDragEnd);
+      }
+
+      function dragPayload(kind, index) {
+        return JSON.stringify({ kind, index });
+      }
+
+      function readDragPayload(event) {
+        try {
+          const raw = event.dataTransfer.getData("text/plain");
+          return raw ? JSON.parse(raw) : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function allowDrop(event, element) {
+        event.preventDefault();
+        element.classList.add("drop-target");
+      }
+
+      function clearDropTarget(element) {
+        element.classList.remove("drop-target");
+      }
+
+      function handleBoardDrop(targetIndex, payload) {
+        if (!payload) return;
+        if (payload.kind === "hand") {
+          playHandCardToSlot(payload.index, targetIndex);
+          return;
+        }
+        if (payload.kind === "board") {
+          moveBoardCard(payload.index, targetIndex);
+        }
+      }
+
+      function handleHandDrop(targetIndex, payload) {
+        if (!payload) return;
+        if (payload.kind === "shop") {
+          buyCard(payload.index);
+          return;
+        }
+        if (payload.kind === "hand") {
+          if (payload.index === targetIndex) return;
+          const moving = state.hand[payload.index];
+          if (!moving) return;
+          const temp = state.hand[targetIndex] ?? null;
+          state.hand[targetIndex] = moving;
+          state.hand[payload.index] = temp;
+          render();
+        }
+      }
+
+      function toggleFreeze() {
+        if (state.gameOver) return;
+        state.frozen = !state.frozen;
+        state.shop.forEach((card) => {
+          if (card) {
+            card.frozen = state.frozen;
+          }
+        });
+        log(state.frozen ? "酒場を凍結した。" : "凍結を解除した。");
+        render();
+      }
+
+      function upgradeTavern() {
+        if (state.gameOver) return;
+        const cost = Math.max(3, 6 - state.tavernTier);
+        if (state.tavernTier >= 3) {
+          log("酒場グレードは最大。");
+          return;
+        }
+        if (state.gold < cost) {
+          log("酒場アップのコインが足りない。");
+          return;
+        }
+        state.gold -= cost;
+        state.tavernTier += 1;
+        state.frozen = false;
+        drawShop();
+        updateAuras();
+        log(`酒場をグレード ${state.tavernTier} に上げた。`);
+        render();
+      }
+
+      function endTurn() {
+        if (state.gameOver) return;
+        const rain = state.board[1];
+        buffRain(state, 1 + Math.floor(state.tavernTier / 2), 1);
+        state.turn += 1;
+        if (state.turn > state.maxTurns) {
+          finishRun();
+          return;
+        }
+        state.gold = 10;
+        if (state.hero?.onTurnStart) {
+          state.hero.onTurnStart(state);
+        }
+        drawShop();
+        updateAuras();
+        log(`ターン ${state.turn}。新しい酒場が開いた。`);
+        render();
+      }
+
+      function finishRun() {
+        state.gameOver = true;
+        const rain = state.board[1];
+        const boardCount = state.board.filter(Boolean).length;
+        const score = rain.atk * 4 + rain.hp * 3 + state.seedGrowth * 6 + state.rerolls * 2 + boardCount * 3;
+        resultBoxEl.classList.add("show");
+        resultScoreEl.textContent = `${score} score`;
+        resultTextEl.innerHTML = `最終酸性降雨: <strong>${rain.atk}/${rain.hp}</strong><br>育成値: <strong>${state.seedGrowth}</strong><br>総リロール: <strong>${state.rerolls}</strong><br>酒場グレード: <strong>${state.tavernTier}</strong>`;
+        log("酒場閉店。かなりバトグラっぽい育成 run になった。");
+        render();
+      }
+
+      function log(message) {
+        state.statusMessage = message;
+        boardStatusEl.textContent = message;
+      }
+
+      function renderBoard() {
+        boardSlotsEl.innerHTML = "";
+        state.board.forEach((card, index) => {
+          if (index < 2) return;
+          const node = document.createElement("article");
+          if (!card) {
+            node.className = "board-card empty";
+            node.dataset.boardSlot = index;
+            node.innerHTML = `<div class="card-tier">空き</div><div class="card-emoji">+</div><div class="card-name">空きスロット</div><div class="card-text">雇用したミニオンが入る</div>`;
+            node.addEventListener("dragover", (event) => allowDrop(event, node));
+            node.addEventListener("dragleave", () => clearDropTarget(node));
+            node.addEventListener("drop", (event) => {
+              event.preventDefault();
+              clearDropTarget(node);
+              handleBoardDrop(index, readDragPayload(event));
+            });
+            boardSlotsEl.appendChild(node);
+            return;
+          }
+
+          let extraClass = "";
+          if (card.heroId || state.hero?.id === card.id) extraClass = " hero-minion";
+          node.className = `board-card${extraClass}`;
+          node.dataset.boardSlot = index;
+          node.addEventListener("pointerdown", (event) => startThresholdDrag("board", index, node, event));
+          node.addEventListener("dragover", (event) => allowDrop(event, node));
+          node.addEventListener("dragleave", () => clearDropTarget(node));
+          node.addEventListener("drop", (event) => {
+            event.preventDefault();
+            clearDropTarget(node);
+            handleBoardDrop(index, readDragPayload(event));
+          });
+          node.innerHTML = `
+            <div class="card-tier">酒場 ${card.tier}</div>
+            <div class="card-emoji">${card.emoji}</div>
+            <div class="card-name">${card.name}</div>
+            <div class="card-text">${card.text || ""}</div>
+            <div class="stats"><span class="atk">${card.atk}</span>/<span class="hp">${card.hp}</span></div>
+          `;
+          boardSlotsEl.appendChild(node);
+        });
+      }
+
+      function renderShop() {
+        shopGridEl.innerHTML = "";
+        state.shop.forEach((card, index) => {
+          const node = document.createElement("button");
+          if (!card) {
+            node.className = "shop-card cant-buy";
+            node.disabled = true;
+            node.innerHTML = `<div class="cost">売り切れ</div><div class="card-emoji">—</div><div class="card-name">空席</div><div class="card-text"></div>`;
+            shopGridEl.appendChild(node);
+            return;
+          }
+
+          const effectiveCost = card.type === "spell" ? Math.max(0, card.cost - state.nextSpellDiscount) : card.cost;
+          const canBuy = state.gold >= effectiveCost && !state.gameOver;
+          const spellClass = card.type === "spell" ? " spell" : "";
+          const freezeClass = card.frozen ? " frozen" : "";
+          const cantClass = canBuy ? " can-buy" : " cant-buy";
+          node.className = `shop-card${spellClass}${freezeClass}${cantClass}`;
+          node.disabled = !canBuy;
+          if (canBuy) {
+            node.addEventListener("pointerdown", (event) => startThresholdDrag("shop", index, node, event));
+          }
+          node.innerHTML = `
+            <div class="cost">${effectiveCost} gold</div>
+            <div class="card-emoji">${card.emoji}</div>
+            <div class="card-name">${card.name}</div>
+            <div class="tagline">Tier ${card.tier} / ${card.type === "spell" ? "Spell" : card.tribe}</div>
+            <div class="card-text">${card.text}</div>
+            <div class="stats"><span class="atk">${card.atk || 0}</span>/<span class="hp">${card.hp || 0}</span></div>
+          `;
+          shopGridEl.appendChild(node);
+        });
+      }
+
+      function renderHand() {
+        handGridEl.innerHTML = "";
+        const cards = state.hand.slice(0, HAND_LIMIT);
+        const handOffset = (cards.length - 1) / 2;
+        cards.forEach((card, index) => {
+          const node = document.createElement("button");
+          node.className = `hand-card${card.type === "spell" ? " spell" : ""}`;
+          const angle = (index - handOffset) * 8;
+          const lift = Math.abs(index - handOffset) * 6;
+          node.style.transform = `translateY(${lift}px) rotate(${angle}deg)`;
+          node.draggable = true;
+          node.addEventListener("dragstart", (event) => {
+            event.dataTransfer.setData("text/plain", dragPayload("hand", index));
+          });
+          node.addEventListener("dragover", (event) => allowDrop(event, node));
+          node.addEventListener("dragleave", () => clearDropTarget(node));
+          node.addEventListener("drop", (event) => {
+            event.preventDefault();
+            clearDropTarget(node);
+            handleHandDrop(index, readDragPayload(event));
+          });
+          node.innerHTML = `
+            <div class="cost">${card.type === "spell" ? "Spell" : "Hand"}</div>
+            <div class="card-emoji">${card.emoji}</div>
+            <div class="card-name">${card.name}</div>
+            <div class="card-text">${card.text || ""}</div>
+            <div class="stats"><span class="atk">${card.atk || 0}</span>/<span class="hp">${card.hp || 0}</span></div>
+          `;
+          node.addEventListener("click", () => playHandCard(index));
+          handGridEl.appendChild(node);
+        });
+        for (let i = cards.length; i < HAND_LIMIT; i += 1) {
+          const empty = document.createElement("div");
+          empty.className = "hand-card empty";
+          empty.innerHTML = `<div class="cost">空き</div><div class="card-emoji">+</div><div class="card-name">手札スロット</div><div class="card-text">生成カードが入る</div>`;
+          empty.addEventListener("dragover", (event) => allowDrop(event, empty));
+          empty.addEventListener("dragleave", () => clearDropTarget(empty));
+          empty.addEventListener("drop", (event) => {
+            event.preventDefault();
+            clearDropTarget(empty);
+            handleHandDrop(i, readDragPayload(event));
+          });
+          handGridEl.appendChild(empty);
+        }
+      }
+
+      function renderHud() {
+        goldValueEl.textContent = state.gold;
+        growthValueEl.textContent = state.seedGrowth;
+        tavernTierValueEl.textContent = state.tavernTier;
+        boardStatusEl.textContent = state.statusMessage || " ";
+
+        const stage = getEvolutionStage(state.seedGrowth);
+        const next = nextStageThreshold(state.seedGrowth);
+        const nextBase = next;
+        seedStageLabelEl.textContent = `${stage.name} / 段階 ${stage.index + 1}`;
+        seedStageHintEl.textContent = stage.index === EVOLUTION_STAGES.length - 1
+          ? "最終変異"
+          : `次の変異まで ${Math.max(0, nextBase - state.seedGrowth)}`;
+
+        const nextTier = Math.min(3, state.tavernTier + 1);
+        const upgradeCost = Math.max(3, 6 - state.tavernTier);
+        upgradeBtn.disabled = state.gameOver || state.tavernTier >= 3;
+        upgradeBtn.textContent = state.tavernTier >= 3
+          ? "酒場 最大"
+          : `酒場 ${state.tavernTier} → ${nextTier} (${upgradeCost})`;
+        rerollBtn.disabled = state.gameOver;
+        rerollBtn.textContent = `リロール ${getRerollCost(state)}`;
+        endTurnBtn.disabled = state.gameOver;
+      }
+
+      function render() {
+        renderHud();
+        renderBoard();
+        renderShop();
+        renderHand();
+      }
+
+      upgradeBtn.addEventListener("click", upgradeTavern);
+      rerollBtn.addEventListener("click", rerollShop);
+      endTurnBtn.addEventListener("click", endTurn);
+      restartBtn.addEventListener("click", () => {
+        setupRun();
+        render();
+      });
+
+      setupRun();
+      render();
+    </script>
+  </body>
+</html>
