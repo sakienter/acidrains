@@ -21,6 +21,13 @@
       const ui = document.createElement('script');
       ui.src = './acidic_rain_ui_score_spell_drag.js';
       ui.async = false;
+      ui.onload = () => {
+        const cardTheme = document.createElement('link');
+        cardTheme.rel = 'stylesheet';
+        cardTheme.href = './acidic_rain_card_theme.css';
+        cardTheme.dataset.acidCardTheme = 'true';
+        document.head.appendChild(cardTheme);
+      };
       document.head.appendChild(ui);
     };
     document.head.appendChild(rules);
