@@ -37,16 +37,10 @@ window.addEventListener("load", () => {
     return unrestrictedRandomCard(gameState, cappedPredicate, message);
   };
 
-  // Explicit text that allows crossing the current tier uses unrestricted helpers.
   const shellWhistler = MINIONS.find(card => card.id === "shell_whistler");
   if (shellWhistler) {
     shellWhistler.onPlay = function(gameState) {
-      gainManyBeyondTier(
-        gameState,
-        SPELLS.filter(card => card.tier === 2),
-        A(this, 1, 2),
-        "Tier2スペルを得た。"
-      );
+      gainManyBeyondTier(gameState, SPELLS.filter(card => card.tier === 2), A(this, 1, 2), "Tier2スペルを得た。");
     };
   }
 
@@ -56,12 +50,7 @@ window.addEventListener("load", () => {
       this.rerollProgress = (this.rerollProgress || 0) + 1;
       while (this.rerollProgress >= 6) {
         this.rerollProgress -= 6;
-        gainManyBeyondTier(
-          gameState,
-          MINIONS.filter(card => card.tier === 3),
-          A(this, 1, 2),
-          "エリーズがTier3カードを届けた。"
-        );
+        gainManyBeyondTier(gameState, MINIONS.filter(card => card.tier === 3), A(this, 1, 2), "エリーズがTier3カードを届けた。");
       }
     };
   }
@@ -69,37 +58,30 @@ window.addEventListener("load", () => {
   const arcadas = MINIONS.find(card => card.id === "arcadas");
   if (arcadas) {
     arcadas.battlecry = function(gameState) {
-      gainManyBeyondTier(
-        gameState,
-        MINIONS.filter(card => card.tier === 2 && card.id !== this.id),
-        A(this, 1, 2),
-        "Tier2カードを得た。"
-      );
+      gainManyBeyondTier(gameState, MINIONS.filter(card => card.tier === 2 && card.id !== this.id), A(this, 1, 2), "Tier2カードを得た。");
     };
   }
 
   const ghastcoiler = MINIONS.find(card => card.id === "ghastcoiler");
   if (ghastcoiler) {
     ghastcoiler.deathrattle = function(gameState) {
-      gainManyBeyondTier(
-        gameState,
-        MINIONS.filter(card => card.tier <= 2),
-        A(this, 3, 6),
-        "ガストコイラーの断末魔。"
-      );
+      gainManyBeyondTier(gameState, MINIONS.filter(card => card.tier <= 2), A(this, 3, 6), "ガストコイラーの断末魔。");
     };
   }
 
   const outlands = MINIONS.find(card => card.id === "outlands");
   if (outlands) {
     outlands.battlecry = function(gameState) {
-      discoverCardsBeyondTier(
-        gameState,
-        SPELLS.filter(card => card.tier >= 1 && card.tier <= 3),
-        A(this, 1, 2),
-        "Tier1～3のスペルを発見"
-      );
+      discoverCardsBeyondTier(gameState, SPELLS.filter(card => card.tier >= 1 && card.tier <= 3), A(this, 1, 2), "Tier1～3のスペルを発見");
     };
+  }
+
+  function triggerEndTurnEffects(gameState) {
+    const triggerCount = gameState.drakkariActive ? 2 : 1;
+    for (let i = 0; i < triggerCount; i += 1) {
+      notifyBoard("onTurnEnd", gameState);
+    }
+    if (triggerCount > 1) log("ドラッカリにより、ターン終了時効果が2回発動した。");
   }
 
   function triggerEndTurnDeathrattles(gameState) {
@@ -109,22 +91,20 @@ window.addEventListener("load", () => {
 
     deathrattles.forEach(({ card, index }) => {
       const triggerCount = card.reborn ? 2 : 1;
-      for (let i = 0; i < triggerCount; i += 1) {
-        card.deathrattle(gameState, index);
-      }
-      log(
-        card.reborn
-          ? `${card.name} の断末魔が蘇りにより2回発動した。`
-          : `${card.name} の断末魔が発動した。`
-      );
+      for (let i = 0; i < triggerCount; i += 1) card.deathrattle(gameState, index);
+      log(card.reborn ? `${card.name} の断末魔が蘇りにより2回発動した。` : `${card.name} の断末魔が発動した。`);
     });
   }
 
   function authoritativeEndTurn() {
     if (state.gameOver) return false;
 
-    // Deathrattles resolve while the current turn/shop/board still exists.
+    triggerEndTurnEffects(state);
     triggerEndTurnDeathrattles(state);
+
+    state.brannSpellActive = false;
+    state.drakkariActive = false;
+    state.nextBattlecryMultiplier = 0;
 
     buffRain(state, 1 + Math.floor(state.tavernTier / 2), 1);
     state.turn += 1;
@@ -135,7 +115,7 @@ window.addEventListener("load", () => {
 
     const nextTurnBonus = Number(state.nextTurnGoldBonus || 0);
     state.nextTurnGoldBonus = 0;
-    state.gold = 10 + nextTurnBonus;
+    state.gold = Number(state.maxGold || 10) + nextTurnBonus;
 
     resetPerTurnCardState();
     if (state.hero?.onTurnStart) state.hero.onTurnStart(state);
@@ -145,15 +125,13 @@ window.addEventListener("load", () => {
     updateAuras();
     notifyBoard("onTurnStart", state);
 
-    log(`ターン ${state.turn}。断末魔の解決後、新しい酒場が開いた。`);
+    log(`ターン ${state.turn}。ターン終了時効果と断末魔の解決後、新しい酒場が開いた。`);
     render();
     return true;
   }
 
   endTurn = authoritativeEndTurn;
 
-  // Older modules registered previous end-turn callbacks. Capture the button
-  // event so exactly one authoritative end-turn sequence runs.
   endTurnBtn.addEventListener("click", event => {
     event.preventDefault();
     event.stopPropagation();
