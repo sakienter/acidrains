@@ -106,7 +106,7 @@ window.addEventListener("load", () => {
     state.drakkariActive = false;
     state.nextBattlecryMultiplier = 0;
 
-    buffRain(state, 1 + Math.floor(state.tavernTier / 2), 1);
+    // Acidic Rain grows only through explicit card effects.
     state.turn += 1;
     if (state.turn > state.maxTurns) {
       finishRun();
