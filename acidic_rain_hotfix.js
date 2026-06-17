@@ -1,4 +1,9 @@
 /* Loaded after the main engine and advanced rules, before window.load. */
+const discoverUiScript = document.createElement("script");
+discoverUiScript.src = "./acidic_rain_discover_ui.js";
+discoverUiScript.async = false;
+document.head.appendChild(discoverUiScript);
+
 const ACID_ORIGINAL_HANDLERS = {
   reroll: rerollShop,
   upgrade: upgradeTavern,
