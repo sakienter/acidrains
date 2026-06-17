@@ -54,3 +54,4 @@ document.write('<script defer src="./acidic_rain_display_fix.js"><\/script>');
 document.write('<script defer src="./acidic_rain_named_icons.js"><\/script>');
 document.write('<script defer src="./acidic_rain_turn_schedule.js"><\/script>');
 document.write('<script defer src="./acidic_rain_katakana_cleanup.js"><\/script>');
+document.write('<script defer src="./acidic_rain_authoritative_patch.js"><\/script>');
