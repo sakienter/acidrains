@@ -7,8 +7,9 @@ window.addEventListener("load", () => {
       justify-content: center !important;
       align-items: flex-end !important;
       gap: clamp(10px, 1.4vw, 20px) !important;
-      min-height: 220px;
-      padding: 18px 12px 8px !important;
+      margin-top: 4px !important;
+      min-height: 150px !important;
+      padding: 8px 12px 0 !important;
       overflow-x: auto;
       overflow-y: visible;
     }
@@ -36,7 +37,7 @@ window.addEventListener("load", () => {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin: 10px 10px 0;
+      margin: 2px 10px 0;
       color: rgba(249, 235, 207, .46);
       font-size: .72rem;
       letter-spacing: .12em;
@@ -67,8 +68,9 @@ window.addEventListener("load", () => {
       justify-content: center !important;
       align-items: flex-end !important;
       gap: 0 !important;
-      min-height: 220px !important;
-      padding: 24px 28px 8px !important;
+      margin-top: -22px !important;
+      min-height: 148px !important;
+      padding: 8px 28px 0 !important;
       overflow-x: auto !important;
       overflow-y: visible !important;
     }
@@ -108,7 +110,7 @@ window.addEventListener("load", () => {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 120px;
+      min-height: 72px;
       color: rgba(249, 235, 207, .42);
       font-size: .88rem;
       letter-spacing: .08em;
@@ -155,7 +157,7 @@ window.addEventListener("load", () => {
       const angle = Math.max(-8, Math.min(8, distance * 2.2));
       const lift = Math.abs(distance) * 2.6;
       node.style.setProperty("--hand-overlap", `${overlap}px`);
-      node.style.setProperty("transform", `translateY(${lift}px) rotate(${angle}deg)`, "important");
+      node.style.setProperty("transform", `translateY(${-lift}px) rotate(${angle}deg)`, "important");
       node.style.zIndex = String(index + 1);
       const card = state.hand[index];
       if (card && card.type !== "spell") {
