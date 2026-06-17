@@ -1,4 +1,4 @@
-name: Decode card engine
+name: Decode and validate card engine
 
 on:
   push:
@@ -9,13 +9,14 @@ permissions:
   contents: write
 
 jobs:
-  decode:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - name: Decode generated card engine
         run: |
           node <<'NODE'
@@ -28,10 +29,71 @@ jobs:
           fs.mkdirSync('tools', { recursive: true });
           fs.writeFileSync('tools/acidic_rain_excel_cards.decoded.js', decoded);
           NODE
-      - name: Commit decoded source
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check cards/minions/tier1.js
+          node --check cards/spells/tier1.js
+
+      - name: Validate Tier 1 coverage
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const decoded = fs.readFileSync('tools/acidic_rain_excel_cards.decoded.js', 'utf8');
+          const marker = 'const EXCEL_CARD_DATA = ';
+          const start = decoded.indexOf(marker);
+          if (start < 0) throw new Error('EXCEL_CARD_DATA was not found.');
+          const jsonStart = start + marker.length;
+          const jsonEnd = decoded.indexOf(';\n', jsonStart);
+          if (jsonEnd < 0) throw new Error('EXCEL_CARD_DATA terminator was not found.');
+          const data = JSON.parse(decoded.slice(jsonStart, jsonEnd));
+
+          const expectedMinions = data.minions.filter(card => Number(card.tier) === 1).map(card => card.name);
+          const expectedSpells = data.spells.filter(card => Number(card.tier) === 1).map(card => card.name);
+
+          function implementedNames(path) {
+            const source = fs.readFileSync(path, 'utf8');
+            return [...source.matchAll(/^\s*'([^']+)':\s*\(\)\s*=>/gm)].map(match => match[1]);
+          }
+
+          const implementedMinions = implementedNames('cards/minions/tier1.js');
+          const implementedSpells = implementedNames('cards/spells/tier1.js');
+          const difference = (left, right) => left.filter(name => !right.includes(name));
+
+          const report = {
+            generatedAt: new Date().toISOString(),
+            syntax: 'ok',
+            tier1: {
+              minions: {
+                expected: expectedMinions,
+                implemented: implementedMinions,
+                missing: difference(expectedMinions, implementedMinions),
+                unexpected: difference(implementedMinions, expectedMinions),
+              },
+              spells: {
+                expected: expectedSpells,
+                implemented: implementedSpells,
+                missing: difference(expectedSpells, implementedSpells),
+                unexpected: difference(implementedSpells, expectedSpells),
+              },
+            },
+          };
+
+          const failures = [
+            ...report.tier1.minions.missing,
+            ...report.tier1.minions.unexpected,
+            ...report.tier1.spells.missing,
+            ...report.tier1.spells.unexpected,
+          ];
+          report.status = failures.length ? 'failed' : 'passed';
+          fs.writeFileSync('tools/tier1-validation.json', `${JSON.stringify(report, null, 2)}\n`);
+          if (failures.length) throw new Error(`Tier 1 coverage failed: ${failures.join(', ')}`);
+          NODE
+
+      - name: Commit generated audit files
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add tools/acidic_rain_excel_cards.decoded.js
-          git diff --cached --quiet || git commit -m 'Decode generated card engine for tier migration'
+          git add tools/acidic_rain_excel_cards.decoded.js tools/tier1-validation.json
+          git diff --cached --quiet || git commit -m 'Validate Tier 1 card effect coverage'
           git push
