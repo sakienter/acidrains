@@ -31,13 +31,44 @@ window.addEventListener("load", () => {
       background: rgba(125, 228, 149, .06);
     }
 
+    .board-hand-divider {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 10px 0;
+      color: rgba(249, 235, 207, .46);
+      font-size: .72rem;
+      letter-spacing: .12em;
+      user-select: none;
+    }
+
+    .board-hand-divider::before,
+    .board-hand-divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(249, 235, 207, .2),
+        rgba(249, 235, 207, .34),
+        rgba(249, 235, 207, .2),
+        transparent
+      );
+    }
+
+    .board-hand-divider span {
+      white-space: nowrap;
+    }
+
     .hand-grid {
       display: flex !important;
       justify-content: center !important;
       align-items: flex-end !important;
       gap: 0 !important;
       min-height: 220px !important;
-      padding: 28px 28px 8px !important;
+      padding: 24px 28px 8px !important;
       overflow-x: auto !important;
       overflow-y: visible !important;
     }
@@ -50,6 +81,14 @@ window.addEventListener("load", () => {
       margin-left: var(--hand-overlap, -14px) !important;
       transform-origin: 50% 120% !important;
       transition: transform 150ms ease, filter 150ms ease, box-shadow 150ms ease !important;
+    }
+
+    .hand-grid .hand-card:not(.spell):not(.empty) {
+      cursor: grab !important;
+    }
+
+    .hand-grid .hand-card:not(.spell):not(.empty):active {
+      cursor: grabbing !important;
     }
 
     .hand-grid .hand-card:first-child {
@@ -88,6 +127,11 @@ window.addEventListener("load", () => {
   `;
   document.head.appendChild(style);
 
+  const divider = document.createElement("div");
+  divider.className = "board-hand-divider";
+  divider.innerHTML = "<span>盤面　｜　手札</span>";
+  handGridEl.parentNode.insertBefore(divider, handGridEl);
+
   function layoutHand() {
     const cards = [...handGridEl.children].filter(node => !node.classList.contains("empty"));
     const count = cards.length;
@@ -113,6 +157,10 @@ window.addEventListener("load", () => {
       node.style.setProperty("--hand-overlap", `${overlap}px`);
       node.style.setProperty("transform", `translateY(${lift}px) rotate(${angle}deg)`, "important");
       node.style.zIndex = String(index + 1);
+      const card = state.hand[index];
+      if (card && card.type !== "spell") {
+        node.title = "クリックで盤面に配置／ドラッグでも配置できます";
+      }
     });
   }
 
@@ -121,7 +169,7 @@ window.addEventListener("load", () => {
     if (!cards.length && !boardSlotsEl.querySelector(".empty-zone-note")) {
       const note = document.createElement("div");
       note.className = "empty-zone-note";
-      note.textContent = "ミニオンを配置してください";
+      note.textContent = "手札のミニオンをクリック、またはここへドラッグ";
       boardSlotsEl.appendChild(note);
     } else if (cards.length) {
       boardSlotsEl.querySelector(".empty-zone-note")?.remove();
