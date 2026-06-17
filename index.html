@@ -4,12 +4,52 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Acidic Rain Battleground</title>
-    <meta http-equiv="refresh" content="0; url=./acidic_rain_battleground.html" />
-    <script>
-      window.location.replace("./acidic_rain_battleground.html");
-    </script>
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #17110d;
+      }
+      #stage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 1280px;
+        height: 720px;
+        transform-origin: center center;
+      }
+      iframe {
+        width: 1280px;
+        height: 720px;
+        border: 0;
+        display: block;
+      }
+    </style>
   </head>
   <body>
-    <p><a href="./acidic_rain_battleground.html">ゲームを開く</a></p>
+    <div id="stage">
+      <iframe id="game" src="./acidic_rain_battleground.html" title="Acidic Rain Battleground"></iframe>
+    </div>
+    <script>
+      const stage = document.querySelector("#stage");
+      const game = document.querySelector("#game");
+
+      function fitStage() {
+        const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720, 1);
+        stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      }
+
+      game.addEventListener("load", () => {
+        const link = game.contentDocument.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "./layout_1280.css";
+        game.contentDocument.head.appendChild(link);
+      });
+
+      window.addEventListener("resize", fitStage);
+      fitStage();
+    </script>
   </body>
 </html>
