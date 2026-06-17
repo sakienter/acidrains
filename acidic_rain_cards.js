@@ -55,4 +55,20 @@ document.write('<script defer src="./acidic_rain_named_icons.js"><\/script>');
 document.write('<script defer src="./acidic_rain_turn_schedule.js"><\/script>');
 document.write('<script defer src="./acidic_rain_katakana_cleanup.js"><\/script>');
 document.write('<script defer src="./acidic_rain_csv_spell_patch.js"><\/script>');
+
+/* 13-file card structure: one common layer plus 6 minion and 6 spell tiers. */
+document.write('<script defer src="./cards/common.js"><\/script>');
+document.write('<script defer src="./cards/minions/tier1.js"><\/script>');
+document.write('<script defer src="./cards/minions/tier2.js"><\/script>');
+document.write('<script defer src="./cards/minions/tier3.js"><\/script>');
+document.write('<script defer src="./cards/minions/tier4.js"><\/script>');
+document.write('<script defer src="./cards/minions/tier5.js"><\/script>');
+document.write('<script defer src="./cards/minions/tier6.js"><\/script>');
+document.write('<script defer src="./cards/spells/tier1.js"><\/script>');
+document.write('<script defer src="./cards/spells/tier2.js"><\/script>');
+document.write('<script defer src="./cards/spells/tier3.js"><\/script>');
+document.write('<script defer src="./cards/spells/tier4.js"><\/script>');
+document.write('<script defer src="./cards/spells/tier5.js"><\/script>');
+document.write('<script defer src="./cards/spells/tier6.js"><\/script>');
+
 document.write('<script defer src="./acidic_rain_authoritative_bootstrap.js"><\/script>');
