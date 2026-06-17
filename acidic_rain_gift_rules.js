@@ -70,20 +70,20 @@ window.GIFT_CARDS = [
   {
     id: "gift_magicfin", name: "贈り物マジックフィン", emoji: "🐟", tier: 0, cost: 0,
     atk: 1, hp: 1, tribe: "贈り物", gift: true,
-    text: "このカードが自陣にいる限り、自分がスペルを買うと、『雄叫び：買ったスペルを発動する。』を持つトークンカードを獲得する。（1ターンに1度）",
+    text: "このカードが自陣にいる限り、自分がスペルを買うと、『雄叫び：覚えたスペルを使う。』を持つ1/1のマーロック・トークンを獲得する。（1ターンに1度）",
     onSpellBought(gameState, boughtSpell) {
       if (!boughtSpell || this.usedTurn === gameState.turn || gameState.hand.length >= HAND_LIMIT) return;
       const storedSpell = initializedClone(boughtSpell);
       const token = {
         id: `magicfin_token_${boughtSpell.id}_${Date.now()}`,
-        name: `${boughtSpell.name}のトークン`, emoji: "🪄", tier: 0, cost: 0,
-        atk: 1, hp: 1, tribe: "なし", token: true,
-        text: `雄叫び：${boughtSpell.name}を発動する。`,
+        name: `${boughtSpell.name}を覚えたマーロック`, emoji: "🐟", tier: 0, cost: 0,
+        atk: 1, hp: 1, tribe: "マーロック", token: true,
+        text: `雄叫び：覚えた「${boughtSpell.name}」を使う。`,
         battlecry(state) {
           if (typeof storedSpell.cast === "function") storedSpell.cast(state);
         },
       };
-      if (gainCardToHand(gameState, token, `${boughtSpell.name}を発動するトークンを得た。`)) {
+      if (gainCardToHand(gameState, token, `${boughtSpell.name}を覚えた1/1のマーロックを得た。`)) {
         this.usedTurn = gameState.turn;
       }
     },
