@@ -5,7 +5,7 @@
  * - The current Excel/CSV-generated MINIONS and SPELLS remain the source of truth.
  * - Each tier module receives only the cards assigned to its own tier.
  * - Card effects can then be moved into the module's `effects` map one card at a time.
- * - Until an override is added, the existing card object and its current behavior are preserved.
+ * - Until an override is added, the existing card object and behavior are preserved.
  */
 (() => {
   if (window.AcidCardModules) return;
@@ -56,13 +56,20 @@
 
   window.AcidCardModules = api;
 
+  function getMinions() {
+    return typeof MINIONS !== 'undefined' && Array.isArray(MINIONS) ? MINIONS : [];
+  }
+
+  function getSpells() {
+    return typeof SPELLS !== 'undefined' && Array.isArray(SPELLS) ? SPELLS : [];
+  }
+
   function moduleCount() {
     return registry.minion.size + registry.spell.size;
   }
 
   function currentPool(kind) {
-    if (kind === 'minion') return Array.isArray(window.MINIONS) ? window.MINIONS : [];
-    return Array.isArray(window.SPELLS) ? window.SPELLS : [];
+    return kind === 'minion' ? getMinions() : getSpells();
   }
 
   function normalizeName(value) {
@@ -102,8 +109,8 @@
       tier: moduleDefinition.tier,
       cards,
       pool,
-      minions: Array.isArray(window.MINIONS) ? window.MINIONS : [],
-      spells: Array.isArray(window.SPELLS) ? window.SPELLS : [],
+      minions: getMinions(),
+      spells: getSpells(),
       findByName(name) {
         const targetName = normalizeName(name);
         return cards.find(card => normalizeName(card?.name) === targetName) || null;
@@ -132,7 +139,9 @@
       if (!name) return;
       counts.set(name, (counts.get(name) || 0) + 1);
     });
-    return [...counts.entries()].filter(([, count]) => count > 1).map(([name, count]) => ({ name, count }));
+    return [...counts.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([name, count]) => ({ name, count }));
   }
 
   function createReport() {
@@ -143,6 +152,7 @@
         modules.push({
           kind,
           tier,
+          label: moduleDefinition?.label || '',
           count: moduleDefinition?.cards?.length || 0,
           names: (moduleDefinition?.cards || []).map(card => normalizeName(card?.name)),
           overrideNames: Object.keys(moduleDefinition?.effects || {}),
@@ -150,11 +160,7 @@
       }
     }
 
-    const allCards = [
-      ...(Array.isArray(window.MINIONS) ? window.MINIONS : []),
-      ...(Array.isArray(window.SPELLS) ? window.SPELLS : []),
-    ];
-
+    const allCards = [...getMinions(), ...getSpells()];
     return {
       installedAt: new Date().toISOString(),
       modules,
@@ -166,10 +172,10 @@
   }
 
   function excelPoolReady() {
-    const minionsReady = Array.isArray(window.MINIONS) && window.MINIONS.length > 0;
-    const spellsReady = Array.isArray(window.SPELLS) && window.SPELLS.length > 0;
-    const generatedPoolReady = minionsReady && window.MINIONS.some(card => String(card?.id || '').startsWith('excel_'));
-    return minionsReady && spellsReady && generatedPoolReady;
+    const minions = getMinions();
+    const spells = getSpells();
+    return minions.length > 0 && spells.length > 0 &&
+      minions.some(card => String(card?.id || '').startsWith('excel_'));
   }
 
   function installAll(force = false) {
