@@ -51,4 +51,9 @@
   }, 50);
 
   window.addEventListener('load', cleanAll);
+
+  const finalRules = document.createElement('script');
+  finalRules.src = './acidic_rain_final_rules.js';
+  finalRules.defer = true;
+  document.head.appendChild(finalRules);
 })();
