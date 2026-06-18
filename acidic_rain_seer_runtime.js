@@ -145,6 +145,14 @@
     document.body.appendChild(script);
   }
 
+  if (!document.querySelector('script[data-acid-card-updates-20260619-finalize]')) {
+    const script = document.createElement('script');
+    script.src = './cards/card_updates_20260619_finalize.js';
+    script.async = false;
+    script.dataset.acidCardUpdates20260619Finalize = 'true';
+    document.body.appendChild(script);
+  }
+
   if (!document.querySelector('script[data-acid-tauren-runtime]')) {
     const script = document.createElement('script');
     script.src = './acidic_rain_tauren_runtime.js';
