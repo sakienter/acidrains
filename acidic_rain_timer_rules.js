@@ -117,8 +117,18 @@ window.addEventListener("load", () => {
 
     if (timerValue) {
       timerValue.textContent = Math.max(0, Math.ceil(num(state.turnTimeRemaining)));
-      timerValue.closest(".timer-stat")?.classList.toggle("timer-warning", num(state.turnTimeRemaining) <= 10 && !state.gameOver);
+      timerValue.closest(".timer-stat")?.classList.toggle(
+        "timer-warning",
+        num(state.turnTimeRemaining) <= 10 && !state.gameOver && !state.isPaused
+      );
     }
+  }
+
+  function captureRemainingTime() {
+    if (turnDeadline > 0) {
+      state.turnTimeRemaining = Math.max(0, (turnDeadline - Date.now()) / 1000);
+    }
+    return Math.max(0, num(state.turnTimeRemaining));
   }
 
   function stopTimer() {
@@ -131,7 +141,50 @@ window.addEventListener("load", () => {
 
   window.stopAcidTurnTimer = stopTimer;
 
+  window.pauseAcidTurnTimer = function() {
+    captureRemainingTime();
+    stopTimer();
+    paintClock();
+    return true;
+  };
+
+  window.resumeAcidTurnTimer = function() {
+    stopTimer();
+    if (state.gameOver || !state.hasStarted || state.turnTransitioning) {
+      paintClock();
+      return false;
+    }
+
+    const remaining = Math.max(0, num(state.turnTimeRemaining));
+    if (remaining <= 0) {
+      paintClock();
+      if (!resolvingTimeout) {
+        resolvingTimeout = true;
+        window.setTimeout(() => {
+          try {
+            endTurn();
+          } finally {
+            resolvingTimeout = false;
+          }
+        }, 0);
+      }
+      return true;
+    }
+
+    turnDeadline = Date.now() + remaining * 1000;
+    paintClock();
+    timerId = window.setInterval(updateTimerFromDeadline, 250);
+    return true;
+  };
+
   function updateTimerFromDeadline() {
+    if (state.isPaused) {
+      captureRemainingTime();
+      stopTimer();
+      paintClock();
+      return;
+    }
+
     if (state.gameOver || !state.hasStarted) {
       stopTimer();
       paintClock();
@@ -157,7 +210,7 @@ window.addEventListener("load", () => {
 
   function startTurnTimer() {
     stopTimer();
-    if (state.gameOver || !state.hasStarted) {
+    if (state.gameOver || !state.hasStarted || state.isPaused) {
       paintClock();
       return;
     }
@@ -170,6 +223,7 @@ window.addEventListener("load", () => {
   }
 
   function initializeRunProgression() {
+    state.isPaused = false;
     state.startingGoldBonus = 0;
     state.baseTurnGold = getBaseGoldForTurn(1);
     state.maxGold = getStartingGoldForTurn(state, 1);
@@ -191,7 +245,7 @@ window.addEventListener("load", () => {
 
   const inheritedEndTurn = endTurn;
   endTurn = function() {
-    if (state.gameOver) return false;
+    if (state.gameOver || state.isPaused) return false;
     const beforeTurn = num(state.turn, 1);
     stopTimer();
     const result = inheritedEndTurn();
@@ -202,6 +256,7 @@ window.addEventListener("load", () => {
 
   const inheritedFinishRun = finishRun;
   finishRun = function() {
+    state.isPaused = false;
     stopTimer();
     const result = inheritedFinishRun();
     paintClock();
@@ -230,12 +285,14 @@ window.addEventListener("load", () => {
 
   const startButton = document.querySelector("#gameStartBtn");
   startButton?.addEventListener("click", () => {
+    state.isPaused = false;
     state.maxTurns = state.endlessMode ? Number.MAX_SAFE_INTEGER : DEFAULT_TURN_LIMIT;
     if (!state.endlessMode) log("16ターンのスコアアタックを開始しました。");
     startTurnTimer();
     render();
   });
 
+  state.isPaused = false;
   state.startingGoldBonus = Math.max(0, num(state.startingGoldBonus));
   state.maxTurns = state.endlessMode ? Number.MAX_SAFE_INTEGER : DEFAULT_TURN_LIMIT;
   state.turnTimeLimit = getTurnTimeLimit(state.turn);
