@@ -61,3 +61,4 @@ document.write('<link rel="stylesheet" href="./acidic_rain_hand_fit.css">');
 document.write('<script defer src="./acidic_rain_hand_spacing.js"><\/script>');
 document.write('<script defer src="./acidic_rain_rebuild.js"><\/script>');
 document.write('<script defer src="./acidic_rain_core_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_timer_rules.js"><\/script>');
