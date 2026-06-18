@@ -86,6 +86,7 @@ window.addEventListener("load", () => {
   function findExactTriple(entries) {
     const groups = new Map();
     entries.forEach(entry => {
+      if (entry.card.id === SURPRISE_ID) return;
       if (!groups.has(entry.card.id)) groups.set(entry.card.id, []);
       groups.get(entry.card.id).push(entry);
     });
@@ -181,8 +182,8 @@ window.addEventListener("load", () => {
 
   const surprise = MINIONS.find(card => card.id === SURPRISE_ID);
   if (surprise) {
-    surprise.text = "このカードは、エレメンタルを覚醒させる際、同名カード1枚分として扱える。";
-    surprise.awakenedText = "覚醒済みのため、覚醒の素材にはならない。";
+    surprise.text = "エレメンタルを覚醒させる際、同名カード1枚分として扱える。（「意外精」を除く）";
+    surprise.awakenedText = "このカードは覚醒の代用素材として扱われる。";
     delete surprise.battlecry;
   }
 
