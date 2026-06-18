@@ -3,6 +3,7 @@
   if (window.AcidCardModules) return;
 
   const EXPECTED_MODULES = 12;
+  const CROSS_TIER_DUPLICATE_NAMES = new Set(['磯の探検家']);
   const registry = {
     minion: new Map(),
     spell: new Map(),
@@ -51,7 +52,7 @@
   };
 
   window.AcidCardModules = api;
-  window.__acidCardModuleVersion = 4;
+  window.__acidCardModuleVersion = 5;
 
   function getPool(kind) {
     if (kind === 'minion') {
@@ -110,19 +111,21 @@
 
       const idMatches = [];
       const sameTierNameMatches = [];
+      const crossTierNameMatches = [];
       pool.forEach((card, index) => {
         if (normalizeId(card?.id) === id) {
           idMatches.push(index);
           return;
         }
-        if (
-          Number(card?.tier) === moduleDefinition.tier
-          && normalizeName(card?.name) === name
-        ) {
-          sameTierNameMatches.push(index);
-        }
+        if (normalizeName(card?.name) !== name) return;
+        if (Number(card?.tier) === moduleDefinition.tier) sameTierNameMatches.push(index);
+        else crossTierNameMatches.push(index);
       });
-      const matchingIndexes = idMatches.length ? idMatches : sameTierNameMatches;
+
+      let matchingIndexes = idMatches.length ? idMatches : sameTierNameMatches;
+      if (!matchingIndexes.length && !CROSS_TIER_DUPLICATE_NAMES.has(name)) {
+        matchingIndexes = crossTierNameMatches;
+      }
 
       if (!matchingIndexes.length) {
         pool.push({ ...definition });
