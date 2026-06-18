@@ -32,7 +32,7 @@ jobs:
               const nameIndex = decoded.indexOf(name);
               if (nameIndex < 0) return 'NOT_FOUND';
               const start = decoded.lastIndexOf('{', nameIndex);
-              if (start < 0) return `CONTEXT ${decoded.slice(Math.max(0, nameIndex - 300), nameIndex + 700)}`;
+              if (start < 0) return 'OBJECT_START_NOT_FOUND';
 
               let depth = 0;
               let quote = '';
@@ -55,14 +55,10 @@ jobs:
                   if (depth === 0) return decoded.slice(start, index + 1);
                 }
               }
-              return `CONTEXT ${decoded.slice(Math.max(0, nameIndex - 300), nameIndex + 700)}`;
+              return 'OBJECT_END_NOT_FOUND';
             }
 
-            const names = [
-              '野良猫', '威嚇するわんこ', 'ショールフィン', '船頭', '大道芸人',
-              '甲板磨き', 'もりもり砂丘', '苔マン', 'ガチ預言者', '不吉な預言者',
-            ];
-            for (const name of names) {
+            for (const name of ['大道芸人', '甲板磨き', 'もりもり砂丘']) {
               console.log(`CARD_DATA ${name} ${objectAtName(name)}`);
             }
           })().catch(error => {
