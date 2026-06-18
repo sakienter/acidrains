@@ -54,6 +54,11 @@
         progressionScript.async = false;
         gameDocument.body.appendChild(progressionScript);
 
+        const cardChangesScript = gameDocument.createElement("script");
+        cardChangesScript.src = "./acidic_rain_requested_card_changes.js";
+        cardChangesScript.async = false;
+        gameDocument.body.appendChild(cardChangesScript);
+
         const poolScript = gameDocument.createElement("script");
         poolScript.src = "./acidic_rain_minion_pool_rules.js";
         poolScript.async = false;
