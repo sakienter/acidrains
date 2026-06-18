@@ -1,33 +1,34 @@
 /*
  * Acidic Rain card bootstrap.
  *
- * Card data is loaded first. Tier-specific effect implementations live only in
- * cards/minions/tier1.js ... tier6.js and cards/spells/tier1.js ... tier6.js.
- * Root-level rule files are reserved for game-wide systems shared by cards.
+ * Base card data is loaded first. Tier-specific definitions and effects are
+ * installed by cards/minions/tier*.js and cards/spells/tier*.js.
  */
 document.write('<script src="./acidic_rain_legacy_cards.js"><\/script>');
 document.write(`<script>
-  /* Temporary spell-pool declarations. Effect handlers are attached by the
-     corresponding cards/spells/tier*.js module. */
+  /* Authoritative tavern spell pool currently supplied for Tiers 1 and 2.
+     Tier 3 entries remain provisional until their replacement list is supplied. */
   SPELLS.splice(0, SPELLS.length,
-    { id:"chef_recommendation", name:"シェフのおすすめ", emoji:"🍽️", tier:1, cost:2, text:"酒場または、自分の盤面の種族ありカード1枚を選ぶ。同名ではない同じ種族のカードをランダムに1枚得る。", type:"spell" },
-    { id:"east_wind", name:"東からの風", emoji:"🌬️", tier:1, cost:1, text:"このゲーム中、酒場の右端のカードは+6/+6を得る。", type:"spell" },
-    { id:"careful_investment", name:"慎重な投資", emoji:"💰", tier:1, cost:1, text:"次のターン、2コイン得る。", type:"spell" },
-    { id:"telescope", name:"望遠鏡", emoji:"🔭", tier:1, cost:4, text:"自分の盤面で一番多い種族のカードを発見する。", type:"spell" },
-    { id:"kaleidoscope", name:"万華鏡", emoji:"🔮", tier:1, cost:5, text:"自分の盤面で一番多い種族のTier3カードを発見する。ただし、このターンはそのカードを手札から使えない。", type:"spell" },
-    { id:"catalog_flip", name:"カタログパラパラ", emoji:"📖", tier:1, cost:1, text:"リロールを2回分0コストにする。", type:"spell" },
-    { id:"losing_ticket", name:"はずれくじ", emoji:"🎟️", tier:1, cost:1, text:"ランダムなTier1カードを1枚得る。", type:"spell" },
-    { id:"brann_spell", name:"ブランスペル", emoji:"🦁", tier:2, cost:3, text:"このターン中、雄叫びが2回発動する。", type:"spell" },
-    { id:"war_drum", name:"陣太鼓", emoji:"🥁", tier:2, cost:1, text:"このターン中、次に使う雄叫びは追加で2回発動する。", type:"spell" },
-    { id:"headhunter", name:"ヘッドハンター", emoji:"🎯", tier:2, cost:3, text:"雄叫びミニオンを1体発見する。", type:"spell" },
-    { id:"scroll", name:"スクロール", emoji:"📜", tier:2, cost:5, text:"現在の自分のTierのミニオン1枚と、スペル1枚を発見する。", type:"spell" },
-    { id:"dream_essence", name:"夢のエッセンス", emoji:"💭", tier:2, cost:2, text:"自陣の雄叫びミニオンを選ぶ。その雄叫びを発動する。", type:"spell" },
-    { id:"chip_bin", name:"チップビン", emoji:"🪙", tier:2, cost:3, text:"2コインを得る。このゲーム中、初期ゴールドを2増やす。", type:"spell" },
-    { id:"drakkari", name:"ドラッカリ", emoji:"🌙", tier:2, cost:3, text:"このターン、ターン終了時効果が2回発動する。", type:"spell" },
+    { id:"coin", name:"コイン", emoji:"🪙", tier:1, cost:1, text:"1ゴールド得る。", type:"spell" },
+    { id:"sprout", name:"新芽", emoji:"🌱", tier:1, cost:3, text:"ティア1のミニオンを1枚発見する。", type:"spell" },
+    { id:"recruit", name:"召集", emoji:"📯", tier:1, cost:2, text:"ティア1のミニオンを1枚得る。", type:"spell" },
+    { id:"disk_fragment", name:"円盤の破片", emoji:"💿", tier:1, cost:3, text:"このカードは手札で2枚集めると、合体して消滅し「覚醒報酬」になる。", type:"spell" },
+    { id:"magic_area", name:"マジックエリア", emoji:"🪄", tier:1, cost:2, text:"酒場に呪文を並べる。", type:"spell" },
+    { id:"muddy_water", name:"どろみず", emoji:"🟤", tier:1, cost:1, text:"このターンの残り時間を5秒追加する。", type:"spell" },
+
+    { id:"chef_recommendation", name:"シェフのおすすめ", emoji:"🍽️", tier:2, cost:2, text:"酒場または、自分の盤面の種族ありカード1枚を選ぶ。同名ではない同じ種族のカードをランダムに1枚得る。", type:"spell" },
+    { id:"losing_ticket", name:"はずれくじ", emoji:"🎟️", tier:2, cost:2, text:"ランダムなティア1カードを1枚得る。", type:"spell" },
+    { id:"careful_investment", name:"慎重な投資", emoji:"💰", tier:2, cost:1, text:"次のターン、2ゴールド得る。", type:"spell" },
+    { id:"burst_coin_pouch", name:"弾けたコインポーチ", emoji:"👛", tier:2, cost:1, text:"3ゴールド得る。次のターンの開始時2ゴールド失う。", type:"spell" },
+    { id:"catalog_flip", name:"カタログパラパラ", emoji:"📖", tier:2, cost:1, text:"2回分のリロールコストを0にする。", type:"spell" },
+    { id:"letter_pack", name:"レターパック", emoji:"📮", tier:2, cost:2, text:"20秒操作不能になる。次のターン3ゴールド得る。", type:"spell" },
+    { id:"end_roll", name:"エンドロール", emoji:"🎬", tier:2, cost:2, text:"自分のターンを終了する。発動時の残り時間10秒につき、次のターン1ゴールドを得る。", type:"spell" },
+    { id:"oil", name:"石油", emoji:"🛢️", tier:2, cost:3, text:"このゲームのゴールドの上限を1増やす。", type:"spell" },
+
     { id:"temporary_time_rewrite", name:"一時的な時間改竄", emoji:"🕰️", tier:3, cost:5, text:"このターン、次に使う3回のスペルは追加で1回発動される。", type:"spell" },
     { id:"zerek", name:"ゼレク", emoji:"🧬", tier:3, cost:6, text:"自陣のカードのコピーを1枚得る。", type:"spell" },
     { id:"time_transcendence", name:"時空の超越", emoji:"⏳", tier:3, cost:7, text:"リミットターンの猶予を1増やす。", type:"spell" },
-    { id:"awakening", name:"覚醒化", emoji:"✨", tier:3, cost:4, text:"自陣のTier1カードを1枚選んで覚醒させる。", type:"spell" }
+    { id:"awakening", name:"覚醒化", emoji:"✨", tier:3, cost:4, text:"自陣のティア1カードを1枚選んで覚醒させる。", type:"spell" }
   );
 <\/script>`);
 
