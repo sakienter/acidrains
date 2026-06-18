@@ -51,7 +51,13 @@
 
         const progressionScript = gameDocument.createElement("script");
         progressionScript.src = "./tavern_progression.js";
+        progressionScript.async = false;
         gameDocument.body.appendChild(progressionScript);
+
+        const poolScript = gameDocument.createElement("script");
+        poolScript.src = "./acidic_rain_minion_pool_rules.js";
+        poolScript.async = false;
+        gameDocument.body.appendChild(poolScript);
       });
 
       window.addEventListener("resize", fitStage);
