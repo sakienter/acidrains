@@ -261,8 +261,12 @@
         window.__tier4DrakkariPendingEffectsPatched = true;
         const previousEndTurn = endTurn;
         endTurn = function() {
-          if (state.drakkariActive && number(state.sixthSensePending) > 0) {
-            state.sixthSensePending = number(state.sixthSensePending) * 2;
+          const multiplier = Math.max(
+            state.drakkariActive ? 2 : 1,
+            Math.max(1, number(state.endTurnMultiplier, 1)),
+          );
+          if (multiplier > 1 && number(state.sixthSensePending) > 0) {
+            state.sixthSensePending = number(state.sixthSensePending) * multiplier;
           }
           return previousEndTurn();
         };
