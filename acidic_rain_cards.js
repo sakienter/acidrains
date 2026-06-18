@@ -36,7 +36,6 @@ document.write('<script defer src="./acidic_rain_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_stat_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_awaken_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_layout_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_spell_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_turn_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_hud_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_discover_rules.js"><\/script>');
