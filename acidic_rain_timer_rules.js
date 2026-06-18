@@ -66,6 +66,13 @@ window.addEventListener("load", () => {
     return Math.min(MAX_TURN_SECONDS, TURN_TIME[normalizedTurn] ?? MAX_TURN_SECONDS);
   };
 
+  window.getCompletedTurnCount = gameState => {
+    const completed = Math.max(0, Math.floor(num(gameState?.turn, 1)) - 1);
+    if (gameState?.endlessMode) return completed;
+    const limit = Math.max(DEFAULT_TURN_LIMIT, Math.floor(num(gameState?.maxTurns, DEFAULT_TURN_LIMIT)));
+    return Math.min(limit, completed);
+  };
+
   function ensureHud() {
     const stats = document.querySelector(".board-stats");
     if (!stats) return {};
@@ -74,7 +81,7 @@ window.addEventListener("load", () => {
     if (!turnValue) {
       const chip = document.createElement("span");
       chip.className = "inline-stat turn-stat";
-      chip.innerHTML = '<span class="icon">🔄</span><span class="hud-label">ターン</span><strong id="turnValue">1/16</strong>';
+      chip.innerHTML = '<span class="icon">◷</span><span class="hud-label">ターン</span><strong id="turnValue">0/16</strong>';
       stats.appendChild(chip);
       turnValue = chip.querySelector("#turnValue");
     }
@@ -93,8 +100,21 @@ window.addEventListener("load", () => {
 
   function paintClock() {
     const { turnValue, timerValue } = ensureHud();
-    const finiteLimit = state.endlessMode ? "∞" : Math.max(DEFAULT_TURN_LIMIT, num(state.maxTurns, DEFAULT_TURN_LIMIT));
-    if (turnValue) turnValue.textContent = `${Math.max(1, num(state.turn, 1))}/${finiteLimit}`;
+    const finiteLimit = state.endlessMode
+      ? "∞"
+      : Math.max(DEFAULT_TURN_LIMIT, Math.floor(num(state.maxTurns, DEFAULT_TURN_LIMIT)));
+    const completedTurns = getCompletedTurnCount(state);
+
+    if (turnValue) {
+      turnValue.textContent = `${completedTurns}/${finiteLimit}`;
+      turnValue.closest(".turn-stat")?.setAttribute(
+        "aria-label",
+        state.endlessMode
+          ? `終了済みターン ${completedTurns}`
+          : `終了済みターン ${completedTurns} / ${finiteLimit}`
+      );
+    }
+
     if (timerValue) {
       timerValue.textContent = Math.max(0, Math.ceil(num(state.turnTimeRemaining)));
       timerValue.closest(".timer-stat")?.classList.toggle("timer-warning", num(state.turnTimeRemaining) <= 10 && !state.gameOver);
@@ -108,6 +128,8 @@ window.addEventListener("load", () => {
     }
     turnDeadline = 0;
   }
+
+  window.stopAcidTurnTimer = stopTimer;
 
   function updateTimerFromDeadline() {
     if (state.gameOver || !state.hasStarted) {
