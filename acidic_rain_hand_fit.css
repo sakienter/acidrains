@@ -1,0 +1,69 @@
+/* Compact hand layout for the fixed 1280x720 game board. */
+#handGrid.hand-grid {
+  margin-top: 2px !important;
+  min-height: 166px !important;
+  padding: 4px 22px 14px !important;
+  align-items: flex-end !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+
+#handGrid.hand-grid .hand-card {
+  flex: 0 0 clamp(90px, 8.1vw, 124px) !important;
+  width: clamp(90px, 8.1vw, 124px) !important;
+  min-width: 90px !important;
+  max-width: 124px !important;
+  min-height: 148px !important;
+  height: 148px !important;
+  max-height: 148px !important;
+  padding: 9px 7px 7px !important;
+  overflow: hidden !important;
+}
+
+#handGrid.hand-grid .hand-card .card-emoji {
+  margin-top: 3px !important;
+  font-size: 34px !important;
+  line-height: 1 !important;
+}
+
+#handGrid.hand-grid .hand-card .card-name {
+  font-size: 0.82rem !important;
+  line-height: 1.12 !important;
+}
+
+#handGrid.hand-grid .hand-card .card-text {
+  min-height: 32px !important;
+  font-size: 0.60rem !important;
+  line-height: 1.24 !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+  overflow: hidden !important;
+}
+
+#handGrid.hand-grid .hand-card .stats {
+  margin-top: auto !important;
+  padding: 0 3px !important;
+  gap: 8px !important;
+  font-size: 0.95rem !important;
+}
+
+#handGrid.hand-grid .hand-card .cost {
+  top: 4px !important;
+  right: 4px !important;
+  padding: 3px 6px !important;
+  font-size: 0.65rem !important;
+}
+
+#handGrid.hand-grid .hand-card:not(.empty):hover {
+  transform: translateY(-12px) scale(1.04) !important;
+}
+
+@media (max-width: 1000px) {
+  #handGrid.hand-grid .hand-card {
+    flex-basis: 92px !important;
+    width: 92px !important;
+    min-width: 92px !important;
+    max-width: 92px !important;
+  }
+}
