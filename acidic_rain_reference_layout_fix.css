@@ -1,0 +1,41 @@
+/* Final positioning pass: action buttons share the battlefield as independent HUD elements. */
+.board-actions {
+  position: static !important;
+  display: contents !important;
+}
+
+#upgradeBtn,
+#rerollBtn,
+#freezeBtn {
+  position: absolute !important;
+  top: 18px !important;
+  z-index: 520 !important;
+}
+
+#upgradeBtn {
+  right: 268px !important;
+}
+
+#rerollBtn {
+  right: 138px !important;
+}
+
+#freezeBtn {
+  right: 24px !important;
+}
+
+#endTurnBtn {
+  right: 22px !important;
+}
+
+#handGrid.hand-grid {
+  padding-left: 34px !important;
+  padding-right: 34px !important;
+}
+
+#handGrid.hand-grid .hand-card {
+  flex-basis: 102px !important;
+  width: 102px !important;
+  min-width: 102px !important;
+  max-width: 102px !important;
+}
