@@ -51,7 +51,7 @@
   };
 
   window.AcidCardModules = api;
-  window.__acidCardModuleVersion = 3;
+  window.__acidCardModuleVersion = 4;
 
   function getPool(kind) {
     if (kind === 'minion') {
@@ -108,12 +108,21 @@
         throw new Error(`Card definition requires id and name: ${moduleDefinition.kind} tier ${moduleDefinition.tier}`);
       }
 
-      const matchingIndexes = [];
+      const idMatches = [];
+      const sameTierNameMatches = [];
       pool.forEach((card, index) => {
-        if (normalizeId(card?.id) === id || normalizeName(card?.name) === name) {
-          matchingIndexes.push(index);
+        if (normalizeId(card?.id) === id) {
+          idMatches.push(index);
+          return;
+        }
+        if (
+          Number(card?.tier) === moduleDefinition.tier
+          && normalizeName(card?.name) === name
+        ) {
+          sameTierNameMatches.push(index);
         }
       });
+      const matchingIndexes = idMatches.length ? idMatches : sameTierNameMatches;
 
       if (!matchingIndexes.length) {
         pool.push({ ...definition });
@@ -194,12 +203,15 @@
   function duplicateNames(cards) {
     const counts = new Map();
     cards.forEach(card => {
-      const name = normalizeName(card?.name);
-      if (name) counts.set(name, (counts.get(name) || 0) + 1);
+      const key = `${normalizeName(card?.name)}::${Number(card?.tier || 0)}`;
+      if (normalizeName(card?.name)) counts.set(key, (counts.get(key) || 0) + 1);
     });
     return [...counts.entries()]
       .filter(([, count]) => count > 1)
-      .map(([name, count]) => ({ name, count }));
+      .map(([key, count]) => {
+        const [name, tier] = key.split('::');
+        return { name, tier: Number(tier), count };
+      });
   }
 
   function createReport() {
