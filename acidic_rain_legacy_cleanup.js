@@ -16,6 +16,27 @@
     text: 'このカードが自陣にいる限り、自分が4回のリロールをすると、酒場の右端のミニオンのスタッツを得る。',
     awakenedText: 'このカードが自陣にいる限り、自分が4回のリロールをすると、酒場の右端のミニオンのスタッツを2倍得る。',
   };
+  const EFFECT_KEYS = [
+    'init',
+    'aura',
+    'cast',
+    'battlecry',
+    'deathrattle',
+    'onPlay',
+    'onSell',
+    'onAnySell',
+    'onTurnStart',
+    'onTurnEnd',
+    'onSpellCast',
+    'onSpellBought',
+    'onElementalPlayed',
+    'onElementalSold',
+    'onGoldSpent',
+    'onGoldGained',
+    'onRerollCount',
+    'onTimeGained',
+    'onDestroyed',
+  ];
 
   const num = (value, fallback = 0) => {
     const parsed = Number(value);
@@ -177,6 +198,12 @@
     return definitions;
   }
 
+  function clearStaleEffects(card) {
+    EFFECT_KEYS.forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(card, key)) delete card[key];
+    });
+  }
+
   function cleanAuthoritativePool(kind) {
     const pool = kind === 'minion'
       ? (typeof MINIONS !== 'undefined' ? MINIONS : [])
@@ -204,9 +231,13 @@
         usedIndexes.add(selectedIndex);
         selected = pool[selectedIndex];
       } else {
-        selected = { ...definition };
+        selected = {};
       }
 
+      clearStaleEffects(selected);
+      Object.keys(selected).forEach(key => {
+        if (!(key in definition)) delete selected[key];
+      });
       Object.assign(selected, definition);
       canonicalCards.push(selected);
     }
@@ -240,14 +271,21 @@
       ...dedupeModuleDefinitions(),
     ];
 
+    // First install migrates old names and IDs to their newest definitions.
     if (window.AcidCardModules?.installed) {
       window.AcidCardModules.reinstall();
     }
 
+    // Remove every non-authoritative card and clear stale legacy effect methods.
     removed.push(
       ...cleanAuthoritativePool('minion'),
       ...cleanAuthoritativePool('spell'),
     );
+
+    // Reinstall once more so only the current effect map is attached.
+    if (window.AcidCardModules?.installed) {
+      window.AcidCardModules.reinstall();
+    }
 
     normalizeAcidRainPoolAndInstances();
     window.__acidRemovedLegacyCards = removed;
