@@ -276,6 +276,17 @@
       awakenedText: '雄叫び：「慎重な投資」を2枚得る。',
     },
     {
+      id: 'tier2_shell_collector',
+      name: '貝殻蒐集家',
+      emoji: '🐚',
+      cost: 3,
+      atk: 3,
+      hp: 2,
+      tribe: 'ナーガ',
+      text: '雄叫び：「コイン」を1枚得る。',
+      awakenedText: '雄叫び：「コイン」を2枚得る。',
+    },
+    {
       id: 'tier2_festival_naga',
       name: 'テキ屋ナーガ',
       emoji: '🎯',
@@ -395,6 +406,12 @@
       '投資家ナーガ': () => ({
         battlecry(gameState) {
           gainNamedSpell(gameState, '慎重な投資', amount(this, 1, 2));
+        },
+      }),
+
+      '貝殻蒐集家': () => ({
+        battlecry(gameState) {
+          gainNamedSpell(gameState, 'コイン', amount(this, 1, 2));
         },
       }),
 
