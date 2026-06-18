@@ -2,7 +2,7 @@
   const moduleData = window.AcidTier4Minions;
   if (!moduleData) throw new Error('Tier 4 minion helpers are not loaded.');
 
-  const fragmentNames = new Set(['円盤の破片', '未知の円盤の破片']);
+  const fragmentNames = new Set(['円盤の破片']);
   function combineFragments(gameState) {
     if (!Array.isArray(gameState?.hand)) return false;
     let changed = false;
