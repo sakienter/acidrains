@@ -14,18 +14,28 @@
     return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
   }
 
-  function addCard(gameState, template, message = '') {
+  function cloneTemplate(template) {
+    return typeof initializedClone === 'function'
+      ? initializedClone(template)
+      : { ...template };
+  }
+
+  function addCard(gameState, template, message = '', extra = {}) {
     if (!template) return false;
     if (gameState.hand.length >= handLimit()) {
       writeLog('手札がいっぱい。');
       return false;
     }
-    if (typeof gainCardToHand === 'function') {
-      return gainCardToHand(gameState, template, message) !== false;
+
+    const copy = { ...cloneTemplate(template), ...extra };
+    if (copy.unlockTier && !copy.originalTextBeforeUnlock) {
+      copy.originalTextBeforeUnlock = copy.text || '';
+      copy.text = `${copy.originalTextBeforeUnlock}（酒場グレード${copy.unlockTier}まで使用不可）`;
     }
-    const copy = typeof initializedClone === 'function'
-      ? initializedClone(template)
-      : { ...template };
+
+    if (typeof gainCardToHand === 'function') {
+      return gainCardToHand(gameState, copy, message) !== false;
+    }
     gameState.hand.push(copy);
     writeLog(message);
     return true;
@@ -46,8 +56,8 @@
     return MINIONS.filter(card => number(card.tier) <= currentTier && predicate(card));
   }
 
-  function tierOneMinions() {
-    return MINIONS.filter(card => number(card.tier) === 1);
+  function tierOneMinions(predicate = () => true) {
+    return MINIONS.filter(card => number(card.tier) === 1 && predicate(card));
   }
 
   function tierOneSpells() {
@@ -55,11 +65,11 @@
   }
 
   function sellTriggerCount(gameState, card) {
-    const normalCount = amount(card, 1, 2);
+    const baseCount = amount(card, 1, 2);
     const permanentMultiplier = Math.max(1, number(gameState.sellEffectMultiplier) || 1);
     const nextMultiplier = Math.max(1, number(gameState.nextSellEffectMultiplier) || 1);
     gameState.nextSellEffectMultiplier = 1;
-    return normalCount * permanentMultiplier * nextMultiplier;
+    return baseCount * permanentMultiplier * nextMultiplier;
   }
 
   function gainNamedSpell(gameState, name, count, extra = {}) {
@@ -70,10 +80,28 @@
     }
     let gained = 0;
     for (let i = 0; i < count; i += 1) {
-      if (!addCard(gameState, { ...template, ...extra }, i === 0 ? `${name} を得た。` : '')) break;
+      if (!addCard(gameState, template, i === 0 ? `${name} を得た。` : '', extra)) break;
       gained += 1;
     }
     return gained;
+  }
+
+  function discoverTierOneTribeMinions(gameState, sourceCard, count) {
+    const pool = tierOneMinions(card =>
+      card.id !== sourceCard.id &&
+      card.name !== sourceCard.name &&
+      card.tribe &&
+      !['なし', '育成', '贈り物'].includes(card.tribe)
+    );
+    if (!pool.length) {
+      writeLog('発見できるティア1の種族ありミニオンがない。');
+      return 0;
+    }
+    if (typeof discoverCards === 'function') {
+      discoverCards(gameState, pool, count, '船頭：ティア1の種族ありミニオンを発見');
+      return count;
+    }
+    return gainRandom(gameState, pool, count, 'ティア1の種族ありミニオンを得た。');
   }
 
   function fixedRightmostMinion(gameState) {
@@ -89,14 +117,29 @@
   function applyDuneBuffAfterReroll(gameState) {
     const atk = number(gameState.tier1DuneAfterRerollAtk);
     const hp = number(gameState.tier1DuneAfterRerollHp);
-    if (!atk && !hp) return;
+    if (!atk && !hp) return false;
     const target = fixedRightmostMinion(gameState);
-    if (!target) return;
+    if (!target) return false;
     target.atk = number(target.atk) + atk;
     target.hp = number(target.hp) + hp;
     target.tier1DuneBuffAtk = number(target.tier1DuneBuffAtk) + atk;
     target.tier1DuneBuffHp = number(target.tier1DuneBuffHp) + hp;
+    writeLog(`酒場の右端のミニオンに+${atk}/+${hp}を付与した。`);
+    return true;
   }
+
+  const IMPLEMENTED_NAMES = [
+    '野良猫',
+    '威嚇するわんこ',
+    'ショールフィン',
+    '船頭',
+    '大道芸人',
+    '甲板磨き',
+    'もりもり砂丘',
+    '苔マン',
+    'ガチ預言者',
+    '不吉な預言者',
+  ];
 
   modules.register({
     kind: 'minion',
@@ -104,6 +147,8 @@
     label: 'ティア1・ミニオン',
     effects: {
       '野良猫': () => ({
+        text: '雄叫び：猫トークンを1匹召喚する。',
+        awakenedText: '雄叫び：猫トークンを2匹召喚する。',
         battlecry(gameState) {
           const count = amount(this, 1, 2);
           if (typeof summonToken === 'function') summonToken(gameState, 'cat', count);
@@ -111,6 +156,8 @@
       }),
 
       '威嚇するわんこ': () => ({
+        text: '売却時：「夢のエッセンス」を1枚得る。それは酒場グレード4まで使用できない。',
+        awakenedText: '売却時：「夢のエッセンス」を2枚得る。それらは酒場グレード4まで使用できない。',
         onSell(gameState) {
           gainNamedSpell(gameState, '夢のエッセンス', sellTriggerCount(gameState, this), {
             unlockTier: 4,
@@ -119,13 +166,18 @@
       }),
 
       'ショールフィン': () => ({
+        text: '8ゴールド使うたび、自分の酒場グレード以下のランダムなマーロックを1枚得る。',
+        awakenedText: '8ゴールド使うたび、自分の酒場グレード以下のランダムなマーロックを2枚得る。',
+        init(card) {
+          card.goldProgress = number(card.goldProgress);
+        },
         onGoldSpent(gameState, spent) {
           this.goldProgress = number(this.goldProgress) + Math.max(0, number(spent));
           while (this.goldProgress >= 8) {
             this.goldProgress -= 8;
             gainRandom(
               gameState,
-              currentTierMinions(gameState, card => card.tribe === 'マーロック'),
+              currentTierMinions(gameState, card => card.tribe === 'マーロック' && card.id !== this.id),
               amount(this, 1, 2),
               'ショールフィンがマーロックを見つけた。',
             );
@@ -134,29 +186,32 @@
       }),
 
       '船頭': () => ({
+        text: '売却時：ティア1の種族ありミニオンを1枚発見する。',
+        awakenedText: '売却時：ティア1の種族ありミニオンを2枚発見する。',
         onSell(gameState) {
-          gainRandom(
-            gameState,
-            tierOneMinions(),
-            sellTriggerCount(gameState, this),
-            'ランダムなティア1ミニオンを得た。',
-          );
+          discoverTierOneTribeMinions(gameState, this, sellTriggerCount(gameState, this));
         },
       }),
 
       '大道芸人': () => ({
+        text: '雄叫び：次のターン、1ゴールド追加で得る。',
+        awakenedText: '雄叫び：次のターン、2ゴールド追加で得る。',
         battlecry(gameState) {
           gameState.nextTurnGoldBonus = number(gameState.nextTurnGoldBonus) + amount(this, 1, 2);
         },
       }),
 
       '甲板磨き': () => ({
+        text: '雄叫び：現在の酒場アップコストを1下げる。',
+        awakenedText: '雄叫び：現在の酒場アップコストを2下げる。',
         battlecry(gameState) {
           gameState.tavernUpgradeDiscount = number(gameState.tavernUpgradeDiscount) + amount(this, 1, 2);
         },
       }),
 
       'もりもり砂丘': () => ({
+        text: '雄叫び：この対戦中、酒場を入替した後、その右端のミニオン1体に+1/+1を付与する。',
+        awakenedText: '雄叫び：この対戦中、酒場を入替した後、その右端のミニオン1体に+2/+2を付与する。',
         battlecry(gameState) {
           const buff = amount(this, 1, 2);
           gameState.tier1DuneAfterRerollAtk = number(gameState.tier1DuneAfterRerollAtk) + buff;
@@ -172,11 +227,13 @@
           const hp = amount(this, 2, 4);
           gameState.tier1DuneAfterRerollAtk = number(gameState.tier1DuneAfterRerollAtk) + atk;
           gameState.tier1DuneAfterRerollHp = number(gameState.tier1DuneAfterRerollHp) + hp;
-          writeLog(`苔マン：以後の酒場入替後バフが +${gameState.tier1DuneAfterRerollAtk}/+${gameState.tier1DuneAfterRerollHp} になった。`);
+          writeLog(`苔マン：以後の酒場入替後バフが+${gameState.tier1DuneAfterRerollAtk}/+${gameState.tier1DuneAfterRerollHp}になった。`);
         },
       }),
 
       'ガチ預言者': () => ({
+        text: '売却時：ランダムなティア1スペルを1枚得る。',
+        awakenedText: '売却時：ランダムなティア1スペルを2枚得る。',
         onSell(gameState) {
           gainRandom(
             gameState,
@@ -188,6 +245,8 @@
       }),
 
       '不吉な預言者': () => ({
+        text: '雄叫び：次に買うスペルは1ゴールド値下げされる。',
+        awakenedText: '雄叫び：次に買うスペルは2ゴールド値下げされる。',
         battlecry(gameState) {
           gameState.nextSpellDiscount = number(gameState.nextSpellDiscount) + amount(this, 1, 2);
         },
@@ -228,18 +287,13 @@
         };
       }
 
-      window.__tier1MinionEffectsImplemented = [
-        '野良猫',
-        '威嚇するわんこ',
-        'ショールフィン',
-        '船頭',
-        '大道芸人',
-        '甲板磨き',
-        'もりもり砂丘',
-        '苔マン',
-        'ガチ預言者',
-        '不吉な預言者',
-      ];
+      window.__tier1MinionEffectsImplemented = [...IMPLEMENTED_NAMES];
+      window.__tier1MinionMissingDefinitions = IMPLEMENTED_NAMES.filter(name =>
+        !MINIONS.some(card => String(card?.name || '').trim() === name)
+      );
+      if (window.__tier1MinionMissingDefinitions.length) {
+        console.warn('[Tier1Minions] Effect implementation exists, but card data is missing:', window.__tier1MinionMissingDefinitions);
+      }
     },
   });
 })();
