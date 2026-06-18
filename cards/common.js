@@ -1,4 +1,4 @@
-/* Shared registry for the 12 tier-specific card modules. */
+/* Shared registry for the 12 tier-specific card effect modules. */
 (() => {
   if (window.AcidCardModules) return;
 
@@ -7,6 +7,8 @@
     minion: new Map(),
     spell: new Map(),
   };
+
+  const normalizeName = value => String(value || '').trim();
 
   const api = {
     registry,
@@ -47,6 +49,7 @@
   };
 
   window.AcidCardModules = api;
+  window.__acidCardModuleVersion = 2;
 
   function getPool(kind) {
     if (kind === 'minion') {
@@ -61,10 +64,6 @@
 
   function cardPoolReady() {
     return getPool('minion').length > 0 && getPool('spell').length > 0;
-  }
-
-  function normalizeName(value) {
-    return String(value || '').trim();
   }
 
   function toRow(card, kind) {
@@ -83,16 +82,17 @@
   }
 
   function applyPatch(card, patch, context) {
-    if (!card || !patch) return;
+    if (!card || !patch) return false;
     const resolved = typeof patch === 'function' ? patch(card, context) : patch;
-    if (resolved && typeof resolved === 'object') Object.assign(card, resolved);
+    if (!resolved || typeof resolved !== 'object') return false;
+    Object.assign(card, resolved);
+    return true;
   }
 
   function installModule(moduleDefinition) {
     const pool = getPool(moduleDefinition.kind);
     const cards = pool.filter(card => Number(card?.tier) === moduleDefinition.tier);
     moduleDefinition.cards = cards;
-    moduleDefinition.rows = cards.map(card => toRow(card, moduleDefinition.kind));
 
     const context = {
       kind: moduleDefinition.kind,
@@ -101,15 +101,34 @@
       pool,
       minions: getPool('minion'),
       spells: getPool('spell'),
+
       findByName(name) {
         const target = normalizeName(name);
         return cards.find(card => normalizeName(card?.name) === target) || null;
       },
+
+      findAllByName(name) {
+        const target = normalizeName(name);
+        return cards.filter(card => normalizeName(card?.name) === target);
+      },
+
+      findById(id) {
+        const target = String(id || '').trim();
+        return cards.find(card => String(card?.id || '').trim() === target) || null;
+      },
+
       patch(name, patch) {
-        const card = this.findByName(name);
-        if (!card) return false;
-        applyPatch(card, patch, this);
-        return true;
+        const targets = this.findAllByName(name);
+        let patched = 0;
+        targets.forEach(card => {
+          if (applyPatch(card, patch, this)) patched += 1;
+        });
+        return patched;
+      },
+
+      patchById(id, patch) {
+        const card = this.findById(id);
+        return card && applyPatch(card, patch, this) ? 1 : 0;
       },
     };
 
@@ -117,6 +136,8 @@
       context.patch(name, patch);
     });
     if (typeof moduleDefinition.apply === 'function') moduleDefinition.apply(context);
+
+    moduleDefinition.rows = cards.map(card => toRow(card, moduleDefinition.kind));
   }
 
   function duplicateNames(cards) {
