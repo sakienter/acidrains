@@ -8,6 +8,11 @@
   `;
   document.head.appendChild(style);
 
+  const safeNumber = (value, fallback = 0) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
   function updateHud() {
     const stats = document.querySelector('.board-stats');
     if (!stats) return;
@@ -19,7 +24,7 @@
     const goldStat = gold?.closest('.inline-stat');
     if (goldStat && !goldStat.querySelector('.hud-label')) {
       goldStat.classList.add('coin-stat');
-      gold.insertAdjacentHTML('beforebegin', '<span class="hud-label">残りコイン</span>');
+      gold.insertAdjacentHTML('beforebegin', '<span class="hud-label">コイン</span>');
     }
 
     const tier = document.querySelector('#tavernTierValue');
@@ -38,7 +43,12 @@
     }
 
     try {
-      if (gold) gold.textContent = state.gold;
+      if (gold) {
+        const currentGold = safeNumber(state.gold);
+        const maximumGold = Math.max(0, safeNumber(state.maxGold, currentGold));
+        gold.textContent = `${currentGold}/${maximumGold}`;
+        goldStat?.setAttribute('aria-label', `コイン ${currentGold} / ${maximumGold}`);
+      }
       if (tier) tier.textContent = state.tavernTier;
       if (freeValue) freeValue.textContent = (state.freeRerolls || 0) + (state.firstRerollFree ? 1 : 0);
     } catch (error) {
