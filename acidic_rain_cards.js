@@ -1,9 +1,11 @@
 /*
- * Loader for the expanded Acidic Rain card set.
- * The immutable card-data snapshot is loaded first, then the spell pool is
- * replaced locally before the game engine starts.
+ * Acidic Rain card bootstrap.
+ *
+ * Card data is kept inside this repository so the current branch is the single
+ * source of truth. Rule files and tier modules are loaded in a deterministic
+ * order after the base pool has been declared.
  */
-document.write('<script src="https://cdn.jsdelivr.net/gh/sakienter/acidrains@eccf3cffd645d8d07df07e3056c1c0b2c42085fb/acidic_rain_cards.js"><\/script>');
+document.write('<script src="./acidic_rain_legacy_cards.js"><\/script>');
 document.write(`<script>
   SPELLS.splice(0, SPELLS.length,
     { id:"chef_recommendation", name:"シェフのおすすめ", emoji:"🍽️", tier:1, cost:2, text:"酒場または、自分の盤面の種族ありカード1枚を選ぶ。同名ではない同じ種族のカードをランダムに1枚得る。", type:"spell", cast(state){ castChefRecommendation(state); } },
@@ -26,6 +28,7 @@ document.write(`<script>
     { id:"awakening", name:"覚醒化", emoji:"✨", tier:3, cost:4, text:"自陣のTier1カードを1枚選んで覚醒させる。", type:"spell", cast(state){ castAwakeningSpell(state); } }
   );
 <\/script>`);
+
 document.write('<script defer src="./acidic_rain_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_stat_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_awaken_rules.js"><\/script>');
@@ -39,7 +42,6 @@ document.write('<script defer src="./acidic_rain_tier2_spell_rules.js"><\/script
 document.write('<script defer src="./acidic_rain_targeting_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_start_screen_rules.js"><\/script>');
 
-/* 13-file card structure: one common layer plus 6 minion and 6 spell tiers. */
 document.write('<script defer src="./cards/common.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier1.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier2.js"><\/script>');
@@ -56,3 +58,4 @@ document.write('<script defer src="./cards/spells/tier6.js"><\/script>');
 
 document.write('<link rel="stylesheet" href="./acidic_rain_card_theme.css">');
 document.write('<script defer src="./acidic_rain_rebuild.js"><\/script>');
+document.write('<script defer src="./acidic_rain_core_rules.js"><\/script>');
