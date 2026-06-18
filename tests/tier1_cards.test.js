@@ -19,6 +19,8 @@ const context = {
     { id: 'alleycat', name: '野良猫', tier: 1, cost: 3, atk: 9, hp: 9, tribe: '獣', text: 'old' },
     { id: 'legacy_boatswain', name: '船頭', tier: 1, cost: 3, atk: 9, hp: 9, tribe: 'マーロック', text: 'old' },
     { id: 'neutral_test', name: '種族なしテスト', tier: 1, cost: 3, atk: 1, hp: 1, tribe: 'なし', text: '' },
+    { id: 'legacy_elemental', name: '旧ティア1エレメンタル', tier: 1, cost: 3, atk: 8, hp: 8, tribe: 'エレメンタル', text: '' },
+    { id: 'tier2_control', name: 'ティア2保持確認', tier: 2, cost: 3, atk: 2, hp: 2, tribe: 'なし', text: '' },
   ],
   SPELLS: [
     { id: 'dream_essence', name: '夢のエッセンス', tier: 2, cost: 2, type: 'spell', text: '雄叫びを発動する。' },
@@ -62,6 +64,7 @@ context.window = context;
 vm.createContext(context);
 vm.runInContext(fs.readFileSync('cards/common.js', 'utf8'), context, { filename: 'cards/common.js' });
 vm.runInContext(fs.readFileSync('cards/minions/tier1.js', 'utf8'), context, { filename: 'cards/minions/tier1.js' });
+vm.runInContext(fs.readFileSync('cards/minions/tier1_pool_guard.js', 'utf8'), context, { filename: 'cards/minions/tier1_pool_guard.js' });
 
 for (const kind of ['minion', 'spell']) {
   for (let tier = 1; tier <= 6; tier += 1) {
@@ -85,6 +88,18 @@ const expected = [
   ['ガチ預言者', 'ナーガ', 1, 3],
   ['不吉な預言者', 'ナーガ', 2, 1],
 ];
+const expectedNames = expected.map(([name]) => name).sort();
+const actualTierOneNames = context.MINIONS
+  .filter(card => Number(card.tier) === 1)
+  .map(card => card.name)
+  .sort();
+assert.deepEqual(actualTierOneNames, expectedNames, 'Tier 1 pool must contain only the authoritative ten cards');
+assert.equal(context.MINIONS.some(card => card.id === 'neutral_test'), false, 'legacy Tier 1 cards must be removed');
+assert.equal(context.MINIONS.some(card => card.id === 'legacy_elemental'), false, 'legacy Tier 1 elementals must be removed');
+assert.equal(context.MINIONS.some(card => card.id === 'tier2_control'), true, 'other tiers must remain untouched');
+assert.equal(Array.from(context.__tier1RemovedLegacyMinionNames).includes('種族なしテスト'), true);
+assert.equal(context.AcidCardModules.get('minion', 1).cards.length, 10);
+
 for (const [name, tribe, atk, hp] of expected) {
   const cards = context.MINIONS.filter(card => card.name === name);
   assert.equal(cards.length, 1, `${name} must exist exactly once`);
@@ -112,6 +127,7 @@ card('船頭').onSell(context.state);
 assert.equal(context.lastDiscover.count, 1);
 assert.equal(context.lastDiscover.pool.some(item => item.name === '船頭'), false);
 assert.equal(context.lastDiscover.pool.some(item => item.tribe === 'なし'), false);
+assert.equal(context.lastDiscover.pool.every(item => expectedNames.includes(item.name)), true);
 
 context.state.nextTurnGoldBonus = 0;
 card('大道芸人').battlecry(context.state);
@@ -146,4 +162,4 @@ context.state.nextSpellDiscount = 0;
 card('不吉な預言者').battlecry(context.state);
 assert.equal(context.state.nextSpellDiscount, 1);
 assert.equal(Array.from(context.__tier1MinionMissingDefinitions).length, 0);
-console.log('Tier 1 definition/effect smoke test passed.');
+console.log('Tier 1 definition/effect/pool smoke test passed.');
