@@ -96,7 +96,7 @@ function gainRandomTierOneCard(gameState) {
 }
 
 function applyEastWindToRightmost(gameState) {
-  const target = getRightmostShopCard(gameState);
+  const target = [...(gameState.shop || [])].reverse().find(card => card && card.type !== "spell");
   if (!target) return;
   const stacks = gameState.eastWindStacks || 0;
   const applied = target.eastWindAppliedStacks || 0;

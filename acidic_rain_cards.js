@@ -27,34 +27,17 @@ document.write(`<script>
   );
 <\/script>`);
 document.write('<script defer src="./acidic_rain_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_hotfix.js"><\/script>');
 document.write('<script defer src="./acidic_rain_stat_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_awaken_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_progress_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_performance_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_layout_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_spell_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_drag_fix.js"><\/script>');
-document.write('<script defer src="./acidic_rain_engine_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_turn_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_hud_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_mode_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_discover_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_tier3_spell_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_tier2_spell_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_targeting_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_auto_tier_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_tier6_progression_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_discover_ui_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_rightmost_slot_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_start_screen_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_shop_size_rules.js"><\/script>');
-document.write('<script defer src="./acidic_rain_excel_cards.js"><\/script>');
-document.write('<script defer src="./acidic_rain_display_fix.js"><\/script>');
-document.write('<script defer src="./acidic_rain_named_icons.js"><\/script>');
-document.write('<script defer src="./acidic_rain_turn_schedule.js"><\/script>');
-document.write('<script defer src="./acidic_rain_katakana_cleanup.js"><\/script>');
-document.write('<script defer src="./acidic_rain_csv_spell_patch.js"><\/script>');
 
 /* 13-file card structure: one common layer plus 6 minion and 6 spell tiers. */
 document.write('<script defer src="./cards/common.js"><\/script>');
@@ -71,4 +54,5 @@ document.write('<script defer src="./cards/spells/tier4.js"><\/script>');
 document.write('<script defer src="./cards/spells/tier5.js"><\/script>');
 document.write('<script defer src="./cards/spells/tier6.js"><\/script>');
 
-document.write('<script defer src="./acidic_rain_authoritative_bootstrap.js"><\/script>');
+document.write('<link rel="stylesheet" href="./acidic_rain_card_theme.css">');
+document.write('<script defer src="./acidic_rain_rebuild.js"><\/script>');

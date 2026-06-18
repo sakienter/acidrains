@@ -773,7 +773,7 @@
           }
         }
         if (state.acidRainEchoMultiplier > 0 && state.rerolls > 0 && state.rerolls % 4 === 0) {
-          const target = getRightmostShopCard(state);
+          const target = [...state.shop].reverse().find(card => card && card.type !== "spell");
           if (target) {
             buffAllRains(state, target.atk || 0, target.hp || 0);
           }
@@ -781,30 +781,7 @@
       }
 
       function growSeed(baseGrowth) {
-        const seed = state.board[0];
-        const beforeStage = getEvolutionStage(state.seedGrowth).index;
-        state.seedGrowth += baseGrowth;
-        seed.atk += baseGrowth;
-        seed.hp += baseGrowth;
-
-        const stage = getEvolutionStage(state.seedGrowth);
-        if (stage.index === 0) {
-          buffRain(state, 0, 1);
-        } else if (stage.index === 1) {
-          buffRain(state, baseGrowth, baseGrowth);
-        } else if (stage.index === 2) {
-          buffRain(state, baseGrowth * 2, baseGrowth * 2);
-        } else {
-          buffRain(state, baseGrowth * 3, baseGrowth * 3);
-        }
-
-        seed.name = `雨宿りの${stage.name}`;
-        seed.emoji = stage.emoji;
-        seed.text = stage.text;
-
-        if (stage.index > beforeStage) {
-          log(`苗床が ${stage.name} に変異。酸性降雨が大きく育った。`);
-        }
+        state.seedGrowth = 0;
       }
 
       function rerollShop() {
@@ -1113,11 +1090,11 @@
         state.gameOver = true;
         const rain = state.board[1];
         const boardCount = state.board.filter(Boolean).length;
-        const score = rain.atk * 4 + rain.hp * 3 + state.seedGrowth * 6 + state.rerolls * 2 + boardCount * 3;
+        const score = rain.atk * 4 + rain.hp * 3 + state.rerolls * 2 + boardCount * 3;
         resultBoxEl.classList.add("show");
         resultScoreEl.textContent = `${score} score`;
-        resultTextEl.innerHTML = `最終酸性降雨: <strong>${rain.atk}/${rain.hp}</strong><br>育成値: <strong>${state.seedGrowth}</strong><br>総リロール: <strong>${state.rerolls}</strong><br>酒場グレード: <strong>${state.tavernTier}</strong>`;
-        log("酒場閉店。かなりバトグラっぽい育成 run になった。");
+        resultTextEl.innerHTML = `最終酸性降雨: <strong>${rain.atk}/${rain.hp}</strong><br>総リロール: <strong>${state.rerolls}</strong><br>酒場グレード: <strong>${state.tavernTier}</strong>`;
+        log("酒場閉店。酸性降雨の最終結果を集計した。");
         render();
       }
 
