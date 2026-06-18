@@ -1,6 +1,6 @@
 /*
  * Shared bridge between the authoritative game actions and card event hooks.
- * Individual card effects stay in cards/minions/* and cards/spells/*.
+ * Individual card effects stay in the tier-specific card modules.
  */
 window.addEventListener('load', () => {
   if (window.__acidCardEventBridgeInstalled) return;
@@ -41,6 +41,19 @@ window.addEventListener('load', () => {
       }
       if (typeof updateAuras === 'function') updateAuras();
       if (typeof render === 'function') render();
+      return result;
+    };
+  }
+
+  if (typeof upgradeTavern === 'function') {
+    const inheritedUpgradeTavern = upgradeTavern;
+    upgradeTavern = function() {
+      const beforeTier = num(state.tavernTier, 1);
+      const result = inheritedUpgradeTavern();
+      if (num(state.tavernTier, 1) > beforeTier && typeof window.refreshAcidCardUnlocks === 'function') {
+        window.refreshAcidCardUnlocks(state);
+        if (typeof render === 'function') render();
+      }
       return result;
     };
   }
