@@ -99,12 +99,15 @@ window.addEventListener('load', () => {
     sellBoardCard = function(index) {
       const sold = state.board?.[index] || null;
       if (!sold) return false;
+      const triggerMultiplier = Math.max(1, num(state.sellTriggerMultiplier, 1));
       const result = inheritedSellBoardCard(index);
 
       if (typeof notifyBoard === 'function') {
-        notifyBoard('onAnySell', state, sold);
-        if (sold.tribe === 'エレメンタル') {
-          notifyBoard('onElementalSold', state, sold);
+        for (let repeat = 0; repeat < triggerMultiplier; repeat += 1) {
+          notifyBoard('onAnySell', state, sold);
+          if (sold.tribe === 'エレメンタル') {
+            notifyBoard('onElementalSold', state, sold);
+          }
         }
       }
       if (typeof updateAuras === 'function') updateAuras();
