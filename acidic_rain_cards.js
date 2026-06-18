@@ -71,3 +71,4 @@ document.write('<script defer src="./acidic_rain_timer_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_discover_ui_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_awakening_reward_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_turn_transition_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_reference_layout.js"><\/script>');
