@@ -256,6 +256,17 @@
         state.drakkariActive = Boolean(state.drakkariActive);
       }
 
+      if (!window.__tier4DrakkariPendingEffectsPatched && typeof endTurn === 'function') {
+        window.__tier4DrakkariPendingEffectsPatched = true;
+        const previousEndTurn = endTurn;
+        endTurn = function() {
+          if (state.drakkariActive && number(state.sixthSensePending) > 0) {
+            state.sixthSensePending = number(state.sixthSensePending) * 2;
+          }
+          return previousEndTurn();
+        };
+      }
+
       window.__tier4SpellEffectsImplemented = DEFINITIONS.map(card => card.name);
     },
   });
