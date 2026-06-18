@@ -11,6 +11,10 @@ window.addEventListener('load', () => {
 
   let active = null;
   let suppressClickUntil = 0;
+  const num = (value, fallback = 0) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
 
   const style = document.createElement('style');
   style.textContent = `
@@ -43,6 +47,7 @@ window.addEventListener('load', () => {
       case '夢のエッセンス':
         return zone==='board' && typeof card.battlecry==='function';
       case '超覚醒化':
+        return zone==='board' && card.type!=='spell' && Number(card.tier)<=5 && !card.awakened && !card.gift;
       case '覚醒化':
         return zone==='board' && card.type!=='spell' && !card.awakened && !card.gift;
       case 'ドッペルゲンガーの奇策':
@@ -122,12 +127,40 @@ window.addEventListener('load', () => {
       return;
     }
     if(name==='ドッペルゲンガーの奇策'){
-      if(state.hand.length>=HAND_LIMIT)return;
+      if(state.hand.length>=HAND_LIMIT-1)return;
       const original=MINIONS.find(c=>c.name===target.card.name) || target.card;
-      state.hand.push(typeof initializedClone==='function'?initializedClone(original):cloneCard(original));
+      state.hand.push(target.card);
       state.hand.push(typeof initializedClone==='function'?initializedClone(original):cloneCard(original));
       state.board[target.index]=null;
     }
+  }
+
+  function cloneHistoryCard(spell){
+    return typeof initializedClone==='function' ? initializedClone(spell) : typeof cloneCard==='function' ? cloneCard(spell) : {...spell};
+  }
+
+  function recordSpellUse(spell){
+    state.cardsPlayedThisTurn=num(state.cardsPlayedThisTurn)+1;
+    if([1,2].includes(num(spell.tier))){
+      state.tier2SpellHistory=Array.isArray(state.tier2SpellHistory)?state.tier2SpellHistory:[];
+      state.tier2SpellHistory.push(cloneHistoryCard(spell));
+    }
+    state.spellHistoryThisTurn=Array.isArray(state.spellHistoryThisTurn)?state.spellHistoryThisTurn:[];
+    state.spellHistoryThisTurn.push(cloneHistoryCard(spell));
+  }
+
+  function additionalActivations(spell){
+    let repeats=0;
+    if(typeof window.consumeAcidTaurenSpellRepeats==='function') repeats+=Math.max(0,num(window.consumeAcidTaurenSpellRepeats()));
+    if(nameOf(spell)!=='一時的な時間改竄' && num(state.timeRewriteCharges)>0){
+      state.timeRewriteCharges=Math.max(0,num(state.timeRewriteCharges)-1);
+      repeats+=1;
+    }
+    if(num(state.doubleSpellCharges)>0){
+      state.doubleSpellCharges=Math.max(0,num(state.doubleSpellCharges)-1);
+      repeats+=1;
+    }
+    return repeats;
   }
 
   function finish(event){
@@ -136,7 +169,15 @@ window.addEventListener('load', () => {
     const targeting=active, target=targetAt(document.elementFromPoint(event.clientX,event.clientY));
     active=null;svg.style.display='none';path.setAttribute('d','');clear();suppressClickUntil=Date.now()+500;
     if(!target){log(`${targeting.spell.name}の対象指定をキャンセルした。`);render();return;}
+
+    const repeats=additionalActivations(targeting.spell);
     resolveTarget(targeting.spell,target);
+    for(let index=0;index<repeats;index+=1) resolveTarget(targeting.spell,target);
+    recordSpellUse(targeting.spell);
+    if(typeof notifyBoard==='function'){
+      for(let index=0;index<=repeats;index+=1) notifyBoard('onSpellCast',state,targeting.spell);
+    }
+
     state.hand.splice(targeting.index,1);
     updateAuras();
     render();
