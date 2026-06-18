@@ -1,10 +1,8 @@
 name: Extract Tier 1 Card Data
 
 on:
-  push:
+  pull_request:
     branches: [main]
-    paths:
-      - '.github/workflows/extract-tier1-card-data.yml'
 
 permissions:
   contents: read
