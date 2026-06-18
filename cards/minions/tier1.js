@@ -1,4 +1,4 @@
-/* acidcards.csv: Tier 1 minions and authoritative effect implementations. */
+/* Tier 1 minion definitions and authoritative effect implementations. */
 (() => {
   const modules = window.AcidCardModules;
 
@@ -128,27 +128,128 @@
     return true;
   }
 
-  const IMPLEMENTED_NAMES = [
-    '野良猫',
-    '威嚇するわんこ',
-    'ショールフィン',
-    '船頭',
-    '大道芸人',
-    '甲板磨き',
-    'もりもり砂丘',
-    '苔マン',
-    'ガチ預言者',
-    '不吉な預言者',
+  const DEFINITIONS = [
+    {
+      id: 'excel_minion_1',
+      name: '野良猫',
+      emoji: '🐈',
+      cost: 3,
+      atk: 1,
+      hp: 1,
+      tribe: '獣',
+      text: '雄叫び：猫トークンを1匹召喚する。',
+      awakenedText: '雄叫び：猫トークンを2匹召喚する。',
+    },
+    {
+      id: 'excel_minion_2',
+      name: '威嚇するわんこ',
+      emoji: '🐕',
+      cost: 3,
+      atk: 3,
+      hp: 1,
+      tribe: '獣',
+      text: '売却時：「夢のエッセンス」を1枚得る。それは酒場グレード4まで使用できない。',
+      awakenedText: '売却時：「夢のエッセンス」を2枚得る。それらは酒場グレード4まで使用できない。',
+    },
+    {
+      id: 'excel_minion_3',
+      name: 'ショールフィン',
+      emoji: '🐟',
+      cost: 3,
+      atk: 2,
+      hp: 2,
+      tribe: 'マーロック',
+      text: '8ゴールド使うたび、自分の酒場グレード以下のランダムなマーロックを1枚得る。',
+      awakenedText: '8ゴールド使うたび、自分の酒場グレード以下のランダムなマーロックを2枚得る。',
+    },
+    {
+      id: 'excel_minion_4',
+      name: '船頭',
+      emoji: '⛵',
+      cost: 3,
+      atk: 1,
+      hp: 1,
+      tribe: 'マーロック',
+      text: '売却時：ティア1の種族ありミニオンを1枚発見する。',
+      awakenedText: '売却時：ティア1の種族ありミニオンを2枚発見する。',
+    },
+    {
+      id: 'excel_minion_5',
+      name: '大道芸人',
+      emoji: '🎪',
+      cost: 3,
+      atk: 3,
+      hp: 1,
+      tribe: '海賊',
+      text: '雄叫び：次のターン、1ゴールド追加で得る。',
+      awakenedText: '雄叫び：次のターン、2ゴールド追加で得る。',
+    },
+    {
+      id: 'excel_minion_6',
+      name: '甲板磨き',
+      emoji: '🧹',
+      cost: 3,
+      atk: 2,
+      hp: 2,
+      tribe: '海賊',
+      text: '雄叫び：現在の酒場アップコストを1下げる。',
+      awakenedText: '雄叫び：現在の酒場アップコストを2下げる。',
+    },
+    {
+      id: 'excel_minion_7',
+      name: 'もりもり砂丘',
+      emoji: '🏜️',
+      cost: 3,
+      atk: 3,
+      hp: 2,
+      tribe: 'エレメンタル',
+      text: '雄叫び：この対戦中、酒場を入替した後、その右端のミニオン1体に+1/+1を付与する。',
+      awakenedText: '雄叫び：この対戦中、酒場を入替した後、その右端のミニオン1体に+2/+2を付与する。',
+    },
+    {
+      id: 'excel_minion_8',
+      name: '苔マン',
+      emoji: '🌿',
+      cost: 3,
+      atk: 4,
+      hp: 1,
+      tribe: 'エレメンタル',
+      text: 'ターン終了時：この対戦中に酒場を入替した後、その右端のミニオン1体に+1/+2を付与する。',
+      awakenedText: 'ターン終了時：この対戦中に酒場を入替した後、その右端のミニオン1体に+2/+4を付与する。',
+    },
+    {
+      id: 'excel_minion_9',
+      name: 'ガチ預言者',
+      emoji: '🔮',
+      cost: 3,
+      atk: 1,
+      hp: 3,
+      tribe: 'ナーガ',
+      text: '売却時：ランダムなティア1スペルを1枚得る。',
+      awakenedText: '売却時：ランダムなティア1スペルを2枚得る。',
+    },
+    {
+      id: 'excel_minion_10',
+      name: '不吉な預言者',
+      emoji: '🌑',
+      cost: 3,
+      atk: 2,
+      hp: 1,
+      tribe: 'ナーガ',
+      text: '雄叫び：次に買うスペルは1ゴールド値下げされる。',
+      awakenedText: '雄叫び：次に買うスペルは2ゴールド値下げされる。',
+    },
   ];
+
+  const IMPLEMENTED_NAMES = DEFINITIONS.map(card => card.name);
 
   modules.register({
     kind: 'minion',
     tier: 1,
     label: 'ティア1・ミニオン',
+    definitions: DEFINITIONS,
     effects: {
       '野良猫': () => ({
-        text: '雄叫び：猫トークンを1匹召喚する。',
-        awakenedText: '雄叫び：猫トークンを2匹召喚する。',
         battlecry(gameState) {
           const count = amount(this, 1, 2);
           if (typeof summonToken === 'function') summonToken(gameState, 'cat', count);
@@ -156,8 +257,6 @@
       }),
 
       '威嚇するわんこ': () => ({
-        text: '売却時：「夢のエッセンス」を1枚得る。それは酒場グレード4まで使用できない。',
-        awakenedText: '売却時：「夢のエッセンス」を2枚得る。それらは酒場グレード4まで使用できない。',
         onSell(gameState) {
           gainNamedSpell(gameState, '夢のエッセンス', sellTriggerCount(gameState, this), {
             unlockTier: 4,
@@ -166,8 +265,6 @@
       }),
 
       'ショールフィン': () => ({
-        text: '8ゴールド使うたび、自分の酒場グレード以下のランダムなマーロックを1枚得る。',
-        awakenedText: '8ゴールド使うたび、自分の酒場グレード以下のランダムなマーロックを2枚得る。',
         init(card) {
           card.goldProgress = number(card.goldProgress);
         },
@@ -186,32 +283,24 @@
       }),
 
       '船頭': () => ({
-        text: '売却時：ティア1の種族ありミニオンを1枚発見する。',
-        awakenedText: '売却時：ティア1の種族ありミニオンを2枚発見する。',
         onSell(gameState) {
           discoverTierOneTribeMinions(gameState, this, sellTriggerCount(gameState, this));
         },
       }),
 
       '大道芸人': () => ({
-        text: '雄叫び：次のターン、1ゴールド追加で得る。',
-        awakenedText: '雄叫び：次のターン、2ゴールド追加で得る。',
         battlecry(gameState) {
           gameState.nextTurnGoldBonus = number(gameState.nextTurnGoldBonus) + amount(this, 1, 2);
         },
       }),
 
       '甲板磨き': () => ({
-        text: '雄叫び：現在の酒場アップコストを1下げる。',
-        awakenedText: '雄叫び：現在の酒場アップコストを2下げる。',
         battlecry(gameState) {
           gameState.tavernUpgradeDiscount = number(gameState.tavernUpgradeDiscount) + amount(this, 1, 2);
         },
       }),
 
       'もりもり砂丘': () => ({
-        text: '雄叫び：この対戦中、酒場を入替した後、その右端のミニオン1体に+1/+1を付与する。',
-        awakenedText: '雄叫び：この対戦中、酒場を入替した後、その右端のミニオン1体に+2/+2を付与する。',
         battlecry(gameState) {
           const buff = amount(this, 1, 2);
           gameState.tier1DuneAfterRerollAtk = number(gameState.tier1DuneAfterRerollAtk) + buff;
@@ -220,8 +309,6 @@
       }),
 
       '苔マン': () => ({
-        text: 'ターン終了時：この対戦中に酒場を入替した後、その右端のミニオン1体に+1/+2を付与する。',
-        awakenedText: 'ターン終了時：この対戦中に酒場を入替した後、その右端のミニオン1体に+2/+4を付与する。',
         onTurnEnd(gameState) {
           const atk = amount(this, 1, 2);
           const hp = amount(this, 2, 4);
@@ -232,8 +319,6 @@
       }),
 
       'ガチ預言者': () => ({
-        text: '売却時：ランダムなティア1スペルを1枚得る。',
-        awakenedText: '売却時：ランダムなティア1スペルを2枚得る。',
         onSell(gameState) {
           gainRandom(
             gameState,
@@ -245,8 +330,6 @@
       }),
 
       '不吉な預言者': () => ({
-        text: '雄叫び：次に買うスペルは1ゴールド値下げされる。',
-        awakenedText: '雄叫び：次に買うスペルは2ゴールド値下げされる。',
         battlecry(gameState) {
           gameState.nextSpellDiscount = number(gameState.nextSpellDiscount) + amount(this, 1, 2);
         },
