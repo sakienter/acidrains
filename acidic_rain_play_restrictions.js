@@ -18,6 +18,16 @@
     return `${card.name} は酒場グレード${unlockTier}になるまで使用できない。`;
   };
 
+  window.refreshAcidCardUnlocks = gameState => {
+    (gameState?.hand || []).forEach(card => {
+      if (!card || !window.canPlayAcidCard(card, gameState)) return;
+      if (card.originalTextBeforeUnlock !== undefined) {
+        card.text = card.originalTextBeforeUnlock;
+        delete card.originalTextBeforeUnlock;
+      }
+    });
+  };
+
   window.addEventListener('load', () => {
     if (window.__acidPlayRestrictionsInstalled) return;
     window.__acidPlayRestrictionsInstalled = true;
@@ -45,5 +55,6 @@
 
     document.addEventListener('pointerdown', stopLockedCard, true);
     document.addEventListener('click', stopLockedCard, true);
+    window.refreshAcidCardUnlocks(state);
   }, { once: true });
 })();
