@@ -28,8 +28,8 @@ window.addEventListener("load", () => {
 
     .board-slots.board-drop-ready {
       border-radius: 22px;
-      box-shadow: inset 0 0 0 2px rgba(125, 228, 149, .5);
-      background: rgba(125, 228, 149, .06);
+      box-shadow: inset 0 0 0 2px rgba(125, 228, 149, .72), inset 0 0 36px rgba(125, 228, 149, .12);
+      background: rgba(125, 228, 149, .08);
     }
 
     .board-hand-divider {
@@ -82,15 +82,37 @@ window.addEventListener("load", () => {
       max-width: 142px !important;
       margin-left: var(--hand-overlap, -14px) !important;
       transform-origin: 50% 120% !important;
-      transition: transform 150ms ease, filter 150ms ease, box-shadow 150ms ease !important;
+      transition: transform 150ms ease, filter 150ms ease, box-shadow 150ms ease, opacity 120ms ease !important;
     }
 
     .hand-grid .hand-card:not(.spell):not(.empty) {
       cursor: grab !important;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-drag: none;
     }
 
     .hand-grid .hand-card:not(.spell):not(.empty):active {
       cursor: grabbing !important;
+    }
+
+    .hand-grid .hand-card.hand-pointer-dragging {
+      opacity: .28 !important;
+      filter: saturate(.55) brightness(.78) !important;
+    }
+
+    .hand-drag-ghost {
+      position: fixed !important;
+      left: 0;
+      top: 0;
+      z-index: 10000 !important;
+      margin: 0 !important;
+      pointer-events: none !important;
+      opacity: .94 !important;
+      transform: translate(-50%, -54%) rotate(0deg) scale(1.04) !important;
+      transform-origin: 50% 50% !important;
+      box-shadow: 0 22px 44px rgba(0, 0, 0, .48), 0 0 0 2px rgba(255, 231, 168, .42) !important;
+      transition: none !important;
     }
 
     .hand-grid .hand-card:first-child {
@@ -104,6 +126,10 @@ window.addEventListener("load", () => {
     .hand-grid .hand-card:not(.empty):hover {
       z-index: 50;
       transform: translateY(-18px) scale(1.08) !important;
+    }
+
+    .hand-grid .hand-card.hand-pointer-dragging:hover {
+      transform: inherit !important;
     }
 
     .empty-zone-note {
@@ -134,8 +160,134 @@ window.addEventListener("load", () => {
   divider.innerHTML = "<span>盤面　｜　手札</span>";
   handGridEl.parentNode.insertBefore(divider, handGridEl);
 
+  const HAND_DRAG_THRESHOLD = 7;
+  let handPointerDrag = null;
+  let suppressHandClickUntil = 0;
+
+  function pointInsideBoard(clientX, clientY) {
+    const rect = boardSlotsEl.getBoundingClientRect();
+    const buffer = 20;
+    return clientX >= rect.left - buffer
+      && clientX <= rect.right + buffer
+      && clientY >= rect.top - buffer
+      && clientY <= rect.bottom + buffer;
+  }
+
+  function moveHandGhost(drag, clientX, clientY) {
+    if (!drag?.ghost) return;
+    drag.ghost.style.left = `${clientX}px`;
+    drag.ghost.style.top = `${clientY}px`;
+  }
+
+  function activateHandPointerDrag(drag, event) {
+    if (drag.active) return;
+    drag.active = true;
+    const rect = drag.node.getBoundingClientRect();
+    const ghost = drag.node.cloneNode(true);
+    ghost.classList.remove("hand-pointer-dragging");
+    ghost.classList.add("hand-drag-ghost");
+    ghost.removeAttribute("draggable");
+    ghost.style.width = `${rect.width}px`;
+    ghost.style.height = `${rect.height}px`;
+    document.body.appendChild(ghost);
+    drag.ghost = ghost;
+    drag.node.classList.add("hand-pointer-dragging");
+    handGridEl.classList.add("hand-drag-active");
+    moveHandGhost(drag, event.clientX, event.clientY);
+  }
+
+  function clearHandPointerDrag() {
+    if (!handPointerDrag) return;
+    handPointerDrag.node?.classList.remove("hand-pointer-dragging");
+    handPointerDrag.ghost?.remove();
+    boardSlotsEl.classList.remove("board-drop-ready");
+    handGridEl.classList.remove("hand-drag-active");
+    handPointerDrag = null;
+  }
+
+  function beginHandPointerDrag(event, node, index) {
+    if (state.gameOver || event.button !== 0 || event.isPrimary === false) return;
+    const card = state.hand[index];
+    if (!card || card.type === "spell") return;
+
+    handPointerDrag = {
+      pointerId: event.pointerId,
+      index,
+      node,
+      startX: event.clientX,
+      startY: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      active: false,
+      ghost: null,
+    };
+  }
+
+  function onHandPointerMove(event) {
+    const drag = handPointerDrag;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    drag.lastX = event.clientX;
+    drag.lastY = event.clientY;
+
+    const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
+    if (!drag.active && distance >= HAND_DRAG_THRESHOLD) {
+      activateHandPointerDrag(drag, event);
+    }
+    if (!drag.active) return;
+
+    event.preventDefault();
+    moveHandGhost(drag, event.clientX, event.clientY);
+    boardSlotsEl.classList.toggle("board-drop-ready", pointInsideBoard(event.clientX, event.clientY));
+  }
+
+  function finishHandPointerDrag(event, cancelled = false) {
+    const drag = handPointerDrag;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const wasActive = drag.active;
+    const dropOnBoard = wasActive && !cancelled && pointInsideBoard(event.clientX, event.clientY);
+    const handIndex = drag.index;
+    clearHandPointerDrag();
+
+    if (!wasActive) return;
+    event.preventDefault();
+    suppressHandClickUntil = Date.now() + 450;
+
+    if (!dropOnBoard) return;
+    const card = state.hand[handIndex];
+    if (!card || card.type === "spell") return;
+    const targetIndex = getFirstEmptyBoardSlot();
+    if (targetIndex < 2) {
+      log("盤面がいっぱい。");
+      render();
+      return;
+    }
+    playHandCardToSlot(handIndex, targetIndex);
+  }
+
+  window.addEventListener("pointermove", onHandPointerMove, { passive: false });
+  window.addEventListener("pointerup", event => finishHandPointerDrag(event));
+  window.addEventListener("pointercancel", event => finishHandPointerDrag(event, true));
+
+  handGridEl.addEventListener("click", event => {
+    if (Date.now() >= suppressHandClickUntil) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  }, true);
+
+  function wireHandPointerDrag(cards) {
+    cards.forEach((node, index) => {
+      const card = state.hand[index];
+      node.dataset.handIndex = String(index);
+      if (!card || card.type === "spell") return;
+      node.draggable = false;
+      node.addEventListener("pointerdown", event => beginHandPointerDrag(event, node, index));
+    });
+  }
+
   function layoutHand() {
-    const cards = [...handGridEl.children].filter(node => !node.classList.contains("empty"));
+    const cards = [...handGridEl.children].filter(node => node.classList.contains("hand-card") && !node.classList.contains("empty"));
     const count = cards.length;
 
     if (!count) {
@@ -161,9 +313,11 @@ window.addEventListener("load", () => {
       node.style.zIndex = String(index + 1);
       const card = state.hand[index];
       if (card && card.type !== "spell") {
-        node.title = "クリックで盤面に配置／ドラッグでも配置できます";
+        node.title = "盤面へドラッグして配置／クリックでも配置できます";
       }
     });
+
+    wireHandPointerDrag(cards);
   }
 
   function layoutBoard() {
@@ -171,7 +325,7 @@ window.addEventListener("load", () => {
     if (!cards.length && !boardSlotsEl.querySelector(".empty-zone-note")) {
       const note = document.createElement("div");
       note.className = "empty-zone-note";
-      note.textContent = "手札のミニオンをクリック、またはここへドラッグ";
+      note.textContent = "手札のミニオンを盤面へドラッグ、またはクリック";
       boardSlotsEl.appendChild(note);
     } else if (cards.length) {
       boardSlotsEl.querySelector(".empty-zone-note")?.remove();
@@ -180,6 +334,7 @@ window.addEventListener("load", () => {
 
   const previousRenderHand = renderHand;
   renderHand = function() {
+    clearHandPointerDrag();
     previousRenderHand();
     layoutHand();
   };
@@ -190,11 +345,12 @@ window.addEventListener("load", () => {
     layoutBoard();
   };
 
-  // The board itself becomes the drop target. Cards are placed into the first
-  // free board position, so visible placeholder cards are unnecessary.
+  // Keep native HTML5 drag/drop as a fallback for environments that support it.
   boardSlotsEl.addEventListener("dragover", event => {
     const payload = readDragPayload(event);
     if (!payload || payload.kind !== "hand") return;
+    const card = state.hand[payload.index];
+    if (!card || card.type === "spell") return;
     event.preventDefault();
     boardSlotsEl.classList.add("board-drop-ready");
   });
@@ -210,6 +366,8 @@ window.addEventListener("load", () => {
     boardSlotsEl.classList.remove("board-drop-ready");
     const payload = readDragPayload(event);
     if (!payload || payload.kind !== "hand") return;
+    const card = state.hand[payload.index];
+    if (!card || card.type === "spell") return;
     const targetIndex = getFirstEmptyBoardSlot();
     if (targetIndex >= 2) playHandCardToSlot(payload.index, targetIndex);
   });
