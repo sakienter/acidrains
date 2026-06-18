@@ -6,7 +6,7 @@
  */
 document.write('<script src="./acidic_rain_legacy_cards.js"><\/script>');
 document.write(`<script>
-  /* Authoritative tavern spell pool currently supplied for Tiers 1 through 4. */
+  /* Authoritative tavern spell pool for Tiers 1 through 6. */
   SPELLS.splice(0, SPELLS.length,
     { id:"coin", name:"コイン", emoji:"🪙", tier:1, cost:1, text:"1ゴールド得る。", type:"spell" },
     { id:"sprout", name:"新芽", emoji:"🌱", tier:1, cost:3, text:"ティア1のミニオンを1枚発見する。", type:"spell" },
@@ -40,7 +40,23 @@ document.write(`<script>
     { id:"dispatch_work", name:"派遣作業", emoji:"🧰", tier:4, cost:3, text:"ランダムな種族なしミニオンを1枚得る。", type:"spell" },
     { id:"drakkari", name:"ドラッカリ", emoji:"🌙", tier:4, cost:2, text:"このターン、ターン終了時の効果は2回発動される。（重複しない）", type:"spell" },
     { id:"premium_moisture_pack", name:"高級保湿パック", emoji:"🧴", tier:4, cost:5, text:"ティア3、ティア4のエレメンタルをランダムに1枚ずつ得る。", type:"spell" },
-    { id:"war_drum", name:"陣太鼓", emoji:"🥁", tier:4, cost:2, text:"このターン、次に使う雄叫びは3回発動する。", type:"spell" }
+    { id:"war_drum", name:"陣太鼓", emoji:"🥁", tier:4, cost:2, text:"このターン、次に使う雄叫びは3回発動する。", type:"spell" },
+
+    { id:"growth_scroll", name:"成長のスクロール", emoji:"📜", tier:5, cost:4, text:"自分のグレードのミニオン1枚とスペル1枚を発見する。", type:"spell" },
+    { id:"kaleidoscope", name:"万華鏡", emoji:"🔮", tier:5, cost:3, text:"ティア6のミニオンを発見する。それはこのターン使えない。", type:"spell" },
+    { id:"marimo_portrait", name:"マリモの肖像画", emoji:"🖼️", tier:5, cost:5, text:"「酸性降雨」と「エンジン」を1枚ずつ得る。", type:"spell" },
+    { id:"rebound", name:"リバウンド", emoji:"↩️", tier:5, cost:2, text:"ターンの終了時：このターンに使ったスペルをランダムに3枚得る。", type:"spell" },
+    { id:"dream_essence", name:"夢のエッセンス", emoji:"💭", tier:5, cost:3, text:"自陣の雄叫びミニオンを選ぶ。その雄叫びを発動する。", type:"spell" },
+    { id:"flash", name:"閃光", emoji:"⚡", tier:5, cost:1, text:"6回分のリロールコストを0にする。", type:"spell" },
+    { id:"high_tea", name:"ハイティー", emoji:"🫖", tier:5, cost:4, text:"酒場をリロールする。そのリロールには、ティア5のカードしか並ばない。", type:"spell" },
+
+    { id:"time_transcendence", name:"時空の超越", emoji:"⏳", tier:6, cost:8, text:"リミットターンの猶予を1増やす。", type:"spell" },
+    { id:"temporary_time_rewrite", name:"一時的な時間改竄", emoji:"🕰️", tier:6, cost:3, text:"このターン、次に使うスペルは追加で1回発動される。", type:"spell" },
+    { id:"doppelganger_tactic", name:"ドッペルゲンガーの奇策", emoji:"👥", tier:6, cost:5, text:"自陣の雄叫びミニオンを1枚手札に戻す。その同名カードを1枚得る。", type:"spell" },
+    { id:"super_awakening", name:"超覚醒化", emoji:"🌟", tier:6, cost:5, text:"自陣のティア5以下のミニオンを1枚選び、覚醒させる。", type:"spell" },
+    { id:"large_spell_box", name:"でかいスペルボックス", emoji:"🧰", tier:6, cost:4, text:"合計10コストになるように、ランダムにスペルを得る。", type:"spell" },
+    { id:"binge_eating", name:"ドカ食い", emoji:"🍱", tier:6, cost:4, text:"残り時間を30秒減らす。ティア5カードをランダムに3枚得る。", type:"spell" },
+    { id:"human_error", name:"ヒューマンエラー", emoji:"⚠️", tier:6, cost:4, text:"リミットターンを2ターン減らす。ティア6ミニオンを3回発見する。", type:"spell" }
   );
 <\/script>`);
 
