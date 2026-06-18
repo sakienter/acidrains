@@ -53,13 +53,19 @@ window.addEventListener('load', () => {
       return result;
     }
 
-    if (advanced && countedRefresh && !state.gameOver) {
-      if (state.hero?.onReroll) state.hero.onReroll(state);
-      if (typeof notifyBoard === 'function') notifyBoard('onRerollCount', state);
-      state.__resolvedRerolls = num(state.rerolls);
-      if (typeof updateAuras === 'function') updateAuras();
-      if (typeof log === 'function') {
-        log('ターン開始時の新しい酒場を、入替1回として数えた。');
+    if (advanced && !state.gameOver) {
+      if (typeof window.refreshAcidCardUnlocks === 'function') {
+        window.refreshAcidCardUnlocks(state);
+      }
+
+      if (countedRefresh) {
+        if (state.hero?.onReroll) state.hero.onReroll(state);
+        if (typeof notifyBoard === 'function') notifyBoard('onRerollCount', state);
+        state.__resolvedRerolls = num(state.rerolls);
+        if (typeof updateAuras === 'function') updateAuras();
+        if (typeof log === 'function') {
+          log('ターン開始時の新しい酒場を、入替1回として数えた。');
+        }
       }
       if (typeof render === 'function') render();
     }
@@ -155,6 +161,42 @@ window.addEventListener('load', () => {
   };
 
   applyTurnLimit();
+
+  // Rightmost-shop effects use the fixed rightmost minion slot. Buying that card
+  // does not move the effect to the minion on its left.
+  function fixedRightmostMinion(gameState) {
+    const slotCount = typeof window.getBaseShopMinionSlots === 'function'
+      ? window.getBaseShopMinionSlots(gameState?.tavernTier)
+      : Math.min(6, 2 + Math.max(1, num(gameState?.tavernTier, 1)));
+    const target = gameState?.shop?.[Math.max(0, slotCount - 1)] || null;
+    return target && target.type !== 'spell' ? target : null;
+  }
+
+  function applyFixedEastWind(gameState) {
+    const target = fixedRightmostMinion(gameState);
+    if (!target) return false;
+    const stacks = Math.max(0, num(gameState.eastWindStacks));
+    const applied = Math.max(0, num(target.eastWindAppliedStacks));
+    const difference = stacks - applied;
+    if (difference <= 0) return false;
+    target.atk = num(target.atk) + 6 * difference;
+    target.hp = num(target.hp) + 6 * difference;
+    target.eastWindAppliedStacks = stacks;
+    return true;
+  }
+
+  window.applyEastWindToRightmost = applyFixedEastWind;
+  const eastWind = (typeof SPELLS !== 'undefined' ? SPELLS : []).find(card => card?.name === '東からの風');
+  if (eastWind) {
+    eastWind.cast = function(gameState) {
+      gameState.eastWindStacks = num(gameState.eastWindStacks) + 1;
+      applyFixedEastWind(gameState);
+      if (typeof log === 'function') {
+        log('このゲーム中、酒場の固定右端ミニオンに+6/+6を付与する。');
+      }
+      return true;
+    };
+  }
 
   // Finalize the corrected token name after the older event bridge has loaded.
   if (typeof TOKEN_CARDS !== 'undefined' && TOKEN_CARDS.gift) {
