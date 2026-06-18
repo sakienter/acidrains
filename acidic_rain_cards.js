@@ -65,4 +65,5 @@ document.write('<script defer src="./acidic_rain_hand_spacing.js"><\/script>');
 document.write('<script defer src="./acidic_rain_rebuild.js"><\/script>');
 document.write('<script defer src="./acidic_rain_core_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_card_event_bridge.js"><\/script>');
+document.write('<script defer src="./acidic_rain_turn_refresh_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_timer_rules.js"><\/script>');
