@@ -60,21 +60,6 @@
     return gain;
   }
 
-  function applyEastWindToRightmost(gameState) {
-    const target = [...(gameState.shop || [])].reverse().find(card => card && card.type !== 'spell');
-    if (!target) return false;
-    const stacks = Math.max(0, number(gameState.eastWindStacks));
-    const applied = Math.max(0, number(target.eastWindAppliedStacks));
-    const difference = stacks - applied;
-    if (difference <= 0) return false;
-    target.atk = number(target.atk) + 6 * difference;
-    target.hp = number(target.hp) + 6 * difference;
-    target.eastWindAppliedStacks = stacks;
-    return true;
-  }
-
-  window.applyEastWindToRightmost = applyEastWindToRightmost;
-
   function createAwakeningReward() {
     if (typeof window.createAwakeningRewardSpell === 'function') {
       return window.createAwakeningRewardSpell();
@@ -158,15 +143,6 @@
     { id: 'disk_fragment', name: '円盤の破片', emoji: '💿', cost: 3, text: 'このカードは手札で2枚集めると、合体して消滅し「覚醒報酬」になる。' },
     { id: 'magic_area', name: 'マジックエリア', emoji: '🪄', cost: 2, text: '酒場に呪文を並べる。' },
     { id: 'muddy_water', name: 'どろみず', emoji: '🟤', cost: 1, text: 'このターンの残り時間を5秒追加する。' },
-    {
-      id: 'east_wind',
-      name: '東からの風',
-      emoji: '🌬️',
-      cost: 1,
-      text: 'このゲーム中、酒場の右端のカードは+6/+6を得る。',
-      token: true,
-      shopEligible: false,
-    },
   ];
 
   modules.register({
@@ -221,20 +197,10 @@
           addTurnTime(gameState, 5);
         },
       }),
-
-      '東からの風': () => ({
-        cast(gameState) {
-          gameState.eastWindStacks = number(gameState.eastWindStacks) + 1;
-          applyEastWindToRightmost(gameState);
-        },
-      }),
     },
 
     apply() {
-      if (typeof state !== 'undefined') {
-        state.eastWindStacks = Math.max(0, number(state.eastWindStacks));
-        combineFragments(state);
-      }
+      if (typeof state !== 'undefined') combineFragments(state);
 
       if (!window.__acidGeneratedCardShopFilterPatched) {
         window.__acidGeneratedCardShopFilterPatched = true;
@@ -250,26 +216,6 @@
             return previousWeighted(eligible(pool));
           };
         }
-      }
-
-      if (!window.__tier1SpellInitialStatePatched && typeof initialState === 'function') {
-        window.__tier1SpellInitialStatePatched = true;
-        const previousInitialState = initialState;
-        initialState = function() {
-          const result = previousInitialState();
-          state.eastWindStacks = 0;
-          return result;
-        };
-      }
-
-      if (!window.__tier1SpellDrawShopPatched && typeof drawShop === 'function') {
-        window.__tier1SpellDrawShopPatched = true;
-        const previousDrawShop = drawShop;
-        drawShop = function() {
-          const result = previousDrawShop();
-          applyEastWindToRightmost(state);
-          return result;
-        };
       }
 
       if (!window.__tier1FragmentPlayPatched && typeof playHandCardToSlot === 'function') {
