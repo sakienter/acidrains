@@ -7,7 +7,8 @@ window.addEventListener('load', () => {
     '覚醒化',
     'ドッペルゲンガーの奇策',
     '熱血パンチ',
-    'ゼレク'
+    'ゼレク',
+    'アニマを検知'
   ]);
 
   let active = null;
@@ -58,6 +59,8 @@ window.addEventListener('load', () => {
         return zone==='board' && card.type!=='spell' && (card.tribe==='海賊' || nameOf(card)==='冷笑フィン');
       case 'ゼレク':
         return zone==='board' && card.type!=='spell';
+      case 'アニマを検知':
+        return zone==='board' && card.type!=='spell';
       default:
         return false;
     }
@@ -104,6 +107,10 @@ window.addEventListener('load', () => {
     if(!isTargeted(spell)||state.gameOver)return false;
     if(typeof window.canPlayAcidCard==='function'&&!window.canPlayAcidCard(spell,state)){
       log(typeof window.describeAcidCardLock==='function'?window.describeAcidCardLock(spell,state):`${spell.name}は現在使用できない。`);
+      return false;
+    }
+    if(nameOf(spell)==='アニマを検知' && !(state.shop||[]).some(card=>card&&card.type!=='spell')){
+      log('アニマを検知：酒場にミニオンがいないため使用できない。');
       return false;
     }
     const r=node.getBoundingClientRect();
@@ -156,6 +163,16 @@ window.addEventListener('load', () => {
       target.card.awakened=true;
       if(target.card.awakenedText)target.card.text=target.card.awakenedText;
       log(`${target.card.name}を覚醒させた。`);return true;
+    }
+    if(name==='アニマを検知'){
+      const source=randomCard((state.shop||[]).filter(card=>card&&card.type!=='spell'));
+      if(!source){log('アニマを検知：酒場にミニオンがいないため不発だった。');return false;}
+      const attack=Math.max(0,num(source.atk));
+      const health=Math.max(0,num(source.hp));
+      target.card.atk=num(target.card.atk)+attack;
+      target.card.hp=num(target.card.hp)+health;
+      log(`アニマを検知：酒場の${source.name}の${attack}/${health}を、自陣の${target.card.name}に加えた。`);
+      return true;
     }
     if(name==='熱血パンチ')return resolveHeatPunch(target);
     if(name==='ゼレク'){
