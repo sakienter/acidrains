@@ -34,12 +34,103 @@
     };
   }
 
+  const normalize = value => String(value || '').trim();
+
+  function duplicateGroups(kind, cards, property) {
+    const groups = new Map();
+    (cards || []).forEach(card => {
+      const value = normalize(card?.[property]);
+      if (!value) return;
+      if (!groups.has(value)) groups.set(value, []);
+      groups.get(value).push(card);
+    });
+    return [...groups.entries()]
+      .filter(([, matches]) => matches.length > 1)
+      .map(([value, matches]) => ({
+        kind,
+        property,
+        value,
+        count: matches.length,
+        names: matches.map(card => normalize(card?.name)),
+        ids: matches.map(card => normalize(card?.id)),
+        tiers: matches.map(card => numberValue(card?.tier)),
+      }));
+  }
+
+  function definitionDuplicates() {
+    const duplicates = [];
+    const modules = window.AcidCardModules;
+    if (!modules?.registry) return duplicates;
+
+    for (const kind of ['minion', 'spell']) {
+      const names = new Map();
+      const ids = new Map();
+      for (let tier = 1; tier <= 6; tier += 1) {
+        const moduleDefinition = modules.get(kind, tier);
+        for (const definition of moduleDefinition?.definitions || []) {
+          const name = normalize(definition?.name);
+          const id = normalize(definition?.id);
+          if (name) {
+            if (!names.has(name)) names.set(name, []);
+            names.get(name).push({ tier, id });
+          }
+          if (id) {
+            if (!ids.has(id)) ids.set(id, []);
+            ids.get(id).push({ tier, name });
+          }
+        }
+      }
+      names.forEach((matches, name) => {
+        if (matches.length > 1) duplicates.push({ kind, property:'name', value:name, matches });
+      });
+      ids.forEach((matches, id) => {
+        if (matches.length > 1) duplicates.push({ kind, property:'id', value:id, matches });
+      });
+    }
+    return duplicates;
+  }
+
+  function runDuplicateAudit() {
+    const minions = typeof MINIONS !== 'undefined' && Array.isArray(MINIONS) ? MINIONS : [];
+    const spells = typeof SPELLS !== 'undefined' && Array.isArray(SPELLS) ? SPELLS : [];
+    const poolDuplicates = [
+      ...duplicateGroups('minion', minions, 'name'),
+      ...duplicateGroups('minion', minions, 'id'),
+      ...duplicateGroups('spell', spells, 'name'),
+      ...duplicateGroups('spell', spells, 'id'),
+    ];
+    const definitions = definitionDuplicates();
+    const report = {
+      checkedAt: new Date().toISOString(),
+      minionTemplates: minions.length,
+      spellTemplates: spells.length,
+      poolDuplicates,
+      definitionDuplicates: definitions,
+      passed: poolDuplicates.length === 0 && definitions.length === 0,
+    };
+    window.__acidDuplicateCardAudit = report;
+
+    if (report.passed) {
+      console.info('[AcidCardAudit] Duplicate card check passed.', report);
+    } else {
+      console.error('[AcidCardAudit] Duplicate card definitions remain.', report);
+    }
+    return report;
+  }
+
+  window.runAcidDuplicateCardAudit = runDuplicateAudit;
+
+  const scheduleAudit = () => window.setTimeout(runDuplicateAudit, 0);
+  if (window.AcidCardModules?.installed) scheduleAudit();
+  else window.addEventListener('acid-card-modules-ready', scheduleAudit, { once:true });
+
   if (typeof setupRun === 'function') {
     const previousSetupRun = setupRun;
     setupRun = function() {
       state.nextFreeSpellPurchases = 0;
       const result = previousSetupRun();
       state.nextFreeSpellPurchases = 0;
+      scheduleAudit();
       return result;
     };
   }
