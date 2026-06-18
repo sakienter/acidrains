@@ -77,17 +77,17 @@
   function gainGift(gameState, count) {
     const token = typeof TOKEN_CARDS !== 'undefined' ? TOKEN_CARDS.gift : null;
     if (!token) {
-      say('贈り物カードが設定されていない。');
+      say('お贈り物カードが設定されていない。');
       return 0;
     }
-    return gainMany(gameState, token, count, '贈り物を得た。');
+    return gainMany(gameState, token, count, 'お贈り物を得た。');
   }
 
   function createReplayMinion(spell) {
     const storedSpell = clone(spell);
     return {
-      id:`magicfin_replay_${spell.id || 'spell'}_${Date.now()}_${Math.random()}`,
-      name:`${spell.name}の再演者`,
+      id:`magicfin_apprentice_${spell.id || 'spell'}_${Date.now()}_${Math.random()}`,
+      name:'マジックフィンの弟子',
       emoji:'🪄',
       tier:6,
       cost:0,
@@ -96,11 +96,18 @@
       tribe:'なし',
       token:true,
       shopEligible:false,
-      text:`雄叫び：${spell.name}を発動する。`,
+      rememberedSpellId: storedSpell.id || '',
+      rememberedSpellName: storedSpell.name || '',
+      text:'雄叫び：買ったスペルを発動する。',
       battlecry(gameState) {
-        if (typeof storedSpell.cast !== 'function') return;
+        if (typeof storedSpell.cast !== 'function') {
+          say('記憶しているスペルを発動できない。');
+          return false;
+        }
         storedSpell.cast(gameState);
         if (typeof notifyBoard === 'function') notifyBoard('onSpellCast', gameState, storedSpell);
+        say(`マジックフィンの弟子が${storedSpell.name}を発動した。`);
+        return true;
       },
     };
   }
@@ -144,9 +151,9 @@
 
   const DEFINITIONS = [
     { id:'tier6_akari', name:'アカリ', emoji:'🔥', cost:3, atk:6, hp:6, tribe:'獣', text:'雄叫び：手札のティア5以下のスペルを1枚選び、そのコピーを1枚手札に追加する。', awakenedText:'雄叫び：手札のティア5以下のスペルを1枚選び、そのコピーを2枚手札に追加する。' },
-    { id:'tier6_maxwell', name:'マクスウェル', emoji:'🎁', cost:3, atk:1, hp:1, tribe:'獣', text:'このカードを売った時、「贈り物」を1枚得る。', awakenedText:'このカードを売った時、「贈り物」を2枚得る。' },
+    { id:'tier6_maxwell', name:'マクスウェル', emoji:'🎁', cost:3, atk:1, hp:1, tribe:'獣', text:'このカードを売った時、「お贈り物」を1枚得る。', awakenedText:'このカードを売った時、「お贈り物」を2枚得る。' },
     { id:'tier6_hotblood_fin', name:'熱血フィン', emoji:'🔥', cost:3, atk:25, hp:25, tribe:'マーロック', text:'このカードを売った時、「熱血パンチ」を1枚得る。', awakenedText:'このカードを売った時、「熱血パンチ」を2枚得る。' },
-    { id:'tier6_magic_fin', name:'マジックフィン', emoji:'🪄', cost:3, atk:3, hp:5, tribe:'マーロック', text:'このカードが自陣にいる限り、自分がスペルを買うと、「雄叫び：買ったスペルを発動する。」を持つトークンカードを獲得する。（1ターンに1度）', awakenedText:'このカードが自陣にいる限り、自分がスペルを買うと、「雄叫び：買ったスペルを発動する。」を持つトークンカードを獲得する。（1ターンに2度）' },
+    { id:'tier6_magic_fin', name:'マジックフィン', emoji:'🪄', cost:3, atk:3, hp:5, tribe:'マーロック', text:'このカードが自陣にいる限り、自分がスペルを買うと、「雄叫び：買ったスペルを発動する。」を持つ「マジックフィンの弟子」を1枚得る。（1ターンに1度）', awakenedText:'このカードが自陣にいる限り、自分がスペルを買うと、「雄叫び：買ったスペルを発動する。」を持つ「マジックフィンの弟子」を1枚得る。（1ターンに2度）' },
     { id:'tier6_heat_lover', name:'熱を愛す男', emoji:'☀️', cost:3, atk:10, hp:8, tribe:'海賊', text:'このカードが自陣にいる際に、残り時間が増えた時、この対戦中に酒場を入替した後、その右端のミニオン1体に+X/+Xを付与する。（Xは増えた時間）（1ターンに3回）', awakenedText:'このカードが自陣にいる際に、残り時間が増えた時、この対戦中に酒場を入替した後、その右端のミニオン1体に+X/+Xを付与する。（Xは増えた時間）（1ターンに6回）' },
     { id:'tier6_timekeeper', name:'タイムキーパー', emoji:'⏱️', cost:3, atk:6, hp:6, tribe:'ナーガ', text:'このカードが自陣にいる限り、自分が5回スペルを使うと、このターンの残り時間を15秒増やす。（1ターンに3回）', awakenedText:'このカードが自陣にいる限り、自分が5回スペルを使うと、このターンの残り時間を30秒増やす。（1ターンに3回）' },
     { id:'tier6_timewarped_seer', name:'時渡りの預言者', emoji:'⏳', cost:3, atk:8, hp:8, tribe:'ナーガ', text:'このカードが自陣にいる限り、スペルが3コスト軽く買える。ただし0にはならない。', awakenedText:'このカードが自陣にいる限り、スペルが3コスト軽く買える。' },
@@ -170,7 +177,7 @@
         const limit = amount(this, 1, 2);
         if (num(this.turnTriggers) >= limit || !spell) return;
         this.turnTriggers = num(this.turnTriggers) + 1;
-        addCard(gameState, createReplayMinion(spell), `${spell.name}を再演するトークンを得た。`);
+        addCard(gameState, createReplayMinion(spell), 'マジックフィンの弟子を得た。');
       },
     }),
     '熱を愛す男': () => ({
