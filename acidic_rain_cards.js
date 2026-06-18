@@ -46,6 +46,7 @@ document.write('<script defer src="./acidic_rain_start_screen_rules.js"><\/scrip
 /* The only authoritative locations for tier-specific card effects. */
 document.write('<script defer src="./cards/common.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier1.js"><\/script>');
+document.write('<script defer src="./cards/minions/tier1_pool_guard.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier2.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier3.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier4.js"><\/script>');
