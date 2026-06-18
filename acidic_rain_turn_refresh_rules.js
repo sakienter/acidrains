@@ -1,7 +1,8 @@
 /*
  * Runtime integrity rules:
  * - A new tavern at turn start counts as one reroll when not frozen.
- * - Minions enter the board and leave the hand before their Battlecry resolves.
+ * - Played cards leave the hand before their effects resolve.
+ * - Minions occupy their destination before their Battlecry resolves.
  * - The normal game uses the authoritative 16-turn limit.
  */
 window.addEventListener('load', () => {
@@ -11,6 +12,13 @@ window.addEventListener('load', () => {
   const num = (value, fallback = 0) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
+  const cloneCardInstance = card => {
+    if (!card) return null;
+    if (typeof initializedClone === 'function') return initializedClone(card);
+    if (typeof cloneCard === 'function') return cloneCard(card);
+    return { ...card };
   };
 
   const inheritedEndTurn = endTurn;
@@ -25,8 +33,6 @@ window.addEventListener('load', () => {
     );
     const shouldCountRefresh = !wasFrozen && willOpenNextTurn;
 
-    // End-turn effects resolve first. The reroll count is incremented immediately
-    // before the next tavern is generated, so rightmost-shop buffs affect it.
     let countedRefresh = false;
     let inheritedDrawShop = null;
     if (shouldCountRefresh && typeof drawShop === 'function') {
@@ -73,18 +79,101 @@ window.addEventListener('load', () => {
     return result;
   };
 
-  // The original play flow resolved Battlecries while the minion was still in
-  // the hand and before its board slot was occupied. That caused summon effects
-  // such as 野良猫 to be overwritten, and blocked generated cards at full hand.
-  if (!window.__acidMinionPlayOrderFixed && typeof playHandCardToSlot === 'function') {
-    window.__acidMinionPlayOrderFixed = true;
+  function repeatSpellActivation(gameState, spell) {
+    if (!spell || typeof spell.cast !== 'function') return false;
+    if (spell.name === 'エンドロール') {
+      const bonus = Math.floor(Math.max(0, num(gameState.turnTimeRemaining)) / 10);
+      gameState.nextTurnGoldBonus = num(gameState.nextTurnGoldBonus) + bonus;
+      if (typeof log === 'function') {
+        log(`エンドロールが追加発動し、次のターンの追加ゴールドがさらに${bonus}増えた。`);
+      }
+      return true;
+    }
+    spell.cast(gameState);
+    return true;
+  }
+
+  function spellRepeatCount(spell) {
+    let repeats = 0;
+
+    if (typeof window.consumeAcidTaurenSpellRepeats === 'function') {
+      repeats += Math.max(0, num(window.consumeAcidTaurenSpellRepeats()));
+    }
+
+    if (spell.name !== '一時的な時間改竄' && num(state.timeRewriteCharges) > 0) {
+      state.timeRewriteCharges = Math.max(0, num(state.timeRewriteCharges) - 1);
+      repeats += 1;
+    }
+
+    if (num(state.doubleSpellCharges) > 0) {
+      state.doubleSpellCharges = Math.max(0, num(state.doubleSpellCharges) - 1);
+      repeats += 1;
+    }
+
+    return repeats;
+  }
+
+  function recordSpellUse(spell) {
+    const historyCard = cloneCardInstance(spell);
+    state.cardsPlayedThisTurn = num(state.cardsPlayedThisTurn) + 1;
+
+    if ([1, 2].includes(num(spell.tier))) {
+      state.tier2SpellHistory = Array.isArray(state.tier2SpellHistory)
+        ? state.tier2SpellHistory
+        : [];
+      state.tier2SpellHistory.push(cloneCardInstance(historyCard));
+    }
+
+    state.spellHistoryThisTurn = Array.isArray(state.spellHistoryThisTurn)
+      ? state.spellHistoryThisTurn
+      : [];
+    state.spellHistoryThisTurn.push(historyCard);
+  }
+
+  function playSpellFromHand(index, spell) {
+    if (spell.unplayable || spell.name === '円盤の破片') {
+      if (typeof log === 'function') {
+        log(`${spell.name}は使用できない。必要な条件を満たすと自動で変化する。`);
+      }
+      if (typeof render === 'function') render();
+      return false;
+    }
+    if (typeof spell.cast !== 'function') {
+      if (typeof log === 'function') log(`${spell.name}の効果を発動できない。`);
+      return false;
+    }
+
+    const repeats = spellRepeatCount(spell);
+
+    // Remove the spell first. Generated cards can use the newly freed hand slot.
+    state.hand.splice(index, 1);
+    spell.cast(state);
+    if (typeof notifyBoard === 'function') notifyBoard('onSpellCast', state, spell);
+
+    for (let repeat = 0; repeat < repeats; repeat += 1) {
+      repeatSpellActivation(state, spell);
+      if (typeof notifyBoard === 'function') notifyBoard('onSpellCast', state, spell);
+    }
+
+    recordSpellUse(spell);
+    if (typeof updateAuras === 'function') updateAuras();
+    if (typeof log === 'function') {
+      const repeatText = repeats > 0 ? `（追加で${repeats}回発動）` : '';
+      log(`${spell.emoji || ''} ${spell.name}を手札から使用した。${repeatText}`);
+    }
+    if (typeof render === 'function') render();
+    return true;
+  }
+
+  // This wrapper is installed after the event bridge and before the awakening
+  // reward wrapper, making it the authoritative non-targeted play flow.
+  if (!window.__acidCardPlayOrderFixed && typeof playHandCardToSlot === 'function') {
+    window.__acidCardPlayOrderFixed = true;
     const inheritedPlayHandCardToSlot = playHandCardToSlot;
 
     playHandCardToSlot = function(index, targetIndex) {
       const sourceCard = state.hand?.[index] || null;
-      if (!sourceCard || sourceCard.type === 'spell') {
-        return inheritedPlayHandCardToSlot(index, targetIndex);
-      }
+      if (!sourceCard) return false;
       if (state.gameOver) return false;
 
       if (
@@ -99,18 +188,17 @@ window.addEventListener('load', () => {
         return false;
       }
 
+      if (sourceCard.type === 'spell') {
+        return playSpellFromHand(index, sourceCard);
+      }
+
       if (targetIndex == null || targetIndex < 2 || state.board?.[targetIndex]) {
         if (typeof log === 'function') log('盤面がいっぱい。');
         if (typeof render === 'function') render();
         return false;
       }
 
-      const played = typeof initializedClone === 'function'
-        ? initializedClone(sourceCard)
-        : { ...sourceCard };
-
-      // Occupy the destination and remove the card from hand first. Battlecries
-      // can now summon into other slots and gain cards into the freed hand slot.
+      const played = cloneCardInstance(sourceCard);
       state.board[targetIndex] = played;
       state.hand.splice(index, 1);
 
@@ -131,14 +219,12 @@ window.addEventListener('load', () => {
 
       state.cardsPlayedThisTurn = num(state.cardsPlayedThisTurn) + 1;
       if (typeof updateAuras === 'function') updateAuras();
-      if (typeof log === 'function') log(`${played.emoji || ''} ${played.name} を手札から場に出した。`);
+      if (typeof log === 'function') log(`${played.emoji || ''} ${played.name}を手札から場に出した。`);
       if (typeof render === 'function') render();
       return true;
     };
   }
 
-  // Restore the specified 16-turn normal mode after the older core layer has
-  // initialized its prototype eight-turn setting.
   function applyTurnLimit() {
     if (!state.endlessMode) state.maxTurns = Math.max(16, num(state.maxTurns));
     const select = document.querySelector('#gameModeSelect');
@@ -161,9 +247,13 @@ window.addEventListener('load', () => {
   };
 
   applyTurnLimit();
+  document.querySelector('#gameStartBtn')?.addEventListener('click', () => {
+    window.setTimeout(() => {
+      if (!state.endlessMode) state.maxTurns = 16;
+      if (typeof render === 'function') render();
+    }, 0);
+  });
 
-  // Rightmost-shop effects use the fixed rightmost minion slot. Buying that card
-  // does not move the effect to the minion on its left.
   function fixedRightmostMinion(gameState) {
     const slotCount = typeof window.getBaseShopMinionSlots === 'function'
       ? window.getBaseShopMinionSlots(gameState?.tavernTier)
@@ -198,7 +288,6 @@ window.addEventListener('load', () => {
     };
   }
 
-  // Finalize the corrected token name after the older event bridge has loaded.
   if (typeof TOKEN_CARDS !== 'undefined' && TOKEN_CARDS.gift) {
     TOKEN_CARDS.gift.name = '贈り物';
   }
