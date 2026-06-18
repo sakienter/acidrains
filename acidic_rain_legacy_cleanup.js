@@ -1,6 +1,6 @@
 /*
- * Final cleanup for prototype-only starting cards and Acid Rain's authoritative
- * Tier 6 registration.
+ * Remove prototype cards and keep exactly one authoritative version of each
+ * card name. Acid Rain is registered as an authoritative Tier 6 minion.
  */
 (() => {
   const ACID_RAIN_ID = 'tier6_acidic_rain';
@@ -21,12 +21,13 @@
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
   };
+  const cardName = card => String(card?.name || '').trim();
 
   function isAcidRain(card) {
     return Boolean(card && (
       card.id === LEGACY_ACID_RAIN_ID
       || card.id === ACID_RAIN_ID
-      || card.name === '酸性降雨'
+      || cardName(card) === '酸性降雨'
     ));
   }
 
@@ -96,7 +97,7 @@
     };
   }
 
-  function patchCardModules() {
+  function patchAcidRainModules() {
     const modules = window.AcidCardModules;
     const tier5 = modules?.get?.('minion', 5) || null;
     const tier6 = modules?.get?.('minion', 6) || null;
@@ -112,6 +113,153 @@
     return true;
   }
 
+  /*
+   * A later tier definition is the newest definition. When the same name exists
+   * in multiple tier modules, remove every older definition. This intentionally
+   * removes the old Tier 4 磯の探検家 and keeps the newer Tier 5 version.
+   */
+  function dedupeModuleDefinitions() {
+    const modules = window.AcidCardModules;
+    if (!modules?.registry) return [];
+    const removed = [];
+
+    for (const kind of ['minion', 'spell']) {
+      const seenNames = new Set();
+      for (let tier = 6; tier >= 1; tier -= 1) {
+        const moduleDefinition = modules.get(kind, tier);
+        if (!moduleDefinition) continue;
+        const definitions = Array.isArray(moduleDefinition.definitions)
+          ? moduleDefinition.definitions
+          : [];
+        const keptReversed = [];
+
+        for (let index = definitions.length - 1; index >= 0; index -= 1) {
+          const definition = definitions[index];
+          const name = cardName(definition);
+          if (!name) continue;
+          if (seenNames.has(name)) {
+            removed.push({
+              kind,
+              name,
+              tier,
+              id: definition.id || '',
+              reason: 'older-definition',
+            });
+            if (moduleDefinition.effects) delete moduleDefinition.effects[name];
+            continue;
+          }
+          seenNames.add(name);
+          keptReversed.push(definition);
+        }
+
+        moduleDefinition.definitions = keptReversed.reverse();
+      }
+    }
+
+    return removed;
+  }
+
+  function authoritativeDefinitions(kind) {
+    const modules = window.AcidCardModules;
+    const definitions = [];
+    if (!modules?.registry) return definitions;
+
+    for (let tier = 1; tier <= 6; tier += 1) {
+      const moduleDefinition = modules.get(kind, tier);
+      for (const definition of moduleDefinition?.definitions || []) {
+        definitions.push({
+          ...definition,
+          tier,
+          ...(kind === 'spell' ? { type: 'spell' } : {}),
+        });
+      }
+    }
+    return definitions;
+  }
+
+  function cleanAuthoritativePool(kind) {
+    const pool = kind === 'minion'
+      ? (typeof MINIONS !== 'undefined' ? MINIONS : [])
+      : (typeof SPELLS !== 'undefined' ? SPELLS : []);
+    if (!Array.isArray(pool)) return [];
+
+    const definitions = authoritativeDefinitions(kind);
+    const removed = [];
+    const usedIndexes = new Set();
+    const canonicalCards = [];
+
+    for (const definition of definitions) {
+      const name = cardName(definition);
+      let selectedIndex = pool.findIndex((card, index) =>
+        !usedIndexes.has(index) && String(card?.id || '') === String(definition.id || '')
+      );
+      if (selectedIndex < 0) {
+        selectedIndex = pool.findIndex((card, index) =>
+          !usedIndexes.has(index) && cardName(card) === name
+        );
+      }
+
+      let selected;
+      if (selectedIndex >= 0) {
+        usedIndexes.add(selectedIndex);
+        selected = pool[selectedIndex];
+      } else {
+        selected = { ...definition };
+      }
+
+      Object.assign(selected, definition);
+      canonicalCards.push(selected);
+    }
+
+    pool.forEach((card, index) => {
+      if (usedIndexes.has(index)) return;
+      removed.push({
+        kind,
+        name: cardName(card),
+        tier: num(card?.tier),
+        id: card?.id || '',
+        reason: definitions.some(definition => cardName(definition) === cardName(card))
+          ? 'duplicate-old-version'
+          : 'legacy-card',
+      });
+    });
+
+    pool.splice(0, pool.length, ...canonicalCards);
+    return removed;
+  }
+
+  function cleanCurrentShop() {
+    if (typeof state === 'undefined' || !state || state.hasStarted || state.gameOver) return;
+    if (typeof drawShop === 'function') drawShop();
+    if (typeof updateAuras === 'function') updateAuras();
+    if (typeof render === 'function') render();
+  }
+
+  function runAuthoritativeCleanup() {
+    const removed = [
+      ...dedupeModuleDefinitions(),
+    ];
+
+    if (window.AcidCardModules?.installed) {
+      window.AcidCardModules.reinstall();
+    }
+
+    removed.push(
+      ...cleanAuthoritativePool('minion'),
+      ...cleanAuthoritativePool('spell'),
+    );
+
+    normalizeAcidRainPoolAndInstances();
+    window.__acidRemovedLegacyCards = removed;
+    window.__acidAuthoritativePoolCleaned = true;
+
+    if (removed.length) {
+      console.info('[AcidCardCleanup] Removed old or duplicate cards.', removed);
+    }
+    cleanCurrentShop();
+    return removed;
+  }
+
   function normalizeAcidRainPoolAndInstances() {
     if (typeof MINIONS !== 'undefined' && Array.isArray(MINIONS)) {
       const matches = MINIONS
@@ -124,7 +272,7 @@
           MINIONS.splice(matches[index].index, 1);
         }
       } else {
-        MINIONS.push(normalizeAcidRain({ ...ACID_RAIN_DEFINITION }));
+        MINIONS.push(normalizeAcidRain({ ...ACID_RAIN_DEFINITION, tier: 6 }));
       }
     }
 
@@ -135,17 +283,18 @@
     }
   }
 
-  const patched = patchCardModules();
+  const patched = patchAcidRainModules();
   normalizeAcidRainPoolAndInstances();
 
   if (patched && window.AcidCardModules?.installed) {
     window.AcidCardModules.reinstall();
-    normalizeAcidRainPoolAndInstances();
   }
 
-  window.addEventListener('acid-card-modules-ready', () => {
-    normalizeAcidRainPoolAndInstances();
-  });
+  if (window.AcidCardModules?.installed) {
+    runAuthoritativeCleanup();
+  } else {
+    window.addEventListener('acid-card-modules-ready', runAuthoritativeCleanup, { once: true });
+  }
 
   window.addEventListener('load', () => {
     if (window.__acidLegacyStartingCardsRemoved) return;
@@ -183,12 +332,14 @@
     setupRun = function() {
       const result = inheritedSetupRun();
       removeLegacyStartingCards();
+      runAuthoritativeCleanup();
       if (typeof updateAuras === 'function') updateAuras();
       if (typeof render === 'function') render();
       return result;
     };
 
     removeLegacyStartingCards();
+    if (!window.__acidAuthoritativePoolCleaned) runAuthoritativeCleanup();
     if (typeof updateAuras === 'function') updateAuras();
     if (typeof render === 'function') render();
   }, { once:true });
