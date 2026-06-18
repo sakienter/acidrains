@@ -16,6 +16,7 @@ window.addEventListener('load', () => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
   };
+  const randomCard = cards => cards.length ? cards[Math.floor(Math.random() * cards.length)] : null;
 
   const style = document.createElement('style');
   style.textContent = `
@@ -76,6 +77,14 @@ window.addEventListener('load', () => {
     return null;
   }
 
+  function currentTarget(spell, preferred=null){
+    if(preferred?.zone==='shop' && state.shop?.[preferred.index]===preferred.card && validTarget(spell,preferred.card,'shop'))return preferred;
+    if(preferred?.zone==='board' && state.board?.[preferred.index]===preferred.card && validTarget(spell,preferred.card,'board'))return preferred;
+    const shop=(state.shop||[]).map((card,index)=>({zone:'shop',index,card})).find(entry=>validTarget(spell,entry.card,'shop'));
+    if(shop)return shop;
+    return (state.board||[]).map((card,index)=>({zone:'board',index,card})).find(entry=>index>=2&&validTarget(spell,entry.card,'board'))||null;
+  }
+
   function clear(){ document.querySelectorAll('.targeting-valid,.targeting-hover,.targeting-source').forEach(n=>n.classList.remove('targeting-valid','targeting-hover','targeting-source')); }
   function highlight(){
     clear();
@@ -93,6 +102,10 @@ window.addEventListener('load', () => {
   function begin(index,node,event){
     const spell=state.hand[index];
     if(!isTargeted(spell)||state.gameOver)return false;
+    if(typeof window.canPlayAcidCard==='function'&&!window.canPlayAcidCard(spell,state)){
+      log(typeof window.describeAcidCardLock==='function'?window.describeAcidCardLock(spell,state):`${spell.name}は現在使用できない。`);
+      return false;
+    }
     const r=node.getBoundingClientRect();
     active={index,spell,source:node,start:{x:r.left+r.width/2,y:r.top+r.height/2}};
     highlight();
@@ -126,34 +139,40 @@ window.addEventListener('load', () => {
   }
 
   function resolveTarget(spell,target){
+    if(!target)return false;
     const name=nameOf(spell);
     if(name==='シェフのおすすめ'){
-      const pool=MINIONS.filter(c=>c.tribe===target.card.tribe && c.name!==target.card.name && Number(c.tier)<=Number(state.tavernTier));
-      if(pool.length) gainCardToHand(state,randomFrom(pool),`${target.card.tribe}のカードを1枚得た。`);
-      return;
+      const pool=MINIONS.filter(c=>c&&!c.token&&c.shopEligible!==false&&c.tribe===target.card.tribe&&c.name!==target.card.name&&Number(c.tier)<=Number(state.tavernTier));
+      const selected=randomCard(pool);
+      if(selected)gainCardToHand(state,selected,`${target.card.tribe}のカードを1枚得た。`);
+      return Boolean(selected);
     }
     if(name==='夢のエッセンス'){
-      target.card.battlecry?.(state);return;
+      if(typeof target.card.battlecry!=='function')return false;
+      target.card.battlecry(state);return true;
     }
     if(name==='超覚醒化'||name==='覚醒化'){
+      if(target.card.awakened)return false;
       target.card.awakened=true;
       if(target.card.awakenedText)target.card.text=target.card.awakenedText;
-      log(`${target.card.name}を覚醒させた。`);return;
+      log(`${target.card.name}を覚醒させた。`);return true;
     }
-    if(name==='熱血パンチ'){
-      resolveHeatPunch(target);return;
-    }
+    if(name==='熱血パンチ')return resolveHeatPunch(target);
     if(name==='ゼレク'){
-      if(state.hand.length<HAND_LIMIT)state.hand.push(typeof initializedClone==='function'?initializedClone(target.card):cloneCard(target.card));
-      return;
+      if(state.hand.length>=HAND_LIMIT)return false;
+      state.hand.push(typeof initializedClone==='function'?initializedClone(target.card):cloneCard(target.card));
+      return true;
     }
     if(name==='ドッペルゲンガーの奇策'){
-      if(state.hand.length>=HAND_LIMIT-1)return;
-      const original=MINIONS.find(c=>c.name===target.card.name) || target.card;
+      if(state.board[target.index]!==target.card)return false;
+      if(state.hand.length+2>HAND_LIMIT)return false;
+      const original=MINIONS.find(c=>c.id===target.card.id)||MINIONS.find(c=>c.name===target.card.name&&Number(c.tier)===Number(target.card.tier))||target.card;
+      state.board[target.index]=null;
       state.hand.push(target.card);
       state.hand.push(typeof initializedClone==='function'?initializedClone(original):cloneCard(original));
-      state.board[target.index]=null;
+      return true;
     }
+    return false;
   }
 
   function cloneHistoryCard(spell){
@@ -187,20 +206,32 @@ window.addEventListener('load', () => {
   function finish(event){
     if(!active)return;
     event.preventDefault();event.stopPropagation();
-    const targeting=active, target=targetAt(document.elementFromPoint(event.clientX,event.clientY));
+    const targeting=active, selectedTarget=targetAt(document.elementFromPoint(event.clientX,event.clientY));
     active=null;svg.style.display='none';path.setAttribute('d','');clear();suppressClickUntil=Date.now()+500;
-    if(!target){log(`${targeting.spell.name}の対象指定をキャンセルした。`);render();return;}
+    if(!selectedTarget){log(`${targeting.spell.name}の対象指定をキャンセルした。`);render();return;}
 
     const repeats=additionalActivations(targeting.spell);
-    resolveTarget(targeting.spell,target);
-    for(let index=0;index<repeats;index+=1) resolveTarget(targeting.spell,target);
-    recordSpellUse(targeting.spell);
-    if(typeof notifyBoard==='function'){
-      for(let index=0;index<=repeats;index+=1) notifyBoard('onSpellCast',state,targeting.spell);
+
+    // The spell leaves the hand first, so generated cards can occupy that slot.
+    if(state.hand?.[targeting.index]===targeting.spell)state.hand.splice(targeting.index,1);
+    else{
+      const currentIndex=state.hand?.indexOf(targeting.spell)??-1;
+      if(currentIndex>=0)state.hand.splice(currentIndex,1);
     }
 
-    state.hand.splice(targeting.index,1);
+    let target=selectedTarget;
+    resolveTarget(targeting.spell,target);
+    if(typeof notifyBoard==='function')notifyBoard('onSpellCast',state,targeting.spell);
+
+    for(let index=0;index<repeats;index+=1){
+      target=currentTarget(targeting.spell,target);
+      resolveTarget(targeting.spell,target);
+      if(typeof notifyBoard==='function')notifyBoard('onSpellCast',state,targeting.spell);
+    }
+
+    recordSpellUse(targeting.spell);
     updateAuras();
+    log(`${targeting.spell.name}を使用した${repeats?`（追加で${repeats}回発動）`:''}。`);
     render();
   }
 
