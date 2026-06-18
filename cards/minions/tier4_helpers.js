@@ -3,8 +3,7 @@
   const logx=m=>{if(typeof log==='function'&&m)log(m)}, pick=p=>p.length?p[Math.floor(Math.random()*p.length)]:null;
   const clone=c=>typeof initializedClone==='function'?initializedClone(c):typeof cloneCard==='function'?cloneCard(c):{...c};
   const pool=a=>(a||[]).filter(c=>c&&!c.token&&c.shopEligible!==false);
-  const fragNames=new Set(['円盤の破片','未知の円盤の破片']);
-  const unknownFrag={id:'unknown_disk_fragment',name:'未知の円盤の破片',emoji:'💿',tier:1,cost:3,type:'spell',token:true,shopEligible:false,fragmentMaterial:true,unplayable:true,text:'このカードは手札で2枚集めると、合体して消滅し「覚醒報酬」になる。'};
+  const fragNames=new Set(['円盤の破片']);
 
   function add(s,t,msg='',extra={}){
     if(!t)return false;
@@ -20,7 +19,7 @@
   function time(s,sec){const x=Math.max(0,n(sec)),resume=!s.isPaused&&s.hasStarted&&!s.gameOver&&typeof pauseAcidTurnTimer==='function'&&typeof resumeAcidTurnTimer==='function';if(resume)pauseAcidTurnTimer();s.turnTimeRemaining=Math.max(0,n(s.turnTimeRemaining))+x;s.turnTimeLimit=Math.max(n(s.turnTimeLimit),s.turnTimeRemaining);if(resume)resumeAcidTurnTimer();logx(`残り時間が${x}秒増えた。`);}
   function reward(){return typeof createAwakeningRewardSpell==='function'?createAwakeningRewardSpell():{id:'awakening_reward',name:'覚醒報酬',emoji:'🌟',tier:0,cost:0,type:'spell',token:true,shopEligible:false,text:'現在の酒場グレード+1のミニオンを発見する。'};}
   function combine(s){let changed=false;while(Array.isArray(s?.hand)){const ix=s.hand.map((c,i)=>fragNames.has(c?.name)||c?.fragmentMaterial?i:-1).filter(i=>i>=0);if(ix.length<2)break;s.hand.splice(ix[1],1);s.hand.splice(ix[0],1);s.hand.push(reward());changed=true;logx('円盤の破片2枚が「覚醒報酬」になった。');}return changed;}
-  function addFrag(s){const ok=add(s,unknownFrag,'未知の円盤の破片を得た。');if(ok)combine(s);return ok;}
+  function addFrag(s){const t=SPELLS.find(x=>x?.name==='円盤の破片');if(!t){logx('円盤の破片が見つからない。');return false;}const ok=add(s,t,'円盤の破片を得た。');if(ok)combine(s);return ok;}
   function rightBuff(s,v){s.tier1DuneAfterRerollAtk=n(s.tier1DuneAfterRerollAtk)+v;s.tier1DuneAfterRerollHp=n(s.tier1DuneAfterRerollHp)+v;}
   function adjacent(s,self,times){const i=s.board.indexOf(self);if(i<2)return;[i-1,i+1].forEach(k=>{const c=s.board[k];if(c&&typeof c.battlecry==='function')for(let r=0;r<times;r++)c.battlecry(s);});}
   function awaken(c){if(!c||c.type==='spell'||c.awakened)return false;c.awakened=true;if(c.awakenedText)c.text=c.awakenedText;return true;}
@@ -34,7 +33,7 @@
     {id:'tier4_instruction_fin',name:'指示フィン',emoji:'👉',cost:3,atk:1,hp:1,tribe:'マーロック',text:'雄叫び：「燃えた海賊旗」を1枚得る。',awakenedText:'雄叫び：「燃えた海賊旗」を2枚得る。'},
     {id:'tier4_mamakome_fin',name:'ママコメフィン',emoji:'🐟',cost:3,atk:1,hp:5,tribe:'マーロック',text:'雄叫び：このターンの残り時間を15秒追加する。',awakenedText:'雄叫び：このターンの残り時間を30秒追加する。'},
     {id:'tier4_night_pirate',name:'夜型の海賊',emoji:'🌙',cost:3,atk:5,hp:6,tribe:'海賊',text:'ターン終了時：次のターン4G得る。',awakenedText:'ターン終了時：次のターン8G得る。'},
-    {id:'tier4_curious_pirate',name:'物好きな海賊',emoji:'🧐',cost:3,atk:1,hp:4,tribe:'海賊',text:'このカードが自陣にいる限り、自分が8回のリロールをすると、「未知の円盤の破片」を1枚得る。',awakenedText:'このカードが自陣にいる限り、自分が4回のリロールをすると、「未知の円盤の破片」を1枚得る。'},
+    {id:'tier4_curious_pirate',name:'物好きな海賊',emoji:'🧐',cost:3,atk:1,hp:4,tribe:'海賊',text:'このカードが自陣にいる限り、自分が8回のリロールをすると、「円盤の破片」を1枚得る。',awakenedText:'このカードが自陣にいる限り、自分が4回のリロールをすると、「円盤の破片」を1枚得る。'},
     {id:'tier4_marimo_captain',name:'まりも船長',emoji:'🏴‍☠️',cost:3,atk:4,hp:4,tribe:'海賊',text:'このカードが破壊された時、この対戦中に酒場を入替した後、その右端のミニオン1体に+12/+12を付与する。',awakenedText:'このカードが破壊された時、この対戦中に酒場を入替した後、その右端のミニオン1体に+24/+24を付与する。'},
     {id:'tier4_engine',name:'エンジン',emoji:'⚙️',cost:3,atk:4,hp:4,tribe:'エレメンタル',text:'雄叫び：この対戦中に酒場を入替した後、その右端のミニオン1体に+7/+7を付与する。',awakenedText:'雄叫び：この対戦中に酒場を入替した後、その右端のミニオン1体に+14/+14を付与する。'},
     {id:'tier4_sakamaki',name:'さかまき',emoji:'🌪️',cost:3,atk:2,hp:2,tribe:'エレメンタル',text:'雄叫び：ランダムなエレメンタルを1枚得る。',awakenedText:'雄叫び：ランダムなエレメンタルを2枚得る。'},
