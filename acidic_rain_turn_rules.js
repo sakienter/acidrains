@@ -66,6 +66,10 @@ window.addEventListener("load", () => {
     });
   }
 
+  function fallbackBaseGold(turn) {
+    return Math.min(10, Math.max(1, Number(turn || 1)) + 2);
+  }
+
   function authoritativeEndTurn() {
     if (state.gameOver) return false;
 
@@ -83,9 +87,17 @@ window.addEventListener("load", () => {
       return true;
     }
 
+    // The currently offered tavern-upgrade cost is discounted once per new turn.
+    state.tavernUpgradeDiscount = Number(state.tavernUpgradeDiscount || 0) + 1;
+
     const nextTurnBonus = Number(state.nextTurnGoldBonus || 0);
     state.nextTurnGoldBonus = 0;
-    state.gold = Number(state.maxGold || 10) + nextTurnBonus;
+    state.startingGoldBonus = Math.max(0, Number(state.startingGoldBonus || 0));
+    state.baseTurnGold = typeof window.getBaseGoldForTurn === "function"
+      ? window.getBaseGoldForTurn(state.turn)
+      : fallbackBaseGold(state.turn);
+    state.maxGold = state.baseTurnGold + state.startingGoldBonus;
+    state.gold = state.maxGold + nextTurnBonus;
 
     resetPerTurnCardState();
     if (state.hero?.onTurnStart) state.hero.onTurnStart(state);
@@ -95,7 +107,8 @@ window.addEventListener("load", () => {
     updateAuras();
     notifyBoard("onTurnStart", state);
 
-    log(`ターン ${state.turn}。ターン終了時効果と断末魔の解決後、新しい酒場が開いた。`);
+    const bonusText = nextTurnBonus > 0 ? `（追加${nextTurnBonus}ゴールド）` : "";
+    log(`ターン ${state.turn}。初期ゴールド${state.maxGold}${bonusText}で新しい酒場が開いた。`);
     render();
     return true;
   }
