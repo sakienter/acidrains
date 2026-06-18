@@ -1,12 +1,4 @@
-/*
- * Shared registry for the 12 tier-specific card modules.
- *
- * Migration policy:
- * - The current Excel/CSV-generated MINIONS and SPELLS remain the source of truth.
- * - Each tier module receives only the cards assigned to its own tier.
- * - Card effects can then be moved into the module's `effects` map one card at a time.
- * - Until an override is added, the existing card object and behavior are preserved.
- */
+/* Shared registry for the 12 tier-specific card modules. */
 (() => {
   if (window.AcidCardModules) return;
 
@@ -35,13 +27,13 @@
       }
 
       registry[kind].set(tier, {
-        source: 'acidcards.csv',
+        source: 'repository card pool',
         effects: {},
         ...moduleDefinition,
         kind,
         tier,
         cards: [],
-        csvRows: [],
+        rows: [],
       });
     },
 
@@ -56,11 +48,10 @@
 
   window.AcidCardModules = api;
 
-  function getMinions() {
-    return typeof MINIONS !== 'undefined' && Array.isArray(MINIONS) ? MINIONS : [];
-  }
-
-  function getSpells() {
+  function getPool(kind) {
+    if (kind === 'minion') {
+      return typeof MINIONS !== 'undefined' && Array.isArray(MINIONS) ? MINIONS : [];
+    }
     return typeof SPELLS !== 'undefined' && Array.isArray(SPELLS) ? SPELLS : [];
   }
 
@@ -68,15 +59,15 @@
     return registry.minion.size + registry.spell.size;
   }
 
-  function currentPool(kind) {
-    return kind === 'minion' ? getMinions() : getSpells();
+  function cardPoolReady() {
+    return getPool('minion').length > 0 && getPool('spell').length > 0;
   }
 
   function normalizeName(value) {
     return String(value || '').trim();
   }
 
-  function toCsvRow(card, kind) {
+  function toRow(card, kind) {
     return {
       id: card?.id || '',
       name: normalizeName(card?.name),
@@ -91,34 +82,33 @@
     };
   }
 
-  function applyCardPatch(card, patch, context) {
+  function applyPatch(card, patch, context) {
     if (!card || !patch) return;
     const resolved = typeof patch === 'function' ? patch(card, context) : patch;
-    if (!resolved || typeof resolved !== 'object') return;
-    Object.assign(card, resolved);
+    if (resolved && typeof resolved === 'object') Object.assign(card, resolved);
   }
 
   function installModule(moduleDefinition) {
-    const pool = currentPool(moduleDefinition.kind);
+    const pool = getPool(moduleDefinition.kind);
     const cards = pool.filter(card => Number(card?.tier) === moduleDefinition.tier);
     moduleDefinition.cards = cards;
-    moduleDefinition.csvRows = cards.map(card => toCsvRow(card, moduleDefinition.kind));
+    moduleDefinition.rows = cards.map(card => toRow(card, moduleDefinition.kind));
 
     const context = {
       kind: moduleDefinition.kind,
       tier: moduleDefinition.tier,
       cards,
       pool,
-      minions: getMinions(),
-      spells: getSpells(),
+      minions: getPool('minion'),
+      spells: getPool('spell'),
       findByName(name) {
-        const targetName = normalizeName(name);
-        return cards.find(card => normalizeName(card?.name) === targetName) || null;
+        const target = normalizeName(name);
+        return cards.find(card => normalizeName(card?.name) === target) || null;
       },
       patch(name, patch) {
         const card = this.findByName(name);
         if (!card) return false;
-        applyCardPatch(card, patch, this);
+        applyPatch(card, patch, this);
         return true;
       },
     };
@@ -126,18 +116,14 @@
     Object.entries(moduleDefinition.effects || {}).forEach(([name, patch]) => {
       context.patch(name, patch);
     });
-
-    if (typeof moduleDefinition.apply === 'function') {
-      moduleDefinition.apply(context);
-    }
+    if (typeof moduleDefinition.apply === 'function') moduleDefinition.apply(context);
   }
 
   function duplicateNames(cards) {
     const counts = new Map();
     cards.forEach(card => {
       const name = normalizeName(card?.name);
-      if (!name) return;
-      counts.set(name, (counts.get(name) || 0) + 1);
+      if (name) counts.set(name, (counts.get(name) || 0) + 1);
     });
     return [...counts.entries()]
       .filter(([, count]) => count > 1)
@@ -159,8 +145,7 @@
         });
       }
     }
-
-    const allCards = [...getMinions(), ...getSpells()];
+    const allCards = [...getPool('minion'), ...getPool('spell')];
     return {
       installedAt: new Date().toISOString(),
       modules,
@@ -171,16 +156,9 @@
     };
   }
 
-  function excelPoolReady() {
-    const minions = getMinions();
-    const spells = getSpells();
-    return minions.length > 0 && spells.length > 0 &&
-      minions.some(card => String(card?.id || '').startsWith('excel_'));
-  }
-
   function installAll(force = false) {
     if (api.installed && !force) return true;
-    if (!excelPoolReady() || moduleCount() !== EXPECTED_MODULES) return false;
+    if (!cardPoolReady() || moduleCount() !== EXPECTED_MODULES) return false;
 
     for (const kind of ['minion', 'spell']) {
       for (let tier = 1; tier <= 6; tier += 1) {
@@ -192,7 +170,7 @@
     api.report = createReport();
     window.__acidTierModulesReady = true;
     window.dispatchEvent(new CustomEvent('acid-card-modules-ready', { detail: api.report }));
-    console.info('[AcidCardModules] 13-file tier card structure ready.', api.report);
+    console.info('[AcidCardModules] Tier modules installed.', api.report);
     return true;
   }
 
@@ -201,14 +179,12 @@
     attempts += 1;
     if (installAll()) {
       window.clearInterval(timer);
-      return;
-    }
-    if (attempts >= 400) {
+    } else if (attempts >= 400) {
       window.clearInterval(timer);
       console.error('[AcidCardModules] Card modules could not be installed.', {
         registeredModules: moduleCount(),
         expectedModules: EXPECTED_MODULES,
-        excelPoolReady: excelPoolReady(),
+        cardPoolReady: cardPoolReady(),
       });
     }
   }, 25);
