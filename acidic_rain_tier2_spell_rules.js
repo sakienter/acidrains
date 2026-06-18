@@ -35,9 +35,14 @@ function castDreamEssence(gameState) {
 }
 
 function castChipBin(gameState) {
-  gameState.maxGold = Number(gameState.maxGold || 10) + 2;
-  gameState.gold = Math.min(gameState.maxGold, Number(gameState.gold || 0) + 2);
-  log(`2コインを得た。上限コインが${gameState.maxGold}になった。`);
+  if (typeof window.increaseStartingGold === "function") {
+    window.increaseStartingGold(gameState, 2, true);
+  } else {
+    gameState.startingGoldBonus = Number(gameState.startingGoldBonus || 0) + 2;
+    gameState.maxGold = Number(gameState.maxGold || 0) + 2;
+    gameState.gold = Number(gameState.gold || 0) + 2;
+  }
+  log(`2コインを得た。このゲーム中の初期ゴールドが${gameState.maxGold}になった。`);
 }
 
 function activateDrakkari(gameState) {
@@ -49,7 +54,7 @@ window.addEventListener("load", () => {
   const oldInitialState = initialState;
   initialState = function() {
     oldInitialState();
-    state.maxGold = 10;
+    state.startingGoldBonus = 0;
     state.brannSpellActive = false;
     state.drakkariActive = false;
   };
@@ -60,7 +65,7 @@ window.addEventListener("load", () => {
     if (state.brannSpellActive) state.battlecryMultiplier = Math.max(2, Number(state.battlecryMultiplier || 1));
   };
 
-  if (typeof state.maxGold !== "number") state.maxGold = 10;
+  if (typeof state.startingGoldBonus !== "number") state.startingGoldBonus = 0;
   if (typeof state.brannSpellActive !== "boolean") state.brannSpellActive = false;
   if (typeof state.drakkariActive !== "boolean") state.drakkariActive = false;
 
