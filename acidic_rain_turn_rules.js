@@ -46,12 +46,18 @@ window.addEventListener("load", () => {
     };
   }
 
+  function endTurnMultiplier(gameState) {
+    const temporary = gameState.drakkariActive ? 2 : 1;
+    const permanent = Math.max(1, Number(gameState.endTurnMultiplier || 1));
+    return Math.max(temporary, permanent);
+  }
+
   function triggerEndTurnEffects(gameState) {
-    const triggerCount = gameState.drakkariActive ? 2 : 1;
+    const triggerCount = endTurnMultiplier(gameState);
     for (let i = 0; i < triggerCount; i += 1) {
       notifyBoard("onTurnEnd", gameState);
     }
-    if (triggerCount > 1) log("ドラッカリにより、ターン終了時効果が2回発動した。");
+    if (triggerCount > 1) log(`ドラッカリにより、ターン終了時効果が${triggerCount}回発動した。`);
   }
 
   function triggerEndTurnDeathrattles(gameState) {
