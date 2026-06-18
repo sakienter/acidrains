@@ -1,11 +1,63 @@
 /* Advanced rules for the expanded Acidic Rain card pool. */
 
 const TOKEN_CARDS = {
-  change: { id:"token_change", name:"おつり", emoji:"🪙", tier:1, cost:0, type:"spell", text:"効果未設定のトークン。", cast(){ log("『おつり』の効果は未設定です。"); } },
-  dream_essence: { id:"token_dream_essence", name:"夢のエッセンス", emoji:"💭", tier:2, cost:0, type:"spell", text:"効果未設定のトークン。", cast(){ log("『夢のエッセンス』の効果は未設定です。"); } },
-  gift: { id:"token_gift", name:"贈り物", emoji:"🎁", tier:3, cost:0, type:"spell", text:"贈り物タグの仮トークン。", cast(){ log("贈り物タグの効果は未設定です。"); } },
-  time_transcendence: { id:"token_time_transcendence", name:"時空の超越", emoji:"⌛", tier:3, cost:0, type:"spell", text:"効果未設定のトークン。", cast(){ log("『時空の超越』の効果は未設定です。"); } },
-  east_wind: { id:"token_east_wind", name:"東よりの風", emoji:"🌬️", tier:2, cost:0, type:"spell", text:"効果未設定。自動で唱えられる。", cast(){ log("『東よりの風』を唱えた。効果は未設定です。"); } },
+  change: {
+    id:"token_change", name:"おつり", emoji:"🪙", tier:1, cost:0, type:"spell",
+    text:"1コイン得る。",
+    cast(gameState){
+      const maxGold = Number(gameState.maxGold || 10);
+      gameState.gold = Math.min(maxGold, Number(gameState.gold || 0) + 1);
+      log("『おつり』で1コイン得た。");
+    }
+  },
+  dream_essence: {
+    id:"token_dream_essence", name:"夢のエッセンス", emoji:"💭", tier:2, cost:0, type:"spell",
+    text:"自陣の雄叫びミニオンを選ぶ。その雄叫びを発動する。",
+    cast(gameState){
+      if (typeof castDreamEssence === "function") return castDreamEssence(gameState);
+      selectBoardCard(
+        gameState,
+        card => typeof card.battlecry === "function",
+        card => card.battlecry(gameState),
+        "夢のエッセンス：雄叫びを発動するミニオンを選択"
+      );
+    }
+  },
+  gift: {
+    id:"token_gift", name:"贈り物", emoji:"🎁", tier:3, cost:0, type:"spell",
+    text:"ランダムな贈り物カードを1枚得る。",
+    cast(gameState){
+      if (typeof castRememberTheBeginning === "function") return castRememberTheBeginning(gameState);
+      const gifts = Array.isArray(window.GIFT_CARDS) ? window.GIFT_CARDS : [];
+      if (!gifts.length) {
+        log("贈り物カードが設定されていないため、不発だった。");
+        return;
+      }
+      gainCardToHand(gameState, randomFrom(gifts), "「贈り物」カードを1枚得た。");
+    }
+  },
+  time_transcendence: {
+    id:"token_time_transcendence", name:"時空の超越", emoji:"⌛", tier:3, cost:0, type:"spell",
+    text:"リミットターンの猶予を1増やす。",
+    cast(gameState){
+      if (typeof extendTurnLimit === "function") return extendTurnLimit(gameState);
+      gameState.maxTurns = Number(gameState.maxTurns || 0) + 1;
+      log(`リミットターンが1増え、${gameState.maxTurns}ターンになった。`);
+    }
+  },
+  east_wind: {
+    id:"token_east_wind", name:"東よりの風", emoji:"🌬️", tier:2, cost:0, type:"spell",
+    text:"このゲーム中、酒場の右端のカードは+6/+6を得る。",
+    cast(gameState){
+      gameState.eastWindStacks = Number(gameState.eastWindStacks || 0) + 1;
+      if (typeof applyEastWindToRightmost === "function") {
+        applyEastWindToRightmost(gameState);
+      } else if (typeof addPersistentRightmostBuff === "function") {
+        addPersistentRightmostBuff(6, 6);
+      }
+      log("『東よりの風』で酒場右端を強化した。");
+    }
+  },
   cat: { id:"token_cat", name:"猫トークン", emoji:"🐈", tier:1, cost:0, atk:1, hp:1, tribe:"獣", text:"野良猫が召喚した猫。" },
 };
 
@@ -205,4 +257,9 @@ function installAdvancedRules(){
   updateAuras();render();
 }
 
-window.addEventListener("load",installAdvancedRules,{once:true});
+window.addEventListener("load", () => {
+  // Legacy gameplay overrides are disabled. The authoritative patch owns
+  // reroll, play, and end-turn flow so card effects resolve exactly once.
+  updateAuras();
+  render();
+}, { once: true });

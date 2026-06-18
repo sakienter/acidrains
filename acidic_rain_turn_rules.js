@@ -4,38 +4,8 @@ window.addEventListener("load", () => {
     return (pool || []).filter(card => Number(card?.tier || 0) <= Number(gameState.tavernTier || 1));
   }
 
-  // Generic Discover effects cannot offer cards above the current tavern tier.
-  // Effects that explicitly name a higher tier use discoverCardsBeyondTier.
-  const uiDiscoverCards = discoverCards;
-  window.discoverCardsBeyondTier = function(gameState, pool, count, title) {
-    return uiDiscoverCards(gameState, pool, count, title);
-  };
-  discoverCards = function(gameState, pool, count, title) {
-    return uiDiscoverCards(gameState, currentTierPool(gameState, pool), count, title);
-  };
-
-  // Generic random generation follows the same tier restriction.
-  const unrestrictedGainMany = gainMany;
-  window.gainManyBeyondTier = function(gameState, pool, count, message) {
-    return unrestrictedGainMany(gameState, pool, count, message);
-  };
-  gainMany = function(gameState, pool, count, message) {
-    return unrestrictedGainMany(gameState, currentTierPool(gameState, pool), count, message);
-  };
-
-  const unrestrictedRandomSpell = gainRandomSpellToHand;
-  gainRandomSpellToHand = function(gameState, predicate, message) {
-    const cappedPredicate = card =>
-      Number(card.tier || 0) <= Number(gameState.tavernTier || 1) && predicate(card);
-    return unrestrictedRandomSpell(gameState, cappedPredicate, message);
-  };
-
-  const unrestrictedRandomCard = gainRandomCardToHand;
-  gainRandomCardToHand = function(gameState, predicate, message) {
-    const cappedPredicate = card =>
-      Number(card.tier || 0) <= Number(gameState.tavernTier || 1) && predicate(card);
-    return unrestrictedRandomCard(gameState, cappedPredicate, message);
-  };
+  // Tier-capping now lives in the authoritative patch to avoid conflicts with
+  // later card-module installs and final UI patches.
 
   const shellWhistler = MINIONS.find(card => card.id === "shell_whistler");
   if (shellWhistler) {
