@@ -23,10 +23,14 @@ jobs:
           node --check cards/minions/tier1_pool_guard.js
           node --check acidic_rain_play_restrictions.js
           node --check acidic_rain_card_event_bridge.js
+          node --check acidic_rain_turn_refresh_rules.js
           node --check acidic_rain_cards.js
           node --check tests/tier1_cards.test.js
           node --check tests/card_event_bridge.test.js
+          node --check tests/turn_start_refresh.test.js
       - name: Test Tier 1 definitions and effects
         run: node tests/tier1_cards.test.js
       - name: Test shared event bridge and restrictions
         run: node tests/card_event_bridge.test.js
+      - name: Test turn-start tavern replacement rules
+        run: node tests/turn_start_refresh.test.js
