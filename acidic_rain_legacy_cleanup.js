@@ -22,6 +22,14 @@
     return Number.isFinite(parsed) ? parsed : fallback;
   };
 
+  function isAcidRain(card) {
+    return Boolean(card && (
+      card.id === LEGACY_ACID_RAIN_ID
+      || card.id === ACID_RAIN_ID
+      || card.name === '酸性降雨'
+    ));
+  }
+
   function fixedRightmostMinion(gameState) {
     if (typeof getRightmostShopCard === 'function') {
       return getRightmostShopCard(gameState);
@@ -34,9 +42,7 @@
   }
 
   function normalizeAcidRain(card) {
-    if (!card || (card.id !== LEGACY_ACID_RAIN_ID && card.id !== ACID_RAIN_ID && card.name !== '酸性降雨')) {
-      return card;
-    }
+    if (!isAcidRain(card)) return card;
 
     const awakened = Boolean(card.awakened);
     card.id = ACID_RAIN_ID;
@@ -96,18 +102,10 @@
     const tier6 = modules?.get?.('minion', 6) || null;
     if (!tier5 || !tier6) return false;
 
-    tier5.definitions = (tier5.definitions || []).filter(card =>
-      card?.name !== '酸性降雨'
-      && card?.id !== LEGACY_ACID_RAIN_ID
-      && card?.id !== ACID_RAIN_ID
-    );
+    tier5.definitions = (tier5.definitions || []).filter(card => !isAcidRain(card));
     if (tier5.effects) delete tier5.effects['酸性降雨'];
 
-    tier6.definitions = (tier6.definitions || []).filter(card =>
-      card?.name !== '酸性降雨'
-      && card?.id !== LEGACY_ACID_RAIN_ID
-      && card?.id !== ACID_RAIN_ID
-    );
+    tier6.definitions = (tier6.definitions || []).filter(card => !isAcidRain(card));
     tier6.definitions.push({ ...ACID_RAIN_DEFINITION });
     tier6.effects = tier6.effects || {};
     tier6.effects['酸性降雨'] = acidRainEffect;
@@ -118,11 +116,7 @@
     if (typeof MINIONS !== 'undefined' && Array.isArray(MINIONS)) {
       const matches = MINIONS
         .map((card, index) => ({ card, index }))
-        .filter(entry => entry.card && (
-          entry.card.id === LEGACY_ACID_RAIN_ID
-          || entry.card.id === ACID_RAIN_ID
-          || entry.card.name === '酸性降雨'
-        ));
+        .filter(entry => isAcidRain(entry.card));
 
       if (matches.length) {
         normalizeAcidRain(matches[0].card);
@@ -169,7 +163,7 @@
       // The old prototype granted Acid Rain for free. Tier 6 Acid Rain must now
       // be bought, discovered, or gained by an explicit card effect.
       state.hand = Array.isArray(state.hand)
-        ? state.hand.filter(card => card?.id !== LEGACY_ACID_RAIN_ID)
+        ? state.hand.filter(card => !isAcidRain(card))
         : [];
 
       state.seedGrowth = 0;
