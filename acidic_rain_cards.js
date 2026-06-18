@@ -36,9 +36,11 @@ document.write('<script defer src="./acidic_rain_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_stat_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_awaken_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_layout_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_spell_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_turn_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_hud_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_discover_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_play_restrictions.js"><\/script>');
 document.write('<script defer src="./acidic_rain_targeting_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_start_screen_rules.js"><\/script>');
 
@@ -62,4 +64,5 @@ document.write('<link rel="stylesheet" href="./acidic_rain_hand_fit.css">');
 document.write('<script defer src="./acidic_rain_hand_spacing.js"><\/script>');
 document.write('<script defer src="./acidic_rain_rebuild.js"><\/script>');
 document.write('<script defer src="./acidic_rain_core_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_card_event_bridge.js"><\/script>');
 document.write('<script defer src="./acidic_rain_timer_rules.js"><\/script>');
