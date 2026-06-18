@@ -26,4 +26,8 @@
   else definitions.push(definition);
 
   window.__tier6SurpriseElementalDefined = true;
+
+  if (window.AcidCardModules?.installed) {
+    window.AcidCardModules.reinstall();
+  }
 })();
