@@ -277,7 +277,7 @@
     },
     {
       id: 'tier2_shell_collector',
-      name: '貝殻蒐集家',
+      name: '貝殻収集家',
       emoji: '🐚',
       cost: 3,
       atk: 3,
@@ -409,7 +409,7 @@
         },
       }),
 
-      '貝殻蒐集家': () => ({
+      '貝殻収集家': () => ({
         battlecry(gameState) {
           gainNamedSpell(gameState, 'コイン', amount(this, 1, 2));
         },
