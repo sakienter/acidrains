@@ -23,22 +23,36 @@ window.addEventListener('load', () => {
     );
     const shouldCountRefresh = !wasFrozen && willOpenNextTurn;
 
-    // Increment before the inherited end-turn flow draws the next tavern.
-    // This lets drawShop wrappers apply persistent rightmost buffs to the
-    // newly opened tavern itself.
-    if (shouldCountRefresh) {
-      state.rerolls = beforeRerolls + 1;
+    // Count the replacement immediately before the inherited flow draws the
+    // next tavern. End-turn effects therefore resolve first, while drawShop
+    // wrappers can still apply persistent rightmost buffs to the new tavern.
+    let countedRefresh = false;
+    let inheritedDrawShop = null;
+    if (shouldCountRefresh && typeof drawShop === 'function') {
+      inheritedDrawShop = drawShop;
+      drawShop = function(...args) {
+        if (!countedRefresh) {
+          state.rerolls = beforeRerolls + 1;
+          countedRefresh = true;
+        }
+        return inheritedDrawShop.apply(this, args);
+      };
     }
 
-    const result = inheritedEndTurn();
-    const advanced = num(state.turn, beforeTurn) > beforeTurn;
+    let result;
+    try {
+      result = inheritedEndTurn();
+    } finally {
+      if (inheritedDrawShop) drawShop = inheritedDrawShop;
+    }
 
-    if (!advanced && shouldCountRefresh) {
+    const advanced = num(state.turn, beforeTurn) > beforeTurn;
+    if (!advanced && countedRefresh) {
       state.rerolls = beforeRerolls;
       return result;
     }
 
-    if (advanced && shouldCountRefresh && !state.gameOver) {
+    if (advanced && countedRefresh && !state.gameOver) {
       if (state.hero?.onReroll) state.hero.onReroll(state);
       if (typeof notifyBoard === 'function') notifyBoard('onRerollCount', state);
       state.__resolvedRerolls = num(state.rerolls);
