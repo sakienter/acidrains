@@ -6,6 +6,7 @@ window.addEventListener('load', () => {
     '超覚醒化',
     '覚醒化',
     'ドッペルゲンガーの奇策',
+    '熱血パンチ',
     'ゼレク'
   ]);
 
@@ -52,6 +53,8 @@ window.addEventListener('load', () => {
         return zone==='board' && card.type!=='spell' && !card.awakened && !card.gift;
       case 'ドッペルゲンガーの奇策':
         return zone==='board' && card.type!=='spell' && typeof card.battlecry==='function';
+      case '熱血パンチ':
+        return zone==='board' && card.type!=='spell' && (card.tribe==='海賊' || nameOf(card)==='冷笑フィン');
       case 'ゼレク':
         return zone==='board' && card.type!=='spell';
       default:
@@ -107,6 +110,21 @@ window.addEventListener('load', () => {
     targetAt(document.elementFromPoint(event.clientX,event.clientY))?.node.classList.add('targeting-hover');
   }
 
+  function resolveHeatPunch(target){
+    if(!target?.card || state.board[target.index]!==target.card)return false;
+    const card=target.card;
+    if(typeof card.deathrattle==='function'){
+      const triggerCount=card.reborn?2:1;
+      for(let index=0;index<triggerCount;index+=1)card.deathrattle(state,target.index);
+    }
+    if(typeof card.onDestroyed==='function')card.onDestroyed(state,target.index);
+    state.board[target.index]=null;
+    const before=Math.max(0,num(state.score));
+    state.score=before*2;
+    log(`熱血パンチ：${card.name}を破壊し、現在のスコアを${before}から${state.score}にした。`);
+    return true;
+  }
+
   function resolveTarget(spell,target){
     const name=nameOf(spell);
     if(name==='シェフのおすすめ'){
@@ -121,6 +139,9 @@ window.addEventListener('load', () => {
       target.card.awakened=true;
       if(target.card.awakenedText)target.card.text=target.card.awakenedText;
       log(`${target.card.name}を覚醒させた。`);return;
+    }
+    if(name==='熱血パンチ'){
+      resolveHeatPunch(target);return;
     }
     if(name==='ゼレク'){
       if(state.hand.length<HAND_LIMIT)state.hand.push(typeof initializedClone==='function'?initializedClone(target.card):cloneCard(target.card));
