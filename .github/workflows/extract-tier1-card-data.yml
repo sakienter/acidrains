@@ -29,11 +29,10 @@ jobs:
             const decoded = zlib.gunzipSync(Buffer.from(match[1], 'base64')).toString('utf8');
 
             function objectAtName(name) {
-              const marker = `name:"${name}"`;
-              const nameIndex = decoded.indexOf(marker);
+              const nameIndex = decoded.indexOf(name);
               if (nameIndex < 0) return 'NOT_FOUND';
               const start = decoded.lastIndexOf('{', nameIndex);
-              if (start < 0) return 'OBJECT_START_NOT_FOUND';
+              if (start < 0) return `CONTEXT ${decoded.slice(Math.max(0, nameIndex - 300), nameIndex + 700)}`;
 
               let depth = 0;
               let quote = '';
@@ -56,7 +55,7 @@ jobs:
                   if (depth === 0) return decoded.slice(start, index + 1);
                 }
               }
-              return 'OBJECT_END_NOT_FOUND';
+              return `CONTEXT ${decoded.slice(Math.max(0, nameIndex - 300), nameIndex + 700)}`;
             }
 
             const names = [
