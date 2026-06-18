@@ -68,7 +68,7 @@ window.addEventListener("load", () => {
       justify-content: center !important;
       align-items: flex-end !important;
       gap: 0 !important;
-      margin-top: -22px !important;
+      margin-top: 6px !important;
       min-height: 148px !important;
       padding: 8px 28px 0 !important;
       overflow-x: auto !important;
