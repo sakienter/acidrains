@@ -45,5 +45,14 @@
   }
 
   state.nextFreeSpellPurchases = Math.max(0, numberValue(state.nextFreeSpellPurchases));
+
+  if (!document.querySelector('script[data-acid-tauren-runtime]')) {
+    const script = document.createElement('script');
+    script.src = './acidic_rain_tauren_runtime.js';
+    script.async = false;
+    script.dataset.acidTaurenRuntime = 'true';
+    document.body.appendChild(script);
+  }
+
   if (typeof render === 'function') render();
 })();
