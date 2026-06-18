@@ -5,6 +5,7 @@
 
   const COPIES_BY_TIER = Object.freeze({ 1:16, 2:15, 3:13, 4:11, 5:9, 6:7 });
   const HOLDINGS = '__minionPoolHoldings';
+  const ANIMA_TEXT = 'ランダムな酒場のミニオン1体のスタッツを、自陣のミニオン1体を選んで加える。';
   const num = (value, fallback = 0) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
@@ -35,6 +36,22 @@
     return template.cast(gameState);
   }
 
+  function patchAnimaDefinitionAndCards() {
+    const moduleDefinition = window.AcidCardModules?.get?.('spell', 6) || null;
+    const definition = (moduleDefinition?.definitions || []).find(card => card?.name === 'アニマを検知');
+    if (definition) definition.text = ANIMA_TEXT;
+
+    const patch = card => {
+      if (card?.name === 'アニマを検知') card.text = ANIMA_TEXT;
+    };
+    (typeof SPELLS !== 'undefined' ? SPELLS : []).forEach(patch);
+    if (typeof state !== 'undefined' && state) {
+      (state.hand || []).forEach(patch);
+      (state.shop || []).forEach(patch);
+    }
+    return Boolean(definition);
+  }
+
   function patchTokensAndExistingCards() {
     if (typeof TOKEN_CARDS !== 'undefined' && TOKEN_CARDS) {
       TOKEN_CARDS.sacrifice = { ...sacrificeToken };
@@ -62,6 +79,9 @@
         card.type = 'spell';
         card.text = 'リミットターンの猶予を1増やす。次のターン「時空の超越」を使えない。';
         card.cast = castCurrentTimeTranscendence;
+      }
+      if (card.name === 'アニマを検知') {
+        card.text = ANIMA_TEXT;
       }
       if (card.name === '生贄' || card.id === 'token_sacrifice') {
         Object.assign(card, sacrificeToken);
@@ -119,19 +139,23 @@
       state.timeTranscendenceBlockedTurn = -1;
       state.cycloneStacks = 0;
       state.spellsPlayedThisGame = 0;
+      patchAnimaDefinitionAndCards();
       patchTokensAndExistingCards();
       ensureNewPoolEntries();
       return result;
     };
   }
 
+  patchAnimaDefinitionAndCards();
   patchTokensAndExistingCards();
 
   let attempts = 0;
   const timer = window.setInterval(() => {
     attempts += 1;
+    const animaReady = patchAnimaDefinitionAndCards();
     patchTokensAndExistingCards();
-    if (ensureNewPoolEntries() || attempts >= 400) {
+    const poolReady = ensureNewPoolEntries();
+    if ((animaReady && poolReady) || attempts >= 400) {
       window.clearInterval(timer);
     }
   }, 25);
