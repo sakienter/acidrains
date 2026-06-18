@@ -33,7 +33,6 @@ jobs:
               if (nameIndex < 0) return 'NOT_FOUND';
               const start = decoded.lastIndexOf('{', nameIndex);
               if (start < 0) return 'OBJECT_START_NOT_FOUND';
-
               let depth = 0;
               let quote = '';
               let escaped = false;
@@ -58,7 +57,7 @@ jobs:
               return 'OBJECT_END_NOT_FOUND';
             }
 
-            for (const name of ['大道芸人', '甲板磨き', 'もりもり砂丘']) {
+            for (const name of ['苔マン', 'ガチ預言者', '不吉な預言者']) {
               console.log(`CARD_DATA ${name} ${objectAtName(name)}`);
             }
           })().catch(error => {
