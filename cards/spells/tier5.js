@@ -82,7 +82,11 @@
     let pending = Math.max(0, Math.floor(num(gameState.reboundPending)));
     gameState.reboundPending = 0;
     if (!pending) return 0;
-    if (gameState.drakkariActive) pending *= 2;
+    const multiplier = Math.max(
+      gameState.drakkariActive ? 2 : 1,
+      Math.max(1, num(gameState.endTurnMultiplier, 1)),
+    );
+    pending *= multiplier;
     const history = Array.isArray(gameState.spellHistoryThisTurn)
       ? gameState.spellHistoryThisTurn.filter(card => card?.type === 'spell')
       : [];
