@@ -17,52 +17,57 @@ jobs:
           node <<'NODE'
           const zlib = require('node:zlib');
 
-          const revision = 'b40013be93ca4395e94df0af006d460347ad3a02';
-          const url = `https://raw.githubusercontent.com/sakienter/acidrains/${revision}/acidic_rain_excel_cards.js`;
-          const source = await fetch(url).then(response => {
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return response.text();
-          });
-          const match = source.match(/const b64="([^"]+)"/);
-          if (!match) throw new Error('Compressed card payload was not found.');
-          const decoded = zlib.gunzipSync(Buffer.from(match[1], 'base64')).toString('utf8');
+          (async () => {
+            const revision = 'b40013be93ca4395e94df0af006d460347ad3a02';
+            const url = `https://raw.githubusercontent.com/sakienter/acidrains/${revision}/acidic_rain_excel_cards.js`;
+            const source = await fetch(url).then(response => {
+              if (!response.ok) throw new Error(`HTTP ${response.status}`);
+              return response.text();
+            });
+            const match = source.match(/const b64="([^"]+)"/);
+            if (!match) throw new Error('Compressed card payload was not found.');
+            const decoded = zlib.gunzipSync(Buffer.from(match[1], 'base64')).toString('utf8');
 
-          function objectAtName(name) {
-            const marker = `name:"${name}"`;
-            const nameIndex = decoded.indexOf(marker);
-            if (nameIndex < 0) return 'NOT_FOUND';
-            const start = decoded.lastIndexOf('{', nameIndex);
-            if (start < 0) return 'OBJECT_START_NOT_FOUND';
+            function objectAtName(name) {
+              const marker = `name:"${name}"`;
+              const nameIndex = decoded.indexOf(marker);
+              if (nameIndex < 0) return 'NOT_FOUND';
+              const start = decoded.lastIndexOf('{', nameIndex);
+              if (start < 0) return 'OBJECT_START_NOT_FOUND';
 
-            let depth = 0;
-            let quote = '';
-            let escaped = false;
-            for (let index = start; index < decoded.length; index += 1) {
-              const char = decoded[index];
-              if (quote) {
-                if (escaped) escaped = false;
-                else if (char === '\\') escaped = true;
-                else if (char === quote) quote = '';
-                continue;
+              let depth = 0;
+              let quote = '';
+              let escaped = false;
+              for (let index = start; index < decoded.length; index += 1) {
+                const char = decoded[index];
+                if (quote) {
+                  if (escaped) escaped = false;
+                  else if (char === '\\') escaped = true;
+                  else if (char === quote) quote = '';
+                  continue;
+                }
+                if (char === '"' || char === "'" || char === '`') {
+                  quote = char;
+                  continue;
+                }
+                if (char === '{') depth += 1;
+                if (char === '}') {
+                  depth -= 1;
+                  if (depth === 0) return decoded.slice(start, index + 1);
+                }
               }
-              if (char === '"' || char === "'" || char === '`') {
-                quote = char;
-                continue;
-              }
-              if (char === '{') depth += 1;
-              if (char === '}') {
-                depth -= 1;
-                if (depth === 0) return decoded.slice(start, index + 1);
-              }
+              return 'OBJECT_END_NOT_FOUND';
             }
-            return 'OBJECT_END_NOT_FOUND';
-          }
 
-          const names = [
-            '野良猫', '威嚇するわんこ', 'ショールフィン', '船頭', '大道芸人',
-            '甲板磨き', 'もりもり砂丘', '苔マン', 'ガチ預言者', '不吉な預言者',
-          ];
-          for (const name of names) {
-            console.log(`CARD_DATA ${name} ${objectAtName(name)}`);
-          }
+            const names = [
+              '野良猫', '威嚇するわんこ', 'ショールフィン', '船頭', '大道芸人',
+              '甲板磨き', 'もりもり砂丘', '苔マン', 'ガチ預言者', '不吉な預言者',
+            ];
+            for (const name of names) {
+              console.log(`CARD_DATA ${name} ${objectAtName(name)}`);
+            }
+          })().catch(error => {
+            console.error(error);
+            process.exitCode = 1;
+          });
           NODE
