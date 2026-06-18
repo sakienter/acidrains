@@ -26,7 +26,37 @@
     text:'このカードは海賊である。',
   };
 
+  function timeTranscendenceIsBlocked(gameState) {
+    return num(gameState?.turn, 1) === num(gameState?.timeTranscendenceBlockedTurn, -1);
+  }
+
+  function patchOfficialTimeSpell() {
+    const template = (typeof SPELLS !== 'undefined' ? SPELLS : [])
+      .find(card => card?.name === '時空の超越' && card?.id === 'time_transcendence');
+    if (!template || typeof template.cast !== 'function') return false;
+    template.cost = 10;
+    template.tier = 6;
+    template.text = 'リミットターンの猶予を1増やす。次のターン「時空の超越」を使えない。';
+    if (!template.__timeTranscendenceLockWrapped) {
+      const officialCast = template.cast;
+      template.cast = function(gameState) {
+        if (timeTranscendenceIsBlocked(gameState)) {
+          if (typeof log === 'function') log(`時空の超越は${gameState.turn}ターン目には発動できない。`);
+          return false;
+        }
+        return officialCast.call(this, gameState);
+      };
+      template.__timeTranscendenceLockWrapped = true;
+    }
+    return true;
+  }
+
   function castCurrentTimeTranscendence(gameState) {
+    if (timeTranscendenceIsBlocked(gameState)) {
+      if (typeof log === 'function') log(`時空の超越は${gameState.turn}ターン目には発動できない。`);
+      return false;
+    }
+    patchOfficialTimeSpell();
     const template = (typeof SPELLS !== 'undefined' ? SPELLS : [])
       .find(card => card?.name === '時空の超越' && card?.id === 'time_transcendence');
     if (!template || typeof template.cast !== 'function') {
@@ -53,6 +83,7 @@
   }
 
   function patchTokensAndExistingCards() {
+    patchOfficialTimeSpell();
     if (typeof TOKEN_CARDS !== 'undefined' && TOKEN_CARDS) {
       TOKEN_CARDS.sacrifice = { ...sacrificeToken };
       TOKEN_CARDS.time_transcendence = {
