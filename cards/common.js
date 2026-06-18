@@ -1,4 +1,4 @@
-/* Shared registry for the 12 tier-specific card effect modules. */
+/* Shared registry for the 12 tier-specific card modules. */
 (() => {
   if (window.AcidCardModules) return;
 
@@ -9,6 +9,7 @@
   };
 
   const normalizeName = value => String(value || '').trim();
+  const normalizeId = value => String(value || '').trim();
 
   const api = {
     registry,
@@ -30,6 +31,7 @@
 
       registry[kind].set(tier, {
         source: 'repository card pool',
+        definitions: [],
         effects: {},
         ...moduleDefinition,
         kind,
@@ -49,7 +51,7 @@
   };
 
   window.AcidCardModules = api;
-  window.__acidCardModuleVersion = 2;
+  window.__acidCardModuleVersion = 3;
 
   function getPool(kind) {
     if (kind === 'minion') {
@@ -89,7 +91,54 @@
     return true;
   }
 
+  function upsertDefinitions(moduleDefinition) {
+    const pool = getPool(moduleDefinition.kind);
+    let changed = false;
+
+    (moduleDefinition.definitions || []).forEach(rawDefinition => {
+      if (!rawDefinition || typeof rawDefinition !== 'object') return;
+      const definition = {
+        ...rawDefinition,
+        tier: moduleDefinition.tier,
+        ...(moduleDefinition.kind === 'spell' ? { type: 'spell' } : {}),
+      };
+      const id = normalizeId(definition.id);
+      const name = normalizeName(definition.name);
+      if (!id || !name) {
+        throw new Error(`Card definition requires id and name: ${moduleDefinition.kind} tier ${moduleDefinition.tier}`);
+      }
+
+      const matchingIndexes = [];
+      pool.forEach((card, index) => {
+        if (normalizeId(card?.id) === id || normalizeName(card?.name) === name) {
+          matchingIndexes.push(index);
+        }
+      });
+
+      if (!matchingIndexes.length) {
+        pool.push({ ...definition });
+        changed = true;
+        return;
+      }
+
+      const targetIndex = matchingIndexes[0];
+      const target = pool[targetIndex];
+      const before = JSON.stringify(toRow(target, moduleDefinition.kind));
+      Object.assign(target, definition);
+      const after = JSON.stringify(toRow(target, moduleDefinition.kind));
+      if (before !== after) changed = true;
+
+      for (let matchIndex = matchingIndexes.length - 1; matchIndex >= 1; matchIndex -= 1) {
+        pool.splice(matchingIndexes[matchIndex], 1);
+        changed = true;
+      }
+    });
+
+    return changed;
+  }
+
   function installModule(moduleDefinition) {
+    const definitionsChanged = upsertDefinitions(moduleDefinition);
     const pool = getPool(moduleDefinition.kind);
     const cards = pool.filter(card => Number(card?.tier) === moduleDefinition.tier);
     moduleDefinition.cards = cards;
@@ -101,6 +150,7 @@
       pool,
       minions: getPool('minion'),
       spells: getPool('spell'),
+      definitionsChanged,
 
       findByName(name) {
         const target = normalizeName(name);
@@ -113,8 +163,8 @@
       },
 
       findById(id) {
-        const target = String(id || '').trim();
-        return cards.find(card => String(card?.id || '').trim() === target) || null;
+        const target = normalizeId(id);
+        return cards.find(card => normalizeId(card?.id) === target) || null;
       },
 
       patch(name, patch) {
@@ -138,6 +188,7 @@
     if (typeof moduleDefinition.apply === 'function') moduleDefinition.apply(context);
 
     moduleDefinition.rows = cards.map(card => toRow(card, moduleDefinition.kind));
+    return definitionsChanged;
   }
 
   function duplicateNames(cards) {
@@ -162,6 +213,7 @@
           label: moduleDefinition?.label || '',
           count: moduleDefinition?.cards?.length || 0,
           names: (moduleDefinition?.cards || []).map(card => normalizeName(card?.name)),
+          definitionNames: (moduleDefinition?.definitions || []).map(card => normalizeName(card?.name)),
           overrideNames: Object.keys(moduleDefinition?.effects || {}),
         });
       }
@@ -177,19 +229,29 @@
     };
   }
 
+  function refreshInitialShopIfNeeded(definitionsChanged) {
+    if (!definitionsChanged || typeof state === 'undefined' || !state) return;
+    if (state.hasStarted || state.gameOver) return;
+    if (typeof drawShop === 'function') drawShop();
+    if (typeof updateAuras === 'function') updateAuras();
+    if (typeof render === 'function') render();
+  }
+
   function installAll(force = false) {
     if (api.installed && !force) return true;
     if (!cardPoolReady() || moduleCount() !== EXPECTED_MODULES) return false;
 
+    let definitionsChanged = false;
     for (const kind of ['minion', 'spell']) {
       for (let tier = 1; tier <= 6; tier += 1) {
-        installModule(registry[kind].get(tier));
+        definitionsChanged = installModule(registry[kind].get(tier)) || definitionsChanged;
       }
     }
 
     api.installed = true;
     api.report = createReport();
     window.__acidTierModulesReady = true;
+    refreshInitialShopIfNeeded(definitionsChanged);
     window.dispatchEvent(new CustomEvent('acid-card-modules-ready', { detail: api.report }));
     console.info('[AcidCardModules] Tier modules installed.', api.report);
     return true;
