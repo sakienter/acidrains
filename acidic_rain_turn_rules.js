@@ -1,11 +1,14 @@
 /* End-turn deathrattles, Reborn repeat, and tavern-tier generation limits. */
 window.addEventListener("load", () => {
+  // Earlier module wrappers are intentionally superseded by this authoritative
+  // end-turn implementation. Keep module reinstalls from wrapping it again.
+  window.__tier3EndTurnPatched = true;
+  window.__tier4DrakkariPendingEffectsPatched = true;
+  window.__tier5EndTurnPatched = true;
+
   function currentTierPool(gameState, pool) {
     return (pool || []).filter(card => Number(card?.tier || 0) <= Number(gameState.tavernTier || 1));
   }
-
-  // Tier-capping now lives in the authoritative patch to avoid conflicts with
-  // later card-module installs and final UI patches.
 
   const shellWhistler = MINIONS.find(card => card.id === "shell_whistler");
   if (shellWhistler) {
@@ -46,14 +49,85 @@ window.addEventListener("load", () => {
     };
   }
 
+  const number = (value, fallback = 0) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
+  function eligible(cards) {
+    return (cards || []).filter(card => card && !card.token && card.shopEligible !== false);
+  }
+
+  function cloneCardInstance(card) {
+    if (!card) return null;
+    if (typeof initializedClone === "function") return initializedClone(card);
+    if (typeof cloneCard === "function") return cloneCard(card);
+    return { ...card };
+  }
+
+  function addCard(gameState, template, message = "") {
+    if (!template) return false;
+    if (gameState.hand.length >= HAND_LIMIT) {
+      log("手札がいっぱい。");
+      return false;
+    }
+    if (typeof gainCardToHand === "function") {
+      return gainCardToHand(gameState, cloneCardInstance(template), message) !== false;
+    }
+    gameState.hand.push(cloneCardInstance(template));
+    if (message) log(message);
+    return true;
+  }
+
+  function randomFromPool(pool) {
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+  }
+
   function endTurnMultiplier(gameState) {
     const temporary = gameState.drakkariActive ? 2 : 1;
-    const permanent = Math.max(1, Number(gameState.endTurnMultiplier || 1));
+    const permanent = Math.max(1, number(gameState.endTurnMultiplier, 1));
     return Math.max(temporary, permanent);
   }
 
-  function triggerEndTurnEffects(gameState) {
-    const triggerCount = endTurnMultiplier(gameState);
+  function resolveRebound(gameState, multiplier) {
+    const pending = Math.max(0, Math.floor(number(gameState.reboundPending)));
+    gameState.reboundPending = 0;
+    if (!pending) return;
+
+    const history = Array.isArray(gameState.spellHistoryThisTurn)
+      ? gameState.spellHistoryThisTurn.filter(card => card?.type === "spell")
+      : [];
+    if (!history.length) {
+      log("リバウンド：このターンに使ったスペルがない。");
+      return;
+    }
+
+    const total = pending * multiplier * 3;
+    let gained = 0;
+    for (let index = 0; index < total; index += 1) {
+      if (!addCard(gameState, randomFromPool(history), index === 0 ? `リバウンドでスペルを${total}枚得た。` : "")) break;
+      gained += 1;
+    }
+    return gained;
+  }
+
+  function resolveSixthSense(gameState, multiplier) {
+    const pending = Math.max(0, Math.floor(number(gameState.sixthSensePending)));
+    gameState.sixthSensePending = 0;
+    if (!pending) return;
+
+    const tier = Math.max(1, Math.min(6, number(gameState.tavernTier, 1)));
+    const minionPool = eligible(MINIONS).filter(card => number(card.tier) === tier);
+    const spellPool = eligible(SPELLS).filter(card => number(card.tier) === tier);
+    const total = pending * multiplier;
+
+    for (let index = 0; index < total; index += 1) {
+      addCard(gameState, randomFromPool(minionPool), index === 0 ? `第六感：ティア${tier}ミニオンを得た。` : "");
+      addCard(gameState, randomFromPool(spellPool), index === 0 ? `第六感：ティア${tier}スペルを得た。` : "");
+    }
+  }
+
+  function triggerEndTurnEffects(gameState, triggerCount) {
     for (let i = 0; i < triggerCount; i += 1) {
       notifyBoard("onTurnEnd", gameState);
     }
@@ -79,21 +153,22 @@ window.addEventListener("load", () => {
   function authoritativeEndTurn() {
     if (state.gameOver) return false;
 
-    triggerEndTurnEffects(state);
+    const multiplier = endTurnMultiplier(state);
+    resolveRebound(state, multiplier);
+    resolveSixthSense(state, multiplier);
+    triggerEndTurnEffects(state, multiplier);
     triggerEndTurnDeathrattles(state);
 
     state.brannSpellActive = false;
     state.drakkariActive = false;
     state.nextBattlecryMultiplier = 0;
 
-    // Acidic Rain grows only through explicit card effects.
     state.turn += 1;
     if (state.turn > state.maxTurns) {
       finishRun();
       return true;
     }
 
-    // The currently offered tavern-upgrade cost is discounted once per new turn.
     state.tavernUpgradeDiscount = Number(state.tavernUpgradeDiscount || 0) + 1;
 
     const nextTurnBonus = Number(state.nextTurnGoldBonus || 0);
