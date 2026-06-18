@@ -94,6 +94,113 @@ window.addEventListener("load", () => {
     return { turnValue, timerValue };
   }
 
+  function getRopeStage() {
+    return document.querySelector(".table-board")
+      || document.querySelector(".shell")
+      || document.body;
+  }
+
+  function getRopeLayoutTarget() {
+    return {
+      divider: document.querySelector("#tradeLine"),
+      shop: document.querySelector(".shop-grid"),
+      board: document.querySelector(".board-slots"),
+    };
+  }
+
+  function ensureRope() {
+    let rope = document.querySelector("#turnRopeOverlay");
+    if (rope) return rope;
+
+    const stage = getRopeStage();
+    if (!stage) return null;
+
+    if (window.getComputedStyle(stage).position === "static") {
+      stage.style.position = "relative";
+    }
+
+    rope = document.createElement("div");
+    rope.id = "turnRopeOverlay";
+    rope.setAttribute("aria-hidden", "true");
+    rope.innerHTML = `
+      <div class="turn-rope-track"></div>
+      <div class="turn-rope-line"></div>
+      <div class="turn-rope-burn"></div>
+    `;
+    stage.appendChild(rope);
+    return rope;
+  }
+
+  function layoutRope() {
+    const rope = ensureRope();
+    const stage = getRopeStage();
+    const { divider, shop, board } = getRopeLayoutTarget();
+    if (!rope || !stage) return false;
+
+    const stageRect = stage.getBoundingClientRect();
+    let left;
+    let right;
+    let centerY;
+
+    if (divider) {
+      const dividerRect = divider.getBoundingClientRect();
+      left = dividerRect.left;
+      right = dividerRect.right;
+      centerY = dividerRect.top + dividerRect.height / 2;
+    } else if (shop && board) {
+      const shopRect = shop.getBoundingClientRect();
+      const boardRect = board.getBoundingClientRect();
+      left = Math.max(shopRect.left, boardRect.left);
+      right = Math.min(shopRect.right, boardRect.right);
+      centerY = (shopRect.bottom + boardRect.top) / 2;
+    } else {
+      return false;
+    }
+
+    rope.style.left = `${left - stageRect.left}px`;
+    rope.style.top = `${centerY - stageRect.top - 12}px`;
+    rope.style.width = `${Math.max(0, right - left)}px`;
+    return right > left;
+  }
+
+  function paintRope() {
+    const rope = ensureRope();
+    if (!rope) return;
+
+    const remaining = Math.max(0, num(state.turnTimeRemaining));
+    const visible =
+      state.hasStarted &&
+      !state.gameOver &&
+      remaining > 0 &&
+      remaining <= 20;
+
+    rope.classList.toggle("show", visible);
+    rope.classList.toggle("paused", Boolean(state.isPaused));
+
+    if (!visible) {
+      rope.style.setProperty("--rope-progress", "0");
+      rope.style.setProperty("--rope-burn-progress", "0");
+      return;
+    }
+
+    if (!layoutRope()) {
+      rope.classList.remove("show");
+      return;
+    }
+
+    const progress = Math.max(0, Math.min(1, remaining / 20));
+    const burnProgress = 1 - progress;
+
+    rope.style.setProperty("--rope-progress", String(progress));
+    rope.style.setProperty("--rope-burn-progress", String(burnProgress));
+
+    const ropeLine = rope.querySelector(".turn-rope-line");
+    const burn = rope.querySelector(".turn-rope-burn");
+
+    if (ropeLine) ropeLine.style.width = `${progress * 100}%`;
+    if (burn) burn.style.left = `calc(${burnProgress * 100}% - 14px)`;
+  }
+
   function paintClock() {
     const { turnValue, timerValue } = ensureHud();
     const finiteLimit = state.endlessMode
@@ -118,6 +225,8 @@ window.addEventListener("load", () => {
         num(state.turnTimeRemaining) <= 10 && !state.gameOver && !state.isPaused
       );
     }
+
+    paintRope();
   }
 
   function captureRemainingTime() {
@@ -272,8 +381,82 @@ window.addEventListener("load", () => {
     .timer-stat.timer-warning { border-color: rgba(255, 116, 88, .72); }
     .timer-stat.timer-warning strong { color: #ff9d7d; }
     .hud-label { opacity: .76; font-size: .78rem; }
+
+    #turnRopeOverlay {
+      --rope-progress: 0;
+      --rope-burn-progress: 0;
+      position: absolute;
+      height: 24px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .18s ease;
+      z-index: 60;
+      overflow: visible;
+    }
+
+    #turnRopeOverlay.show { opacity: 1; }
+
+    #turnRopeOverlay .turn-rope-track {
+      position: absolute;
+      inset: 10px 0 auto 0;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 232, 180, .14);
+      box-shadow: 0 0 0 1px rgba(80, 48, 18, .15) inset;
+    }
+
+    #turnRopeOverlay .turn-rope-line {
+      position: absolute;
+      right: 0;
+      top: 10px;
+      height: 4px;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #d9b071 0%, #a56c35 45%, #704119 100%);
+      box-shadow:
+        0 0 6px rgba(255, 196, 110, .22),
+        0 0 1px rgba(0, 0, 0, .45) inset;
+      transition: width .22s linear;
+    }
+
+    #turnRopeOverlay .turn-rope-burn {
+      position: absolute;
+      top: 1px;
+      width: 28px;
+      height: 20px;
+      border-radius: 50%;
+      filter: drop-shadow(0 0 6px rgba(255, 149, 64, .55));
+      transition: left .22s linear;
+      background:
+        radial-gradient(circle at 50% 62%, rgba(255, 241, 195, .98) 0 12%, rgba(255, 209, 95, .95) 13% 30%, rgba(255, 118, 40, .88) 31% 54%, rgba(255, 72, 24, .50) 55% 68%, transparent 69%),
+        radial-gradient(circle at 36% 34%, rgba(255, 235, 156, .9) 0 10%, transparent 11%),
+        radial-gradient(circle at 66% 26%, rgba(255, 170, 73, .7) 0 10%, transparent 11%);
+      transform: rotate(-8deg);
+      animation: ropeFlameFlicker .22s infinite alternate ease-in-out;
+    }
+
+    #turnRopeOverlay.paused .turn-rope-line,
+    #turnRopeOverlay.paused .turn-rope-burn {
+      transition: none;
+    }
+
+    #turnRopeOverlay.paused .turn-rope-burn {
+      animation-play-state: paused;
+    }
+
+    @keyframes ropeFlameFlicker {
+      from { transform: translateY(0) rotate(-8deg) scale(1); }
+      to { transform: translateY(-1px) rotate(-5deg) scale(1.06); }
+    }
   `;
   document.head.appendChild(style);
+
+  window.addEventListener("resize", () => {
+    window.requestAnimationFrame(() => {
+      layoutRope();
+      paintRope();
+    });
+  });
 
   const modeSelect = document.querySelector("#gameModeSelect");
   const limitOption = modeSelect?.querySelector('option[value="limit"]');
