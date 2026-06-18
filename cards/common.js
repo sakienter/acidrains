@@ -1,9 +1,29 @@
-/* Shared registry for the 12 tier-specific card modules. */
+/* Shared registry for the 12 authoritative tier-specific card modules. */
 (() => {
   if (window.AcidCardModules) return;
 
   const EXPECTED_MODULES = 12;
-  const CROSS_TIER_DUPLICATE_NAMES = new Set(['磯の探検家']);
+  const EFFECT_KEYS = [
+    'init',
+    'aura',
+    'cast',
+    'battlecry',
+    'deathrattle',
+    'onPlay',
+    'onSell',
+    'onAnySell',
+    'onTurnStart',
+    'onTurnEnd',
+    'onSpellCast',
+    'onSpellBought',
+    'onElementalPlayed',
+    'onElementalSold',
+    'onGoldSpent',
+    'onGoldGained',
+    'onRerollCount',
+    'onTimeGained',
+    'onDestroyed',
+  ];
   const registry = {
     minion: new Map(),
     spell: new Map(),
@@ -52,7 +72,7 @@
   };
 
   window.AcidCardModules = api;
-  window.__acidCardModuleVersion = 5;
+  window.__acidCardModuleVersion = 6;
 
   function getPool(kind) {
     if (kind === 'minion') {
@@ -66,7 +86,10 @@
   }
 
   function cardPoolReady() {
-    return getPool('minion').length > 0 && getPool('spell').length > 0;
+    return typeof MINIONS !== 'undefined'
+      && Array.isArray(MINIONS)
+      && typeof SPELLS !== 'undefined'
+      && Array.isArray(SPELLS);
   }
 
   function toRow(card, kind) {
@@ -92,6 +115,17 @@
     return true;
   }
 
+  function clearEffectMethods(card) {
+    EFFECT_KEYS.forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(card, key)) delete card[key];
+    });
+  }
+
+  /*
+   * Card names are unique inside each card kind. If a newer tier defines the
+   * same name, the existing object is moved to the newer tier instead of adding
+   * a second old/new copy.
+   */
   function upsertDefinitions(moduleDefinition) {
     const pool = getPool(moduleDefinition.kind);
     let changed = false;
@@ -109,39 +143,32 @@
         throw new Error(`Card definition requires id and name: ${moduleDefinition.kind} tier ${moduleDefinition.tier}`);
       }
 
-      const idMatches = [];
-      const sameTierNameMatches = [];
-      const crossTierNameMatches = [];
+      const matches = [];
       pool.forEach((card, index) => {
-        if (normalizeId(card?.id) === id) {
-          idMatches.push(index);
-          return;
+        if (normalizeId(card?.id) === id || normalizeName(card?.name) === name) {
+          matches.push(index);
         }
-        if (normalizeName(card?.name) !== name) return;
-        if (Number(card?.tier) === moduleDefinition.tier) sameTierNameMatches.push(index);
-        else crossTierNameMatches.push(index);
       });
 
-      let matchingIndexes = idMatches.length ? idMatches : sameTierNameMatches;
-      if (!matchingIndexes.length && !CROSS_TIER_DUPLICATE_NAMES.has(name)) {
-        matchingIndexes = crossTierNameMatches;
-      }
-
-      if (!matchingIndexes.length) {
+      if (!matches.length) {
         pool.push({ ...definition });
         changed = true;
         return;
       }
 
-      const targetIndex = matchingIndexes[0];
+      const targetIndex = matches[0];
       const target = pool[targetIndex];
       const before = JSON.stringify(toRow(target, moduleDefinition.kind));
+      clearEffectMethods(target);
+      Object.keys(target).forEach(key => {
+        if (!(key in definition)) delete target[key];
+      });
       Object.assign(target, definition);
       const after = JSON.stringify(toRow(target, moduleDefinition.kind));
       if (before !== after) changed = true;
 
-      for (let matchIndex = matchingIndexes.length - 1; matchIndex >= 1; matchIndex -= 1) {
-        pool.splice(matchingIndexes[matchIndex], 1);
+      for (let matchIndex = matches.length - 1; matchIndex >= 1; matchIndex -= 1) {
+        pool.splice(matches[matchIndex], 1);
         changed = true;
       }
     });
@@ -152,8 +179,16 @@
   function installModule(moduleDefinition) {
     const definitionsChanged = upsertDefinitions(moduleDefinition);
     const pool = getPool(moduleDefinition.kind);
-    const cards = pool.filter(card => Number(card?.tier) === moduleDefinition.tier);
+    const definitionNames = new Set(
+      (moduleDefinition.definitions || []).map(card => normalizeName(card?.name)),
+    );
+    const cards = pool.filter(card =>
+      Number(card?.tier) === moduleDefinition.tier
+      && definitionNames.has(normalizeName(card?.name))
+    );
     moduleDefinition.cards = cards;
+
+    cards.forEach(clearEffectMethods);
 
     const context = {
       kind: moduleDefinition.kind,
@@ -203,18 +238,59 @@
     return definitionsChanged;
   }
 
-  function duplicateNames(cards) {
-    const counts = new Map();
+  function refreshModuleViews() {
+    for (const kind of ['minion', 'spell']) {
+      const pool = getPool(kind);
+      for (let tier = 1; tier <= 6; tier += 1) {
+        const moduleDefinition = registry[kind].get(tier);
+        const names = new Set(
+          (moduleDefinition?.definitions || []).map(card => normalizeName(card?.name)),
+        );
+        moduleDefinition.cards = pool.filter(card =>
+          Number(card?.tier) === tier && names.has(normalizeName(card?.name))
+        );
+        moduleDefinition.rows = moduleDefinition.cards.map(card => toRow(card, kind));
+      }
+    }
+  }
+
+  function duplicateCards(kind, cards) {
+    const groups = new Map();
     cards.forEach(card => {
-      const key = `${normalizeName(card?.name)}::${Number(card?.tier || 0)}`;
-      if (normalizeName(card?.name)) counts.set(key, (counts.get(key) || 0) + 1);
+      const name = normalizeName(card?.name);
+      if (!name) return;
+      if (!groups.has(name)) groups.set(name, []);
+      groups.get(name).push(card);
     });
-    return [...counts.entries()]
-      .filter(([, count]) => count > 1)
-      .map(([key, count]) => {
-        const [name, tier] = key.split('::');
-        return { name, tier: Number(tier), count };
+    return [...groups.entries()]
+      .filter(([, matches]) => matches.length > 1)
+      .map(([name, matches]) => ({
+        kind,
+        name,
+        count: matches.length,
+        tiers: matches.map(card => Number(card?.tier || 0)),
+        ids: matches.map(card => card?.id || ''),
+      }));
+  }
+
+  function duplicateDefinitions() {
+    const duplicates = [];
+    for (const kind of ['minion', 'spell']) {
+      const groups = new Map();
+      for (let tier = 1; tier <= 6; tier += 1) {
+        const moduleDefinition = registry[kind].get(tier);
+        for (const definition of moduleDefinition?.definitions || []) {
+          const name = normalizeName(definition?.name);
+          if (!name) continue;
+          if (!groups.has(name)) groups.set(name, []);
+          groups.get(name).push({ tier, id: definition?.id || '' });
+        }
+      }
+      groups.forEach((matches, name) => {
+        if (matches.length > 1) duplicates.push({ kind, name, matches });
       });
+    }
+    return duplicates;
   }
 
   function createReport() {
@@ -233,11 +309,17 @@
         });
       }
     }
-    const allCards = [...getPool('minion'), ...getPool('spell')];
+    const minions = getPool('minion');
+    const spells = getPool('spell');
+    const allCards = [...minions, ...spells];
     return {
       installedAt: new Date().toISOString(),
       modules,
-      duplicateNames: duplicateNames(allCards),
+      duplicateCards: [
+        ...duplicateCards('minion', minions),
+        ...duplicateCards('spell', spells),
+      ],
+      duplicateDefinitions: duplicateDefinitions(),
       invalidTierCards: allCards
         .filter(card => !Number.isInteger(Number(card?.tier)) || Number(card?.tier) < 1 || Number(card?.tier) > 6)
         .map(card => ({ id: card?.id || '', name: normalizeName(card?.name), tier: card?.tier })),
@@ -263,6 +345,7 @@
       }
     }
 
+    refreshModuleViews();
     api.installed = true;
     api.report = createReport();
     window.__acidTierModulesReady = true;
