@@ -126,6 +126,12 @@ window.addEventListener("load", () => {
     return null;
   }
 
+  function canStoreAwakenedResult(match) {
+    const consumedFromHand = match.consumed.filter(entry => entry.zone === "hand").length;
+    const resultingHandSize = state.hand.length - consumedFromHand + 1;
+    return resultingHandSize <= HAND_LIMIT;
+  }
+
   function resolveAllAwakenings() {
     if (resolvingAwakening) return;
     resolvingAwakening = true;
@@ -133,10 +139,13 @@ window.addEventListener("load", () => {
       let combined = false;
       do {
         combined = false;
-        if (state.hand.length >= HAND_LIMIT) break;
         const entries = allNormalOwnedMinions();
         const match = findExactTriple(entries) || findElementalWildcardTriple(entries);
         if (!match) break;
+        if (!canStoreAwakenedResult(match)) {
+          log(`手札に空きがないため、${match.template.name}の覚醒結果を受け取れない。`);
+          break;
+        }
         const awakened = awakenedCopyFrom(match.template, match.consumed);
         removeOwnedEntries(match.consumed);
         state.hand.push(awakened);
