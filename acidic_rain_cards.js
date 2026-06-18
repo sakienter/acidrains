@@ -82,6 +82,7 @@ document.write('<script defer src="./cards/minions/tier4_helpers.js"><\/script>'
 document.write('<script defer src="./cards/minions/tier4.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier5.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier6.js"><\/script>');
+document.write('<script defer src="./cards/minions/tier6_surprise.js"><\/script>');
 document.write('<script defer src="./cards/spells/tier1.js"><\/script>');
 document.write('<script defer src="./cards/spells/tier2.js"><\/script>');
 document.write('<script defer src="./cards/spells/tier3.js"><\/script>');
