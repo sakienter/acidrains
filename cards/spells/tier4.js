@@ -56,10 +56,11 @@
     return gain;
   }
 
-  function spellBoxPool() {
+  function spellBoxPool(gameState) {
+    const tier = Math.max(1, number(gameState?.tavernTier, 1));
     return eligible(SPELLS).filter(card => {
       const cost = number(card.cost);
-      return cost >= 1 && cost <= 5;
+      return number(card.tier) <= tier && cost >= 1 && cost <= 5;
     });
   }
 
@@ -79,7 +80,7 @@
   }
 
   function createSpellBoxBundle(gameState) {
-    const pool = spellBoxPool();
+    const pool = spellBoxPool(gameState);
     const freeSlots = Math.max(0, handLimit() - gameState.hand.length);
     if (!pool.length || freeSlots <= 0) {
       writeLog('スペルボックスを開ける手札枠がない。');
