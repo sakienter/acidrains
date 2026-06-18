@@ -1,6 +1,8 @@
 /*
- * A new tavern shown at the start of the next turn counts as one tavern
- * replacement when the previous tavern was not frozen.
+ * Runtime integrity rules:
+ * - A new tavern at turn start counts as one reroll when not frozen.
+ * - Minions enter the board and leave the hand before their Battlecry resolves.
+ * - The normal game uses the authoritative 16-turn limit.
  */
 window.addEventListener('load', () => {
   if (window.__acidTurnRefreshRulesInstalled) return;
@@ -23,9 +25,8 @@ window.addEventListener('load', () => {
     );
     const shouldCountRefresh = !wasFrozen && willOpenNextTurn;
 
-    // Count the replacement immediately before the inherited flow draws the
-    // next tavern. End-turn effects therefore resolve first, while drawShop
-    // wrappers can still apply persistent rightmost buffs to the new tavern.
+    // End-turn effects resolve first. The reroll count is incremented immediately
+    // before the next tavern is generated, so rightmost-shop buffs affect it.
     let countedRefresh = false;
     let inheritedDrawShop = null;
     if (shouldCountRefresh && typeof drawShop === 'function') {
@@ -65,4 +66,110 @@ window.addEventListener('load', () => {
 
     return result;
   };
+
+  // The original play flow resolved Battlecries while the minion was still in
+  // the hand and before its board slot was occupied. That caused summon effects
+  // such as 野良猫 to be overwritten, and blocked generated cards at full hand.
+  if (!window.__acidMinionPlayOrderFixed && typeof playHandCardToSlot === 'function') {
+    window.__acidMinionPlayOrderFixed = true;
+    const inheritedPlayHandCardToSlot = playHandCardToSlot;
+
+    playHandCardToSlot = function(index, targetIndex) {
+      const sourceCard = state.hand?.[index] || null;
+      if (!sourceCard || sourceCard.type === 'spell') {
+        return inheritedPlayHandCardToSlot(index, targetIndex);
+      }
+      if (state.gameOver) return false;
+
+      if (
+        typeof window.canPlayAcidCard === 'function'
+        && !window.canPlayAcidCard(sourceCard, state)
+      ) {
+        const message = typeof window.describeAcidCardLock === 'function'
+          ? window.describeAcidCardLock(sourceCard, state)
+          : `${sourceCard.name}は現在使用できない。`;
+        if (typeof log === 'function') log(message);
+        if (typeof render === 'function') render();
+        return false;
+      }
+
+      if (targetIndex == null || targetIndex < 2 || state.board?.[targetIndex]) {
+        if (typeof log === 'function') log('盤面がいっぱい。');
+        if (typeof render === 'function') render();
+        return false;
+      }
+
+      const played = typeof initializedClone === 'function'
+        ? initializedClone(sourceCard)
+        : { ...sourceCard };
+
+      // Occupy the destination and remove the card from hand first. Battlecries
+      // can now summon into other slots and gain cards into the freed hand slot.
+      state.board[targetIndex] = played;
+      state.hand.splice(index, 1);
+
+      const baseMultiplier = Math.max(1, num(state.battlecryMultiplier, 1));
+      const extraMultiplier = Math.max(0, num(state.nextBattlecryMultiplier));
+      const triggerCount = Math.max(1, baseMultiplier + extraMultiplier);
+      state.nextBattlecryMultiplier = 0;
+
+      if (typeof played.battlecry === 'function') {
+        for (let repeat = 0; repeat < triggerCount; repeat += 1) {
+          played.battlecry(state);
+        }
+      }
+      if (typeof played.onPlay === 'function') played.onPlay(state);
+      if (played.tribe === 'エレメンタル' && typeof notifyBoard === 'function') {
+        notifyBoard('onElementalPlayed', state, played);
+      }
+
+      state.cardsPlayedThisTurn = num(state.cardsPlayedThisTurn) + 1;
+      if (typeof updateAuras === 'function') updateAuras();
+      if (typeof log === 'function') log(`${played.emoji || ''} ${played.name} を手札から場に出した。`);
+      if (typeof render === 'function') render();
+      return true;
+    };
+  }
+
+  // Restore the specified 16-turn normal mode after the older core layer has
+  // initialized its prototype eight-turn setting.
+  function applyTurnLimit() {
+    if (!state.endlessMode) state.maxTurns = Math.max(16, num(state.maxTurns));
+    const select = document.querySelector('#gameModeSelect');
+    const limitOption = select?.querySelector('option[value="limit"]');
+    if (limitOption) limitOption.textContent = '16ターン';
+  }
+
+  const inheritedInitialState = initialState;
+  initialState = function() {
+    const result = inheritedInitialState();
+    if (!state.endlessMode) state.maxTurns = 16;
+    return result;
+  };
+
+  const inheritedSetupRun = setupRun;
+  setupRun = function() {
+    const result = inheritedSetupRun();
+    if (!state.endlessMode) state.maxTurns = 16;
+    return result;
+  };
+
+  applyTurnLimit();
+
+  // Finalize the corrected token name after the older event bridge has loaded.
+  if (typeof TOKEN_CARDS !== 'undefined' && TOKEN_CARDS.gift) {
+    TOKEN_CARDS.gift.name = '贈り物';
+  }
+  const tierSixModule = window.AcidCardModules?.get?.('minion', 6) || null;
+  const maxwellDefinition = tierSixModule?.definitions?.find(card => card?.name === 'マクスウェル');
+  if (maxwellDefinition) {
+    maxwellDefinition.text = 'このカードを売った時、「贈り物」を1枚得る。';
+    maxwellDefinition.awakenedText = 'このカードを売った時、「贈り物」を2枚得る。';
+  }
+  const maxwell = (typeof MINIONS !== 'undefined' ? MINIONS : [])
+    .find(card => card?.name === 'マクスウェル' && num(card.tier) === 6);
+  if (maxwell) {
+    maxwell.text = 'このカードを売った時、「贈り物」を1枚得る。';
+    maxwell.awakenedText = 'このカードを売った時、「贈り物」を2枚得る。';
+  }
 }, { once: true });
