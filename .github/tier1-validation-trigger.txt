@@ -1,0 +1,1 @@
+Run the authoritative Tier 1 minion-pool validation.
