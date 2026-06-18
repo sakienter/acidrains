@@ -61,9 +61,13 @@ document.write('<script defer src="./cards/spells/tier6.js"><\/script>');
 
 document.write('<link rel="stylesheet" href="./acidic_rain_card_theme.css">');
 document.write('<link rel="stylesheet" href="./acidic_rain_hand_fit.css">');
+document.write('<link rel="stylesheet" href="./acidic_rain_requested_ui.css">');
 document.write('<script defer src="./acidic_rain_hand_spacing.js"><\/script>');
 document.write('<script defer src="./acidic_rain_rebuild.js"><\/script>');
 document.write('<script defer src="./acidic_rain_core_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_card_event_bridge.js"><\/script>');
 document.write('<script defer src="./acidic_rain_turn_refresh_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_timer_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_discover_ui_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_awakening_reward_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_turn_transition_rules.js"><\/script>');
