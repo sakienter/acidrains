@@ -53,22 +53,7 @@ function createScenario({ frozen = false, turn = 1, maxTurns = 16, endlessMode =
     log(message) {
       logs.push(message);
     },
-    endTurn() {
-      if (context.state.gameOver) return false;
-      if (!context.state.endlessMode && context.state.turn >= context.state.maxTurns) {
-        context.state.gameOver = true;
-        return true;
-      }
-
-      context.state.turn += 1;
-      if (context.state.frozen) {
-        context.state.frozen = false;
-        context.state.shop.forEach(card => {
-          if (card) card.frozen = false;
-        });
-        return true;
-      }
-
+    drawShop() {
       drawObservedRerolls = context.state.rerolls;
       context.state.shop = [
         { name: '新左', atk: 1, hp: 1 },
@@ -85,6 +70,25 @@ function createScenario({ frozen = false, turn = 1, maxTurns = 16, endlessMode =
         rightmost.hp += context.state.tier1DuneAfterRerollHp;
         context.state.tier1DuneLastAppliedReroll = context.state.rerolls;
       }
+      return context.state.shop;
+    },
+    endTurn() {
+      if (context.state.gameOver) return false;
+      if (!context.state.endlessMode && context.state.turn >= context.state.maxTurns) {
+        context.state.gameOver = true;
+        return true;
+      }
+
+      context.state.turn += 1;
+      if (context.state.frozen) {
+        context.state.frozen = false;
+        context.state.shop.forEach(card => {
+          if (card) card.frozen = false;
+        });
+        return true;
+      }
+
+      context.drawShop();
       return true;
     },
   };
@@ -112,7 +116,7 @@ function createScenario({ frozen = false, turn = 1, maxTurns = 16, endlessMode =
 
   assert.equal(scenario.context.state.turn, 2);
   assert.equal(scenario.context.state.rerolls, 5, 'unfrozen next-turn tavern must count as one replacement');
-  assert.equal(scenario.drawObservedRerolls, 5, 'counter must increase before the new tavern is drawn');
+  assert.equal(scenario.drawObservedRerolls, 5, 'counter must increase immediately before the new tavern is drawn');
   assert.equal(scenario.context.state.shop[2].name, '新右');
   assert.equal(scenario.context.state.shop[2].atk, 2, 'rightmost attack buff must apply to the newly opened tavern');
   assert.equal(scenario.context.state.shop[2].hp, 3, 'rightmost health buff must apply to the newly opened tavern');
