@@ -1,135 +1,594 @@
-/* Requested tavern alignment and prominent HUD positions. */
+/*
+ * Fixed 1280x720 battlefield layout.
+ * The center lane is reserved for cards; turn controls occupy a dedicated rail.
+ */
+
 .table-board {
   position: relative !important;
+  isolation: isolate !important;
+  padding: 14px 16px 12px !important;
+  border: 1px solid rgba(236, 196, 118, .34) !important;
+  border-radius: 30px !important;
+  overflow: hidden !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif !important;
+  background:
+    radial-gradient(circle at 46% 9%, rgba(231, 186, 106, .15), transparent 28%),
+    linear-gradient(180deg, rgba(117, 82, 49, .97) 0 14%, rgba(103, 71, 45, .98) 14% 100%) !important;
+  box-shadow:
+    inset 0 0 0 8px rgba(70, 43, 25, .2),
+    inset 0 1px 0 rgba(255, 234, 193, .2),
+    0 24px 60px rgba(0, 0, 0, .44) !important;
 }
 
-#shopGrid.shop-grid {
-  display: flex !important;
-  align-items: stretch !important;
-  justify-content: center !important;
-  flex-wrap: nowrap !important;
-  gap: 9px !important;
-  width: 100% !important;
-  margin: 5px auto 0 !important;
-  padding-inline: 10px !important;
-  overflow: visible !important;
+.table-board::before {
+  content: "";
+  position: absolute;
+  inset: 92px 160px 10px 10px;
+  z-index: -1;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(255, 230, 176, .055), transparent 42%),
+    linear-gradient(180deg, rgba(128, 88, 55, .28), rgba(72, 46, 30, .09));
+  pointer-events: none;
 }
 
-#shopGrid.shop-grid > .shop-card {
-  flex: 0 1 150px !important;
-  width: 150px !important;
-  min-width: 118px !important;
-  max-width: 158px !important;
+.table-board::after {
+  content: "";
+  position: absolute;
+  top: 92px;
+  right: 12px;
+  bottom: 10px;
+  width: 136px;
+  z-index: -1;
+  border-left: 1px solid rgba(255, 234, 193, .08);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(47, 40, 43, .14), rgba(37, 26, 20, .22));
+  pointer-events: none;
 }
 
+/* Header ------------------------------------------------------------------ */
 .board-tools {
-  min-height: 58px !important;
-  padding-right: 154px !important;
+  position: relative !important;
+  display: block !important;
+  min-height: 82px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.board-stats,
+.board-actions {
+  gap: 8px !important;
+}
+
+.board-stats {
+  display: contents !important;
 }
 
 .board-actions {
-  margin-left: auto !important;
+  position: absolute !important;
+  top: 4px !important;
+  right: 8px !important;
+  z-index: 500 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  margin: 0 !important;
+}
+
+.inline-stat,
+.reroll-chip {
+  border: 1px solid rgba(127, 211, 244, .48) !important;
+  border-radius: 13px !important;
+  background: linear-gradient(180deg, rgba(16, 99, 132, .97), rgba(9, 69, 96, .98)) !important;
+  color: #f1fbff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .12),
+    0 7px 18px rgba(0, 0, 0, .26) !important;
+}
+
+.reroll-chip {
+  min-height: 50px !important;
+  padding: 8px 13px !important;
+  font-size: .93rem !important;
+  font-weight: 850 !important;
+  line-height: 1.15 !important;
+  letter-spacing: .015em !important;
+  white-space: nowrap !important;
+  transition: transform .14s ease, filter .14s ease, border-color .14s ease !important;
+}
+
+.reroll-chip:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  filter: brightness(1.1) !important;
+  border-color: rgba(170, 234, 255, .8) !important;
+}
+
+.reroll-chip:active:not(:disabled) {
+  transform: translateY(0) !important;
+}
+
+#upgradeBtn {
+  width: 176px !important;
+}
+
+#rerollBtn {
+  width: 122px !important;
+}
+
+#freezeBtn {
+  width: 106px !important;
+}
+
+/* Score, turn, tier ------------------------------------------------------- */
+.score-stat {
+  position: absolute !important;
+  top: 4px !important;
+  left: 0 !important;
+  z-index: 520 !important;
+  width: 224px !important;
+  height: 54px !important;
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  grid-template-rows: 17px 1fr !important;
+  align-items: center !important;
+  gap: 0 8px !important;
+  padding: 6px 14px 7px !important;
+}
+
+.score-stat .icon {
+  display: none !important;
+}
+
+.score-stat .hud-label {
+  grid-column: 1 / -1 !important;
+  color: rgba(222, 245, 255, .78) !important;
+  font-size: .67rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .16em !important;
+}
+
+.score-stat #scoreValue {
+  grid-column: 1 / -1 !important;
+  color: #f5fcff !important;
+  font-size: 1.48rem !important;
+  font-variant-numeric: tabular-nums !important;
+  font-weight: 900 !important;
+  letter-spacing: .13em !important;
+  line-height: 1 !important;
+}
+
+.turn-stat {
+  position: absolute !important;
+  top: 4px !important;
+  right: 430px !important;
+  z-index: 520 !important;
+  width: 148px !important;
+  height: 50px !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 7px 12px !important;
+}
+
+.turn-stat .icon {
+  display: none !important;
+}
+
+.turn-stat .hud-label {
+  color: rgba(222, 245, 255, .76) !important;
+  font-size: .73rem !important;
+  font-weight: 800 !important;
+}
+
+.turn-stat #turnValue {
+  color: #ffffff !important;
+  font-size: 1.14rem !important;
+  font-weight: 950 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.inline-stat:has(#tavernTierValue) {
+  position: absolute !important;
+  top: 61px !important;
+  left: 0 !important;
+  z-index: 480 !important;
+  min-width: 150px !important;
+  height: 25px !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 3px 10px !important;
+  border-color: rgba(232, 194, 113, .34) !important;
+  border-radius: 999px !important;
+  background: rgba(53, 36, 24, .74) !important;
+  box-shadow: none !important;
+}
+
+.inline-stat:has(#tavernTierValue) .icon {
+  font-size: .74rem !important;
+}
+
+.inline-stat:has(#tavernTierValue) .hud-label {
+  color: rgba(251, 230, 188, .72) !important;
+  font-size: .66rem !important;
+}
+
+#tavernTierValue {
+  color: #ffe09a !important;
+  font-size: .83rem !important;
+}
+
+.free-reroll-stat {
+  position: absolute !important;
+  top: 58px !important;
+  right: 114px !important;
+  z-index: 530 !important;
+  min-width: 120px !important;
+  min-height: 24px !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  padding: 3px 8px !important;
+  border-color: rgba(120, 215, 249, .24) !important;
+  border-radius: 0 0 10px 10px !important;
+  background: rgba(15, 43, 57, .92) !important;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, .22) !important;
+}
+
+.free-reroll-stat .icon {
+  font-size: .7rem !important;
+}
+
+.free-reroll-stat .hud-label {
+  font-size: .62rem !important;
+}
+
+.free-reroll-stat #freeRerollValue {
+  color: #bcefff !important;
+  font-size: .72rem !important;
+}
+
+/* Status ribbon ----------------------------------------------------------- */
+.board-status {
+  position: absolute !important;
+  top: 72px !important;
+  left: 176px !important;
+  right: 600px !important;
+  z-index: 220 !important;
+  min-height: 20px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  color: rgba(251, 234, 204, .66) !important;
+  font-size: .7rem !important;
+  line-height: 20px !important;
+  text-align: center !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.board-meta {
+  position: absolute !important;
+  top: 64px !important;
+  right: 450px !important;
+  z-index: 230 !important;
+  display: flex !important;
+  width: 146px !important;
+  min-height: 24px !important;
+  margin: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: rgba(223, 244, 255, .76) !important;
+  font-size: .65rem !important;
+}
+
+#acidRainStatus {
+  width: 100% !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Shared central play lane ------------------------------------------------ */
+#shopGrid.shop-grid,
+#boardSlots.board-slots,
+#handGrid.hand-grid,
+.market-gap,
+.board-hand-divider {
+  width: calc(100% - 154px) !important;
+  margin-right: 154px !important;
+}
+
+#shopGrid.shop-grid,
+#boardSlots.board-slots,
+#handGrid.hand-grid {
+  position: relative !important;
+  display: flex !important;
+  justify-content: center !important;
+  overflow: visible !important;
+}
+
+#shopGrid.shop-grid::before,
+#boardSlots.board-slots::before {
+  position: absolute;
+  top: -14px;
+  left: 8px;
+  z-index: 2;
+  color: rgba(248, 226, 187, .46);
+  font-size: .62rem;
+  font-weight: 750;
+  letter-spacing: .17em;
+  pointer-events: none;
+}
+
+#shopGrid.shop-grid::before {
+  content: "酒場";
+}
+
+#boardSlots.board-slots::before {
+  content: "盤面";
+}
+
+/* Tavern ------------------------------------------------------------------ */
+#shopGrid.shop-grid {
+  align-items: stretch !important;
+  flex-wrap: nowrap !important;
+  gap: 9px !important;
+  min-height: 166px !important;
+  margin-top: 14px !important;
+  margin-left: 0 !important;
+  padding: 6px 16px 4px !important;
+}
+
+#shopGrid.shop-grid > .shop-card {
+  flex: 0 1 142px !important;
+  width: 142px !important;
+  min-width: 108px !important;
+  max-width: 148px !important;
+  height: 154px !important;
+  min-height: 154px !important;
+}
+
+.market-gap {
+  padding: 1px 16px 3px !important;
+}
+
+.judge-line {
+  height: 4px !important;
+  margin: 3px 0 7px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, transparent, rgba(21, 13, 9, .9) 9%, rgba(21, 13, 9, .9) 91%, transparent) !important;
+  box-shadow: 0 1px 0 rgba(255, 235, 196, .12) !important;
+}
+
+.judge-line::after {
+  top: -15px !important;
+  right: 10px !important;
+  color: rgba(248, 226, 187, .38) !important;
+  font-size: .58rem !important;
+}
+
+/* Board ------------------------------------------------------------------- */
+#boardSlots.board-slots {
+  align-items: flex-end !important;
+  gap: 10px !important;
+  min-height: 188px !important;
+  margin-top: 5px !important;
+  margin-left: 0 !important;
+  padding: 12px 18px 3px !important;
+}
+
+#boardSlots.board-slots > .board-card {
+  flex: 0 1 145px !important;
+  width: 145px !important;
+  min-width: 108px !important;
+  max-width: 150px !important;
+  height: 166px !important;
+  min-height: 166px !important;
+}
+
+.empty-zone-note {
+  align-self: center !important;
+  color: rgba(250, 232, 202, .31) !important;
+  font-size: .78rem !important;
+  letter-spacing: .08em !important;
+}
+
+.board-hand-divider {
+  min-height: 20px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 22px !important;
+  color: rgba(249, 232, 199, .36) !important;
+  font-size: .59rem !important;
+  letter-spacing: .15em !important;
+}
+
+.board-hand-divider span {
+  font-size: 0 !important;
+}
+
+.board-hand-divider span::after {
+  content: "手札";
+  font-size: .59rem;
+}
+
+/* Hand -------------------------------------------------------------------- */
+#handGrid.hand-grid {
+  align-items: flex-end !important;
+  gap: 0 !important;
+  min-height: 162px !important;
+  height: 162px !important;
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  padding: 5px 42px 9px !important;
+}
+
+#handGrid.hand-grid .hand-card {
+  flex: 0 0 104px !important;
+  width: 104px !important;
+  min-width: 104px !important;
+  max-width: 104px !important;
+  height: 142px !important;
+  min-height: 142px !important;
+  max-height: 142px !important;
+}
+
+/* Right control rail ------------------------------------------------------ */
+#endTurnBtn {
+  position: absolute !important;
+  top: 194px !important;
+  right: 10px !important;
+  z-index: 600 !important;
+  width: 118px !important;
+  min-height: 76px !important;
+  padding: 11px 13px !important;
+  border-color: rgba(159, 224, 249, .62) !important;
+  border-radius: 18px !important;
+  font-size: 1.08rem !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 10px 24px rgba(0,0,0,.32),
+    0 0 18px rgba(57, 173, 215, .12) !important;
 }
 
 .timer-stat {
   position: absolute !important;
-  top: 10px !important;
-  right: 15px !important;
-  z-index: 300 !important;
-  min-width: 132px !important;
-  min-height: 62px !important;
+  top: 286px !important;
+  right: 7px !important;
+  z-index: 580 !important;
+  width: 124px !important;
+  min-width: 124px !important;
+  min-height: 104px !important;
   display: grid !important;
-  grid-template-columns: auto 1fr auto !important;
-  grid-template-rows: auto 1fr !important;
+  grid-template-columns: 1fr auto !important;
+  grid-template-rows: 23px 1fr !important;
   align-items: center !important;
   justify-items: center !important;
-  gap: 0 5px !important;
-  padding: 7px 12px 8px !important;
-  border: 1px solid rgba(125, 211, 255, .46) !important;
-  border-radius: 18px !important;
-  background: linear-gradient(180deg, rgba(26, 47, 64, .96), rgba(16, 29, 40, .98)) !important;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, .4), 0 0 22px rgba(125, 211, 255, .14) !important;
+  gap: 0 4px !important;
+  padding: 9px 10px 11px !important;
+  border-color: rgba(125, 211, 255, .43) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(180deg, rgba(24, 54, 71, .98), rgba(15, 36, 49, .99)) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .34), 0 0 22px rgba(125, 211, 255, .11) !important;
 }
 
 .timer-stat .icon {
+  grid-column: 1 !important;
   grid-row: 1 !important;
+  justify-self: end !important;
+  font-size: .8rem !important;
 }
 
 .timer-stat .hud-label {
-  grid-column: 2 / 4 !important;
+  grid-column: 2 !important;
+  grid-row: 1 !important;
   justify-self: start !important;
-  font-size: .72rem !important;
+  color: rgba(220, 244, 255, .72) !important;
+  font-size: .69rem !important;
+  font-weight: 800 !important;
   letter-spacing: .08em !important;
 }
 
 .timer-stat #turnTimerValue {
-  grid-column: 1 / 3 !important;
+  grid-column: 1 !important;
   grid-row: 2 !important;
+  justify-self: end !important;
   min-width: 2.4ch !important;
-  color: #bfeeff !important;
-  font-size: 2.25rem !important;
+  color: #c5f2ff !important;
+  font-size: 2.7rem !important;
+  font-variant-numeric: tabular-nums !important;
   font-weight: 1000 !important;
   line-height: .95 !important;
   text-align: right !important;
-  text-shadow: 0 0 14px rgba(125, 211, 255, .34) !important;
+  text-shadow: 0 0 16px rgba(125, 211, 255, .34) !important;
 }
 
 .timer-stat > span:last-child {
-  grid-column: 3 !important;
+  grid-column: 2 !important;
   grid-row: 2 !important;
   align-self: end !important;
-  padding-bottom: 3px !important;
-  color: rgba(220, 244, 255, .78) !important;
-  font-size: .72rem !important;
+  justify-self: start !important;
+  padding-bottom: 4px !important;
+  color: rgba(220, 244, 255, .7) !important;
+  font-size: .67rem !important;
 }
 
 .timer-stat.timer-warning {
   border-color: rgba(255, 116, 88, .78) !important;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, .4), 0 0 24px rgba(255, 116, 88, .2) !important;
+  animation: timer-warning-pulse .9s ease-in-out infinite alternate;
 }
 
 .timer-stat.timer-warning #turnTimerValue {
-  color: #ff9d7d !important;
+  color: #ffad91 !important;
+}
+
+@keyframes timer-warning-pulse {
+  from { box-shadow: 0 12px 28px rgba(0,0,0,.34), 0 0 10px rgba(255,116,88,.1); }
+  to { box-shadow: 0 12px 28px rgba(0,0,0,.34), 0 0 28px rgba(255,116,88,.32); }
 }
 
 .coin-stat {
   position: absolute !important;
-  right: 18px !important;
-  bottom: 13px !important;
-  z-index: 320 !important;
-  min-width: 132px !important;
-  min-height: 52px !important;
-  justify-content: center !important;
-  padding: 8px 14px !important;
-  border: 1px solid rgba(238, 199, 96, .48) !important;
+  right: 7px !important;
+  bottom: 9px !important;
+  z-index: 590 !important;
+  width: 126px !important;
+  min-width: 126px !important;
+  min-height: 53px !important;
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  grid-template-rows: 16px 1fr !important;
+  align-items: center !important;
+  gap: 0 6px !important;
+  padding: 6px 11px 7px !important;
+  border-color: rgba(238, 199, 96, .54) !important;
   border-radius: 18px !important;
-  background: linear-gradient(180deg, rgba(73, 49, 24, .97), rgba(39, 26, 14, .98)) !important;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, .42), 0 0 20px rgba(227, 187, 86, .14) !important;
+  background: linear-gradient(180deg, rgba(72, 49, 25, .98), rgba(39, 27, 15, .99)) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .38), 0 0 18px rgba(227, 187, 86, .11) !important;
   pointer-events: none !important;
 }
 
+.coin-stat .icon {
+  grid-column: 1 !important;
+  grid-row: 1 / 3 !important;
+  color: #f3c95e !important;
+  font-size: .9rem !important;
+}
+
 .coin-stat .hud-label {
-  font-size: .72rem !important;
-  letter-spacing: .06em !important;
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  justify-self: start !important;
+  color: rgba(249, 228, 177, .7) !important;
+  font-size: .63rem !important;
+  letter-spacing: .11em !important;
 }
 
 .coin-stat #goldValue {
-  min-width: 4.6ch !important;
-  color: #f4cf66 !important;
-  font-size: 1.72rem !important;
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  justify-self: center !important;
+  min-width: 4.5ch !important;
+  color: #f8d66f !important;
+  font-size: 1.58rem !important;
+  font-variant-numeric: tabular-nums !important;
   font-weight: 1000 !important;
   line-height: 1 !important;
   text-align: center !important;
-  text-shadow: 0 0 12px rgba(227, 187, 86, .3) !important;
+  text-shadow: 0 0 12px rgba(227, 187, 86, .26) !important;
 }
 
-#handGrid.hand-grid {
-  padding-left: 158px !important;
-  padding-right: 158px !important;
+/* Result layer remains above the fixed HUD. */
+.result.show {
+  position: absolute !important;
+  inset: 100px 175px 18px 18px !important;
+  z-index: 3000 !important;
+  margin: 0 !important;
+  overflow: auto !important;
 }
 
 @media (max-width: 1000px) {
-  #shopGrid.shop-grid > .shop-card {
-    min-width: 108px !important;
+  #shopGrid.shop-grid > .shop-card,
+  #boardSlots.board-slots > .board-card {
+    min-width: 104px !important;
   }
 }
