@@ -1,0 +1,220 @@
+/*
+ * Keep every card component inside the fixed card frame.
+ * Long rules text is clamped before it can push the stat row outside.
+ */
+
+/* Shared containment ------------------------------------------------------ */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) {
+  align-content: stretch !important;
+  min-height: 0 !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .card-emoji,
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .card-name,
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .tagline,
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .card-text,
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stats {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .card-text {
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  text-overflow: ellipsis !important;
+  overflow-wrap: anywhere !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stats {
+  position: static !important;
+  align-self: stretch !important;
+  width: 100% !important;
+  height: 27px !important;
+  min-height: 27px !important;
+  padding: 0 3px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stat-orb {
+  min-width: 32px !important;
+  height: 26px !important;
+  padding: 0 6px !important;
+  font-size: .96rem !important;
+  line-height: 22px !important;
+}
+
+/* Tavern cards ------------------------------------------------------------ */
+#shopGrid .shop-card:not(.spell) {
+  display: grid !important;
+  grid-template-rows: 31px auto 12px minmax(0, 1fr) 27px !important;
+  row-gap: 2px !important;
+  padding: 15px 8px 7px !important;
+  overflow: visible !important;
+}
+
+#shopGrid .shop-card.spell {
+  display: grid !important;
+  grid-template-rows: 34px auto 12px minmax(0, 1fr) !important;
+  row-gap: 3px !important;
+  padding: 15px 9px 10px !important;
+  overflow: visible !important;
+}
+
+#shopGrid .shop-card .card-emoji {
+  align-self: center !important;
+  margin-top: 0 !important;
+  font-size: 31px !important;
+  line-height: 1 !important;
+}
+
+#shopGrid .shop-card .card-name {
+  align-self: center !important;
+  font-size: .84rem !important;
+  line-height: 1.08 !important;
+  max-height: 2.16em !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+#shopGrid .shop-card .tagline {
+  align-self: center !important;
+  font-size: .56rem !important;
+  line-height: 1.05 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+#shopGrid .shop-card .card-text {
+  align-self: stretch !important;
+  font-size: .58rem !important;
+  line-height: 1.19 !important;
+  -webkit-line-clamp: 4 !important;
+}
+
+#shopGrid .shop-card.spell .card-text {
+  font-size: .61rem !important;
+  line-height: 1.22 !important;
+  -webkit-line-clamp: 5 !important;
+}
+
+#shopGrid .shop-card.spell .stats {
+  display: none !important;
+}
+
+/* Board cards ------------------------------------------------------------- */
+#boardSlots .board-card:not(.empty) {
+  display: grid !important;
+  grid-template-rows: 32px auto minmax(0, 1fr) 27px !important;
+  row-gap: 3px !important;
+  padding: 15px 9px 7px !important;
+  overflow: visible !important;
+}
+
+#boardSlots .board-card .card-emoji {
+  align-self: center !important;
+  margin-top: 0 !important;
+  font-size: 31px !important;
+  line-height: 1 !important;
+}
+
+#boardSlots .board-card .card-name {
+  align-self: center !important;
+  font-size: .83rem !important;
+  line-height: 1.08 !important;
+  max-height: 2.16em !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+#boardSlots .board-card .card-text {
+  font-size: .58rem !important;
+  line-height: 1.18 !important;
+  -webkit-line-clamp: 5 !important;
+}
+
+/* Hand cards -------------------------------------------------------------- */
+#handGrid .hand-card:not(.empty):not(.spell) {
+  display: grid !important;
+  grid-template-rows: 27px auto minmax(0, 1fr) 24px !important;
+  row-gap: 2px !important;
+  padding: 11px 7px 6px !important;
+  overflow: hidden !important;
+}
+
+#handGrid .hand-card.spell {
+  display: grid !important;
+  grid-template-rows: 29px auto minmax(0, 1fr) !important;
+  row-gap: 3px !important;
+  padding: 11px 7px 8px !important;
+  overflow: hidden !important;
+}
+
+#handGrid .hand-card .card-emoji {
+  align-self: center !important;
+  margin-top: 0 !important;
+  font-size: 26px !important;
+  line-height: 1 !important;
+}
+
+#handGrid .hand-card .card-name {
+  align-self: center !important;
+  min-height: 0 !important;
+  max-height: 2.16em !important;
+  font-size: .7rem !important;
+  line-height: 1.08 !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+#handGrid .hand-card .card-text {
+  font-size: .51rem !important;
+  line-height: 1.16 !important;
+  -webkit-line-clamp: 4 !important;
+}
+
+#handGrid .hand-card .stats {
+  height: 24px !important;
+  min-height: 24px !important;
+  padding: 0 2px !important;
+}
+
+#handGrid .hand-card .stat-orb {
+  min-width: 27px !important;
+  height: 23px !important;
+  padding: 0 5px !important;
+  font-size: .78rem !important;
+  line-height: 19px !important;
+}
+
+#handGrid .hand-card.spell .stats {
+  display: none !important;
+}
+
+/* Legacy plain-number stats fallback ------------------------------------- */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stats > .atk,
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stats > .hp {
+  min-width: 2ch !important;
+  font-size: 1rem !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+#handGrid .hand-card .stats > .atk,
+#handGrid .hand-card .stats > .hp {
+  font-size: .8rem !important;
+}
