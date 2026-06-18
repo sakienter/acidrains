@@ -78,6 +78,7 @@ document.write('<script defer src="./cards/minions/tier1.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier1_pool_guard.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier2.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier3.js"><\/script>');
+document.write('<script defer src="./cards/minions/tier4_helpers.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier4.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier5.js"><\/script>');
 document.write('<script defer src="./cards/minions/tier6.js"><\/script>');
