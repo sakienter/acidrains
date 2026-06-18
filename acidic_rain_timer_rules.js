@@ -14,26 +14,22 @@ window.addEventListener("load", () => {
   });
 
   const TURN_TIME = Object.freeze({
-    1: 40,
-    2: 40,
-    3: 50,
-    4: 50,
-    5: 60,
-    6: 60,
+    1: 25,
+    2: 25,
+    3: 40,
+    4: 40,
+    5: 65,
+    6: 65,
     7: 80,
     8: 80,
     9: 100,
     10: 100,
-    11: 120,
-    12: 120,
-    13: 140,
-    14: 140,
-    15: 160,
-    16: 160,
+    11: 100,
+    12: 100,
   });
 
-  const DEFAULT_TURN_LIMIT = 16;
-  const MAX_TURN_SECONDS = 160;
+  const DEFAULT_TURN_LIMIT = 12;
+  const MAX_TURN_SECONDS = 100;
   let timerId = null;
   let turnDeadline = 0;
   let resolvingTimeout = false;
@@ -81,7 +77,7 @@ window.addEventListener("load", () => {
     if (!turnValue) {
       const chip = document.createElement("span");
       chip.className = "inline-stat turn-stat";
-      chip.innerHTML = '<span class="icon">◷</span><span class="hud-label">ターン</span><strong id="turnValue">0/16</strong>';
+      chip.innerHTML = '<span class="icon">◷</span><span class="hud-label">ターン</span><strong id="turnValue">0/12</strong>';
       stats.appendChild(chip);
       turnValue = chip.querySelector("#turnValue");
     }
@@ -90,7 +86,7 @@ window.addEventListener("load", () => {
     if (!timerValue) {
       const chip = document.createElement("span");
       chip.className = "inline-stat timer-stat";
-      chip.innerHTML = '<span class="icon">⏱️</span><span class="hud-label">残り</span><strong id="turnTimerValue">40</strong><span>秒</span>';
+      chip.innerHTML = '<span class="icon">⏱️</span><span class="hud-label">残り</span><strong id="turnTimerValue">25</strong><span>秒</span>';
       stats.appendChild(chip);
       timerValue = chip.querySelector("#turnTimerValue");
     }
@@ -281,13 +277,13 @@ window.addEventListener("load", () => {
 
   const modeSelect = document.querySelector("#gameModeSelect");
   const limitOption = modeSelect?.querySelector('option[value="limit"]');
-  if (limitOption) limitOption.textContent = "16ターン";
+  if (limitOption) limitOption.textContent = "12ターン";
 
   const startButton = document.querySelector("#gameStartBtn");
   startButton?.addEventListener("click", () => {
     state.isPaused = false;
     state.maxTurns = state.endlessMode ? Number.MAX_SAFE_INTEGER : DEFAULT_TURN_LIMIT;
-    if (!state.endlessMode) log("16ターンのスコアアタックを開始しました。");
+    if (!state.endlessMode) log("12ターンのスコアアタックを開始しました。");
     startTurnTimer();
     render();
   });
