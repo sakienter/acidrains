@@ -1,40 +1,45 @@
 /* Compact hand layout for the fixed 1280x720 game board. */
 #handGrid.hand-grid {
   margin-top: 2px !important;
-  min-height: 166px !important;
-  padding: 4px 22px 14px !important;
+  min-height: 164px !important;
+  padding: 5px 34px 16px !important;
   align-items: flex-end !important;
   overflow-x: auto !important;
   overflow-y: visible !important;
 }
 
 #handGrid.hand-grid .hand-card {
-  flex: 0 0 clamp(90px, 8.1vw, 124px) !important;
-  width: clamp(90px, 8.1vw, 124px) !important;
-  min-width: 90px !important;
-  max-width: 124px !important;
-  min-height: 148px !important;
-  height: 148px !important;
-  max-height: 148px !important;
-  padding: 9px 7px 7px !important;
+  flex: 0 0 clamp(96px, 8.25vw, 108px) !important;
+  width: clamp(96px, 8.25vw, 108px) !important;
+  min-width: 96px !important;
+  max-width: 108px !important;
+  min-height: 146px !important;
+  height: 146px !important;
+  max-height: 146px !important;
+  padding: 8px 7px 8px !important;
   overflow: hidden !important;
 }
 
 #handGrid.hand-grid .hand-card .card-emoji {
   margin-top: 3px !important;
-  font-size: 34px !important;
+  font-size: 32px !important;
   line-height: 1 !important;
 }
 
 #handGrid.hand-grid .hand-card .card-name {
-  font-size: 0.82rem !important;
-  line-height: 1.12 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.10 !important;
+  min-height: 1.72em !important;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  overflow: hidden !important;
 }
 
 #handGrid.hand-grid .hand-card .card-text {
-  min-height: 32px !important;
-  font-size: 0.60rem !important;
-  line-height: 1.24 !important;
+  min-height: 31px !important;
+  font-size: 0.57rem !important;
+  line-height: 1.20 !important;
   display: -webkit-box !important;
   -webkit-box-orient: vertical !important;
   -webkit-line-clamp: 3 !important;
@@ -44,26 +49,30 @@
 #handGrid.hand-grid .hand-card .stats {
   margin-top: auto !important;
   padding: 0 3px !important;
-  gap: 8px !important;
-  font-size: 0.95rem !important;
+  gap: 7px !important;
+  font-size: 0.90rem !important;
 }
 
 #handGrid.hand-grid .hand-card .cost {
   top: 4px !important;
   right: 4px !important;
   padding: 3px 6px !important;
-  font-size: 0.65rem !important;
+  font-size: 0.62rem !important;
 }
 
 #handGrid.hand-grid .hand-card:not(.empty):hover {
-  transform: translateY(-12px) scale(1.04) !important;
+  transform: translateY(-10px) scale(1.035) !important;
 }
 
 @media (max-width: 1000px) {
+  #handGrid.hand-grid {
+    padding-inline: 22px !important;
+  }
+
   #handGrid.hand-grid .hand-card {
-    flex-basis: 92px !important;
-    width: 92px !important;
-    min-width: 92px !important;
-    max-width: 92px !important;
+    flex-basis: 94px !important;
+    width: 94px !important;
+    min-width: 94px !important;
+    max-width: 94px !important;
   }
 }
