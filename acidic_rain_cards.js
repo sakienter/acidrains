@@ -109,3 +109,5 @@ document.write('<script defer src="./acidic_rain_awakening_reward_rules.js"><\/s
 document.write('<script defer src="./acidic_rain_turn_transition_rules.js"><\/script>');
 document.write('<script defer src="./acidic_rain_reference_layout.js"><\/script>');
 document.write('<script defer src="./acidic_rain_pause_rules.js"><\/script>');
+document.write('<script defer src="./acidic_rain_requested_card_changes.js"><\/script>');
+document.write('<script defer src="./acidic_rain_seer_runtime.js"><\/script>');
