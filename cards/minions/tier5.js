@@ -120,6 +120,14 @@
     return discover(gameState, pool, count, '磯の探検家：自陣にいない種族を発見');
   }
 
+  function fixedRightmostMinion(gameState) {
+    const slotCount = typeof window.getBaseShopMinionSlots === 'function'
+      ? window.getBaseShopMinionSlots(gameState?.tavernTier)
+      : Math.min(6, 2 + Math.max(1, num(gameState?.tavernTier, 1)));
+    const target = gameState?.shop?.[Math.max(0, slotCount - 1)] || null;
+    return target && target.type !== 'spell' ? target : null;
+  }
+
   function syncAcidRain(card) {
     if (!card || card.id !== 'acidic_rain_copy') return card;
     const template = MINIONS.find(candidate => candidate?.id === 'acidic_rain_copy');
@@ -136,8 +144,11 @@
       this.rerollProgress = Math.max(0, Math.floor(num(this.rerollProgress))) + 1;
       while (this.rerollProgress >= 4) {
         this.rerollProgress -= 4;
-        const target = [...(gameState.shop || [])].reverse().find(shopCard => shopCard && shopCard.type !== 'spell');
-        if (!target) continue;
+        const target = fixedRightmostMinion(gameState);
+        if (!target) {
+          say(`${this.name}：酒場の固定右端にミニオンがいないため、スタッツを得なかった。`);
+          continue;
+        }
         const multiplier = this.awakened ? 2 : 1;
         this.atk = num(this.atk) + num(target.atk) * multiplier;
         this.hp = num(this.hp) + num(target.hp) * multiplier;
