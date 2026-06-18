@@ -42,10 +42,16 @@
       }
 
       game.addEventListener("load", () => {
-        const link = game.contentDocument.createElement("link");
+        const gameDocument = game.contentDocument;
+
+        const link = gameDocument.createElement("link");
         link.rel = "stylesheet";
         link.href = "./layout_1280.css";
-        game.contentDocument.head.appendChild(link);
+        gameDocument.head.appendChild(link);
+
+        const progressionScript = gameDocument.createElement("script");
+        progressionScript.src = "./tavern_progression.js";
+        gameDocument.body.appendChild(progressionScript);
       });
 
       window.addEventListener("resize", fitStage);
