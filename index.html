@@ -59,6 +59,11 @@
         cardChangesScript.async = false;
         gameDocument.body.appendChild(cardChangesScript);
 
+        const seerRuntimeScript = gameDocument.createElement("script");
+        seerRuntimeScript.src = "./acidic_rain_seer_runtime.js";
+        seerRuntimeScript.async = false;
+        gameDocument.body.appendChild(seerRuntimeScript);
+
         const poolScript = gameDocument.createElement("script");
         poolScript.src = "./acidic_rain_minion_pool_rules.js";
         poolScript.async = false;
