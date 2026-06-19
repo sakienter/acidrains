@@ -1,0 +1,268 @@
+/*
+ * Final layout corrections for the fantasy card frame.
+ * Loaded after acidic_rain_card_rough_layout.css and the large desktop layout.
+ * Selectors intentionally match or exceed the legacy desktop specificity.
+ */
+
+/* Tavern cards ------------------------------------------------------------ */
+#shopGrid.shop-grid {
+  min-height: 248px !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) {
+  height: 232px !important;
+  min-height: 232px !important;
+  max-height: 232px !important;
+  padding: 9px 8px 8px !important;
+  row-gap: 4px !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty):not(.spell) {
+  grid-template-columns: minmax(0, 1fr) 58px !important;
+  grid-template-rows: 64px 29px minmax(82px, 1fr) 30px !important;
+}
+
+#shopGrid.shop-grid > .shop-card.spell:not(.empty) {
+  grid-template-columns: minmax(0, 1fr) 58px !important;
+  grid-template-rows: 64px 29px minmax(113px, 1fr) !important;
+}
+
+/* Board cards ------------------------------------------------------------- */
+#boardSlots.board-slots {
+  min-height: 252px !important;
+}
+
+#boardSlots.board-slots > .board-card:not(.empty) {
+  height: 236px !important;
+  min-height: 236px !important;
+  max-height: 236px !important;
+  padding: 9px 8px 8px !important;
+  row-gap: 4px !important;
+}
+
+#boardSlots.board-slots > .board-card:not(.empty):not(.spell) {
+  grid-template-columns: minmax(0, 1fr) 58px !important;
+  grid-template-rows: 66px 29px minmax(84px, 1fr) 30px !important;
+}
+
+#boardSlots.board-slots > .board-card.spell:not(.empty) {
+  grid-template-columns: minmax(0, 1fr) 58px !important;
+  grid-template-rows: 66px 29px minmax(115px, 1fr) !important;
+}
+
+/* Illustration window ----------------------------------------------------- */
+#shopGrid.shop-grid > .shop-card:not(.empty) .card-emoji,
+#boardSlots.board-slots > .board-card:not(.empty) .card-emoji {
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 2px 27px 3px !important;
+  font-size: 39px !important;
+  overflow: hidden !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .card-emoji img,
+#boardSlots.board-slots > .board-card:not(.empty) .card-emoji img {
+  width: auto !important;
+  height: 58px !important;
+  max-width: 88% !important;
+  max-height: 94% !important;
+  object-fit: contain !important;
+}
+
+/* Badges no longer cover the name plate. */
+#shopGrid.shop-grid > .shop-card:not(.empty) .tier-number-badge,
+#boardSlots.board-slots > .board-card:not(.empty) .tier-number-badge {
+  top: -5px !important;
+  left: -4px !important;
+  width: 47px !important;
+  min-width: 47px !important;
+  height: 58px !important;
+  padding-bottom: 13px !important;
+  font-size: 1.3rem !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .cost,
+#boardSlots.board-slots > .board-card:not(.empty) .cost {
+  top: 5px !important;
+  right: 5px !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  border-width: 2px !important;
+  font-size: .93rem !important;
+}
+
+/* Name and tribe ---------------------------------------------------------- */
+#shopGrid.shop-grid > .shop-card:not(.empty) .card-name,
+#boardSlots.board-slots > .board-card:not(.empty) .card-name {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  height: 29px !important;
+  min-height: 29px !important;
+  padding: 0 3px 0 9px !important;
+  font-size: .68rem !important;
+  letter-spacing: -.025em !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .tagline,
+#boardSlots.board-slots > .board-card:not(.empty) .tagline {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  width: 58px !important;
+  max-width: 58px !important;
+  height: 29px !important;
+  min-height: 29px !important;
+  padding: 0 6px 0 2px !important;
+  font-size: .51rem !important;
+  letter-spacing: -.035em !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .tagline::before,
+#boardSlots.board-slots > .board-card:not(.empty) .tagline::before {
+  margin-right: 3px !important;
+  font-size: .68rem !important;
+}
+
+/* Rules box: restore the intended vertical space and line count. */
+#shopGrid.shop-grid > .shop-card:not(.empty) .card-text,
+#boardSlots.board-slots > .board-card:not(.empty) .card-text {
+  grid-column: 1 / -1 !important;
+  grid-row: 3 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 7px 8px 6px !important;
+  overflow: hidden !important;
+  font-size: .62rem !important;
+  line-height: 1.26 !important;
+  -webkit-line-clamp: 6 !important;
+}
+
+#shopGrid.shop-grid > .shop-card.spell:not(.empty) .card-text,
+#boardSlots.board-slots > .board-card.spell:not(.empty) .card-text {
+  min-height: 0 !important;
+  font-size: .64rem !important;
+  -webkit-line-clamp: 8 !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .card-effect-label,
+#boardSlots.board-slots > .board-card:not(.empty) .card-effect-label {
+  margin-right: 4px !important;
+  padding: 1px 4px !important;
+  font-size: .39rem !important;
+}
+
+/* Stats: one separator only and no forced minimum widths from old CSS. */
+#shopGrid.shop-grid > .shop-card:not(.empty) .stats,
+#boardSlots.board-slots > .board-card:not(.empty) .stats {
+  grid-column: 1 / -1 !important;
+  grid-row: 4 !important;
+  width: 72% !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 10px !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .stat-orb,
+#shopGrid.shop-grid > .shop-card:not(.empty) .stats > .atk,
+#shopGrid.shop-grid > .shop-card:not(.empty) .stats > .hp,
+#boardSlots.board-slots > .board-card:not(.empty) .stat-orb,
+#boardSlots.board-slots > .board-card:not(.empty) .stats > .atk,
+#boardSlots.board-slots > .board-card:not(.empty) .stats > .hp {
+  min-width: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  font-size: .96rem !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .stats > .hp::before,
+#shopGrid.shop-grid > .shop-card:not(.empty) .hp-orb::before,
+#boardSlots.board-slots > .board-card:not(.empty) .stats > .hp::before,
+#boardSlots.board-slots > .board-card:not(.empty) .hp-orb::before {
+  content: none !important;
+  margin: 0 !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .stats::before,
+#shopGrid.shop-grid > .shop-card:not(.empty) .stats::after,
+#boardSlots.board-slots > .board-card:not(.empty) .stats::before,
+#boardSlots.board-slots > .board-card:not(.empty) .stats::after {
+  width: 9px !important;
+  height: 9px !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .stats::before,
+#boardSlots.board-slots > .board-card:not(.empty) .stats::before {
+  left: -6px !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty) .stats::after,
+#boardSlots.board-slots > .board-card:not(.empty) .stats::after {
+  right: -6px !important;
+}
+
+/* Spell cards fill the lower area instead of leaving an empty black block. */
+#shopGrid.shop-grid > .shop-card.spell:not(.empty) .stats,
+#boardSlots.board-slots > .board-card.spell:not(.empty) .stats {
+  display: none !important;
+}
+
+/* Keep the bottom crest attached to the frame. */
+#shopGrid.shop-grid > .shop-card:not(.empty)::after,
+#boardSlots.board-slots > .board-card:not(.empty)::after {
+  bottom: -5px !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+
+/* Hand cards: retain compact size but restore a usable rules panel. */
+#handGrid.hand-grid > .hand-card:not(.empty):not(.spell) {
+  grid-template-columns: minmax(0, 1fr) 46px !important;
+  grid-template-rows: 48px 23px minmax(55px, 1fr) 23px !important;
+  row-gap: 3px !important;
+}
+
+#handGrid.hand-grid > .hand-card.spell:not(.empty) {
+  grid-template-columns: minmax(0, 1fr) 46px !important;
+  grid-template-rows: 48px 23px minmax(80px, 1fr) !important;
+  row-gap: 3px !important;
+}
+
+#handGrid.hand-grid > .hand-card:not(.empty) .card-text {
+  height: 100% !important;
+  min-height: 0 !important;
+  font-size: .5rem !important;
+  line-height: 1.18 !important;
+  -webkit-line-clamp: 5 !important;
+}
+
+#handGrid.hand-grid > .hand-card:not(.empty) .stats > .hp::before,
+#handGrid.hand-grid > .hand-card:not(.empty) .hp-orb::before {
+  content: none !important;
+  margin: 0 !important;
+}
+
+/* Discover cards use the same corrected hierarchy at presentation size. */
+#discoverOverlay .discover-card-choice:not(.empty):not(.spell) {
+  grid-template-columns: minmax(0, 1fr) 104px !important;
+  grid-template-rows: 112px 40px minmax(170px, 1fr) 40px !important;
+}
+
+#discoverOverlay .discover-card-choice.spell:not(.empty) {
+  grid-template-columns: minmax(0, 1fr) 104px !important;
+  grid-template-rows: 112px 40px minmax(215px, 1fr) !important;
+}
+
+#discoverOverlay .discover-card-choice .stats > .hp::before,
+#discoverOverlay .discover-card-choice .hp-orb::before {
+  content: none !important;
+  margin: 0 !important;
+}
