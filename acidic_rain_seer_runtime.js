@@ -193,6 +193,14 @@
     document.head.appendChild(link);
   }
 
+  if (!document.querySelector('link[data-acid-card-rough-layout]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './acidic_rain_card_rough_layout.css';
+    link.dataset.acidCardRoughLayout = 'true';
+    document.head.appendChild(link);
+  }
+
   if (!document.querySelector('script[data-acid-card-readability]')) {
     const script = document.createElement('script');
     script.src = './acidic_rain_card_readability.js';
