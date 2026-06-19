@@ -1,0 +1,634 @@
+/*
+ * Rough-layout card skin.
+ * Loaded after the large desktop layout so the visual hierarchy follows the
+ * approved sketch: tier at upper-left, cost at upper-right, illustration,
+ * one-piece name/type plate, a large rules panel, and centred stats.
+ */
+:root {
+  --rough-card-ink: #11181c;
+  --rough-card-paper: #fffef9;
+  --rough-card-paper-deep: #f4f1e8;
+  --rough-card-cyan: #5fc5e8;
+  --rough-card-yellow: #fff000;
+  --rough-card-awakened-glow: rgba(255, 226, 0, .48);
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+):not(.empty) {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-rows: 52px 29px minmax(0, 1fr) 30px !important;
+  column-gap: 0 !important;
+  row-gap: 5px !important;
+  padding: 10px 9px 8px !important;
+  overflow: visible !important;
+  border: 3px solid var(--rough-card-ink) !important;
+  border-radius: 20px !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--tribe-hi, #aee8f7) 34%, #ffffff) 0%,
+      color-mix(in srgb, var(--tribe-mid, #b9dce4) 18%, #ffffff) 33%,
+      var(--rough-card-paper) 46%,
+      var(--rough-card-paper-deep) 100%
+    ) !important;
+  color: var(--rough-card-ink) !important;
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, .25),
+    inset 0 1px 0 rgba(255, 255, 255, .95) !important;
+  isolation: isolate !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+):not(.empty)::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 3px 3px auto !important;
+  z-index: 0 !important;
+  height: 76px !important;
+  border-radius: 15px 15px 44% 44% !important;
+  background:
+    radial-gradient(circle at 50% 25%, rgba(255, 255, 255, .72), transparent 45%),
+    linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .62)) !important;
+  pointer-events: none !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+):not(.empty) > * {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+/* Tier: cyan downward triangle with a dark outline. */
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .tier-number-badge {
+  position: absolute !important;
+  top: -4px !important;
+  left: -3px !important;
+  right: auto !important;
+  z-index: 8 !important;
+  width: 52px !important;
+  min-width: 52px !important;
+  height: 61px !important;
+  padding: 0 0 15px !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  clip-path: polygon(0 0, 100% 0, 50% 100%) !important;
+  background: var(--rough-card-ink) !important;
+  color: #0b1114 !important;
+  font-size: 1.55rem !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-shadow: none !important;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .24)) !important;
+  box-shadow: none !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .tier-number-badge::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 3px 4px 5px !important;
+  z-index: -1 !important;
+  clip-path: inherit !important;
+  background: linear-gradient(180deg, #75d2ef, var(--rough-card-cyan)) !important;
+}
+
+/* Cost: yellow oval at upper-right. */
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .cost {
+  position: absolute !important;
+  top: 5px !important;
+  right: 5px !important;
+  z-index: 8 !important;
+  width: 49px !important;
+  min-width: 49px !important;
+  max-width: 49px !important;
+  height: 43px !important;
+  min-height: 43px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: visible !important;
+  border: 3px solid var(--rough-card-ink) !important;
+  border-radius: 50% !important;
+  background: var(--rough-card-yellow) !important;
+  color: #0b1013 !important;
+  font-size: 1.15rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-shadow: none !important;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, .22) !important;
+  opacity: 1 !important;
+}
+
+/* Illustration. */
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .card-emoji {
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+  align-self: center !important;
+  justify-self: center !important;
+  margin: 0 !important;
+  padding-top: 1px !important;
+  font-size: 43px !important;
+  line-height: 1 !important;
+  filter:
+    drop-shadow(0 2px 3px rgba(0, 0, 0, .28))
+    drop-shadow(0 0 7px color-mix(in srgb, var(--tribe-glow, #75cfe9) 55%, transparent)) !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .card-emoji img {
+  width: auto !important;
+  max-width: 74px !important;
+  height: 50px !important;
+  object-fit: contain !important;
+}
+
+/* Name and tribe share one outlined row. */
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .card-name {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  width: auto !important;
+  height: 29px !important;
+  min-height: 29px !important;
+  margin: 0 !important;
+  padding: 0 3px 0 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  overflow: hidden !important;
+  border: 2px solid var(--rough-card-ink) !important;
+  border-right: 0 !important;
+  border-radius: 8px 0 0 8px !important;
+  background: rgba(255, 255, 255, .94) !important;
+  color: #11181c !important;
+  font-size: .77rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: right !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  text-shadow: none !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .tagline {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  width: auto !important;
+  max-width: 72px !important;
+  height: 29px !important;
+  min-height: 29px !important;
+  margin: 0 !important;
+  padding: 0 8px 0 3px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  overflow: hidden !important;
+  border: 2px solid var(--rough-card-ink) !important;
+  border-left: 0 !important;
+  border-radius: 0 8px 8px 0 !important;
+  background: rgba(255, 255, 255, .94) !important;
+  color: #11181c !important;
+  font-size: .65rem !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  text-shadow: none !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .tagline::before {
+  content: "/" !important;
+  flex: 0 0 auto !important;
+  margin-right: 5px !important;
+  color: #11181c !important;
+  font-size: .82rem !important;
+  font-weight: 800 !important;
+}
+
+/* Rules panel. */
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .card-text {
+  grid-column: 1 / -1 !important;
+  grid-row: 3 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 7px 8px !important;
+  align-self: stretch !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  border: 2px solid var(--rough-card-ink) !important;
+  border-radius: 9px !important;
+  background: rgba(255, 255, 255, .97) !important;
+  color: #171b1d !important;
+  font-size: .69rem !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  text-align: left !important;
+  text-shadow: none !important;
+  overflow-wrap: anywhere !important;
+  box-shadow: inset 0 1px 0 #fff !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 5 !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+).spell .card-text {
+  background: rgba(251, 247, 255, .98) !important;
+  color: #251b2d !important;
+}
+
+.card-effect-label {
+  display: none !important;
+}
+
+.card-keyword {
+  color: #8a241f !important;
+  font-weight: 1000 !important;
+}
+
+.spell .card-keyword {
+  color: #6a2c82 !important;
+}
+
+.card-value {
+  color: #075d83 !important;
+  font-weight: 950 !important;
+}
+
+/* Stats become a single centred “attack / health” line. */
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .stats {
+  grid-column: 1 / -1 !important;
+  grid-row: 4 !important;
+  position: static !important;
+  width: 100% !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  overflow: visible !important;
+  color: #101518 !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .stat-orb,
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .stats > .atk,
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .stats > .hp {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #101518 !important;
+  font-size: 1.12rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .stats > .hp::before,
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+) .hp-orb::before {
+  content: "/" !important;
+  margin: 0 8px !important;
+  color: #101518 !important;
+  font-weight: 700 !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+).spell {
+  grid-template-rows: 52px 29px minmax(0, 1fr) !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+).spell .stats {
+  display: none !important;
+}
+
+/* Awakened cards: bright yellow double frame from the sketch. */
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+).awakened-card {
+  border-color: var(--rough-card-ink) !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--tribe-hi, #aee8f7) 28%, #fff8ab) 0%,
+      #fffef0 45%,
+      #fffdf2 100%
+    ) !important;
+  box-shadow:
+    0 0 0 4px var(--rough-card-yellow),
+    0 0 0 7px var(--rough-card-ink),
+    0 0 24px var(--rough-card-awakened-glow),
+    0 10px 22px rgba(0, 0, 0, .3) !important;
+}
+
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+).awakened-card .card-name,
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+).awakened-card .tagline,
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+).awakened-card .card-text {
+  background: #fffef2 !important;
+}
+
+/* Frozen remains readable without replacing the awakened frame. */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card).frozen {
+  filter: saturate(.82) brightness(1.04) !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card).frozen .card-text {
+  background: #eefaff !important;
+}
+
+/* Hand cards use a compressed version of the same hierarchy. */
+#handGrid .hand-card:not(.empty) {
+  grid-template-rows: 39px 24px minmax(0, 1fr) 24px !important;
+  row-gap: 3px !important;
+  padding: 8px 6px 6px !important;
+  border-radius: 16px !important;
+}
+
+#handGrid .hand-card.spell:not(.empty) {
+  grid-template-rows: 39px 24px minmax(0, 1fr) !important;
+}
+
+#handGrid .hand-card .tier-number-badge {
+  width: 42px !important;
+  min-width: 42px !important;
+  height: 50px !important;
+  padding-bottom: 12px !important;
+  font-size: 1.2rem !important;
+}
+
+#handGrid .hand-card .cost {
+  width: 39px !important;
+  min-width: 39px !important;
+  max-width: 39px !important;
+  height: 35px !important;
+  min-height: 35px !important;
+  border-width: 2px !important;
+  font-size: .86rem !important;
+}
+
+#handGrid .hand-card .card-emoji {
+  font-size: 31px !important;
+}
+
+#handGrid .hand-card .card-emoji img {
+  max-width: 53px !important;
+  height: 37px !important;
+}
+
+#handGrid .hand-card .card-name,
+#handGrid .hand-card .tagline {
+  height: 24px !important;
+  min-height: 24px !important;
+}
+
+#handGrid .hand-card .card-name {
+  padding-left: 5px !important;
+  font-size: .57rem !important;
+}
+
+#handGrid .hand-card .tagline {
+  max-width: 51px !important;
+  padding-right: 5px !important;
+  font-size: .49rem !important;
+}
+
+#handGrid .hand-card .tagline::before {
+  margin-right: 3px !important;
+  font-size: .62rem !important;
+}
+
+#handGrid .hand-card .card-text {
+  padding: 5px !important;
+  font-size: .52rem !important;
+  line-height: 1.2 !important;
+  -webkit-line-clamp: 4 !important;
+}
+
+#handGrid .hand-card .stats,
+#handGrid .hand-card .stat-orb,
+#handGrid .hand-card .stats > .atk,
+#handGrid .hand-card .stats > .hp {
+  height: 24px !important;
+  min-height: 24px !important;
+  font-size: .78rem !important;
+}
+
+#handGrid .hand-card .stats > .hp::before,
+#handGrid .hand-card .hp-orb::before {
+  margin-inline: 5px !important;
+}
+
+/* Discover choices inherit the same card language at a larger scale. */
+#discoverOverlay .discover-card-choice {
+  grid-template-rows: 66px 34px minmax(150px, 1fr) 34px !important;
+  row-gap: 7px !important;
+  padding: 13px 12px 10px !important;
+  border-radius: 24px !important;
+}
+
+#discoverOverlay .discover-card-choice.spell {
+  grid-template-rows: 66px 34px minmax(180px, 1fr) !important;
+}
+
+#discoverOverlay .discover-card-choice .tier-number-badge {
+  width: 62px !important;
+  min-width: 62px !important;
+  height: 72px !important;
+  padding-bottom: 18px !important;
+  font-size: 1.9rem !important;
+}
+
+#discoverOverlay .discover-card-choice .cost {
+  width: 58px !important;
+  min-width: 58px !important;
+  max-width: 58px !important;
+  height: 51px !important;
+  min-height: 51px !important;
+  font-size: 1.35rem !important;
+}
+
+#discoverOverlay .discover-card-choice .card-emoji {
+  font-size: 55px !important;
+}
+
+#discoverOverlay .discover-card-choice .card-name,
+#discoverOverlay .discover-card-choice .tagline {
+  height: 34px !important;
+  min-height: 34px !important;
+}
+
+#discoverOverlay .discover-card-choice .card-name {
+  font-size: .94rem !important;
+}
+
+#discoverOverlay .discover-card-choice .tagline {
+  max-width: 100px !important;
+  font-size: .8rem !important;
+}
+
+#discoverOverlay .discover-card-choice .card-text {
+  padding: 11px 12px !important;
+  font-size: .85rem !important;
+  line-height: 1.4 !important;
+  -webkit-line-clamp: 8 !important;
+}
+
+#discoverOverlay .discover-card-choice .stat-orb,
+#discoverOverlay .discover-card-choice .stats > .atk,
+#discoverOverlay .discover-card-choice .stats > .hp {
+  font-size: 1.35rem !important;
+}
+
+/* Keyboard focus remains obvious without changing the design language. */
+:is(
+  #shopGrid .shop-card,
+  #boardSlots .board-card,
+  #handGrid .hand-card,
+  #discoverOverlay .discover-card-choice
+):focus-visible {
+  outline: 3px solid #6ed8f4 !important;
+  outline-offset: 4px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(
+    #shopGrid .shop-card,
+    #boardSlots .board-card,
+    #handGrid .hand-card,
+    #discoverOverlay .discover-card-choice
+  ) {
+    transition: none !important;
+  }
+}
