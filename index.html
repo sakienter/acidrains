@@ -5,24 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Acidic Rain Battleground</title>
     <style>
-      html, body {
+      :root {
+        --game-width: 1600px;
+        --game-height: 900px;
+      }
+
+      html,
+      body {
         width: 100%;
         height: 100%;
         margin: 0;
         overflow: hidden;
         background: #17110d;
       }
+
       #stage {
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 1280px;
-        height: 720px;
+        width: var(--game-width);
+        height: var(--game-height);
         transform-origin: center center;
       }
+
       iframe {
-        width: 1280px;
-        height: 720px;
+        width: var(--game-width);
+        height: var(--game-height);
         border: 0;
         display: block;
       }
@@ -30,34 +38,111 @@
   </head>
   <body>
     <div id="stage">
-      <iframe id="game" src="./acidic_rain_battleground.html" title="Acidic Rain Battleground"></iframe>
+      <iframe
+        id="game"
+        src="./acidic_rain_battleground.html?v=20260620-2"
+        title="Acidic Rain Battleground"
+      ></iframe>
     </div>
+
     <script>
+      const BASE_WIDTH = 1600;
+      const BASE_HEIGHT = 900;
+      const VIEWPORT_PADDING = 12;
+      const ASSET_VERSION = "20260620-2";
+
       const stage = document.querySelector("#stage");
       const game = document.querySelector("#game");
 
       function fitStage() {
-        const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720, 1);
+        const availableWidth = Math.max(1, window.innerWidth - VIEWPORT_PADDING * 2);
+        const availableHeight = Math.max(1, window.innerHeight - VIEWPORT_PADDING * 2);
+        const scale = Math.min(
+          availableWidth / BASE_WIDTH,
+          availableHeight / BASE_HEIGHT,
+          1
+        );
+
         stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      }
+
+      function appendStyle(documentRef, href, marker) {
+        const old = documentRef.querySelector(`link[data-index-style="${marker}"]`);
+        if (old) old.remove();
+
+        const link = documentRef.createElement("link");
+        link.rel = "stylesheet";
+        link.href = `${href}?v=${ASSET_VERSION}`;
+        link.dataset.indexStyle = marker;
+        documentRef.head.appendChild(link);
+        return link;
+      }
+
+      function appendScript(documentRef, src, marker) {
+        const old = documentRef.querySelector(`script[data-index-script="${marker}"]`);
+        if (old) old.remove();
+
+        const script = documentRef.createElement("script");
+        script.src = `${src}?v=${ASSET_VERSION}`;
+        script.async = false;
+        script.dataset.indexScript = marker;
+        documentRef.body.appendChild(script);
+        return script;
+      }
+
+      function installFinalCardStyles(documentRef) {
+        documentRef
+          .querySelectorAll(
+            "link[data-acid-card-rough-layout], link[data-acid-card-layout-fix], " +
+            'link[data-index-style="card-frame"], link[data-index-style="card-layout-fix"]'
+          )
+          .forEach(node => node.remove());
+
+        appendStyle(
+          documentRef,
+          "./acidic_rain_card_rough_layout.css",
+          "card-frame"
+        );
+        appendStyle(
+          documentRef,
+          "./acidic_rain_card_layout_fix.css",
+          "card-layout-fix"
+        );
       }
 
       game.addEventListener("load", () => {
         const gameDocument = game.contentDocument;
+        if (!gameDocument) return;
 
-        const link = gameDocument.createElement("link");
-        link.rel = "stylesheet";
-        link.href = "./layout_1280.css";
-        gameDocument.head.appendChild(link);
+        appendStyle(gameDocument, "./layout_1280.css", "base-layout");
 
-        const progressionScript = gameDocument.createElement("script");
-        progressionScript.src = "./tavern_progression.js";
-        progressionScript.async = false;
-        gameDocument.body.appendChild(progressionScript);
+        const progressionScript = appendScript(
+          gameDocument,
+          "./tavern_progression.js",
+          "progression"
+        );
 
-        const poolScript = gameDocument.createElement("script");
-        poolScript.src = "./acidic_rain_minion_pool_rules.js";
-        poolScript.async = false;
-        gameDocument.body.appendChild(poolScript);
+        const loadPoolRules = () => {
+          const poolScript = appendScript(
+            gameDocument,
+            "./acidic_rain_minion_pool_rules.js",
+            "pool-rules"
+          );
+
+          poolScript.addEventListener("load", () => {
+            installFinalCardStyles(gameDocument);
+            window.setTimeout(() => installFinalCardStyles(gameDocument), 250);
+            window.setTimeout(() => installFinalCardStyles(gameDocument), 1000);
+          }, { once: true });
+        };
+
+        progressionScript.addEventListener("load", loadPoolRules, { once: true });
+        progressionScript.addEventListener("error", loadPoolRules, { once: true });
+
+        // Ensure the final card CSS is present even when a cached script fails to
+        // emit a load event or another runtime appends legacy styles afterward.
+        installFinalCardStyles(gameDocument);
+        window.setTimeout(() => installFinalCardStyles(gameDocument), 1500);
       });
 
       window.addEventListener("resize", fitStage);
