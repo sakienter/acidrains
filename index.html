@@ -33,13 +33,13 @@
     <div id="stage">
       <iframe
         id="game"
-        src="./acidic_rain_battleground.html?v=20260620-3"
+        src="./acidic_rain_battleground.html?v=20260620-4"
         title="Acidic Rain Battleground"
       ></iframe>
     </div>
 
     <script>
-      const ASSET_VERSION = "20260620-3";
+      const ASSET_VERSION = "20260620-4";
       const game = document.querySelector("#game");
 
       function appendStyle(documentRef, href, marker) {
@@ -94,6 +94,14 @@
         );
       }
 
+      function installFinalCardRuntime(documentRef) {
+        appendScript(
+          documentRef,
+          "./acidic_rain_card_final_runtime.js",
+          "final-card-runtime"
+        );
+      }
+
       game.addEventListener("load", () => {
         const gameDocument = game.contentDocument;
         if (!gameDocument) return;
@@ -115,8 +123,15 @@
 
           poolScript.addEventListener("load", () => {
             installFinalStyles(gameDocument);
-            window.setTimeout(() => installFinalStyles(gameDocument), 250);
-            window.setTimeout(() => installFinalStyles(gameDocument), 1000);
+            installFinalCardRuntime(gameDocument);
+            window.setTimeout(() => {
+              installFinalStyles(gameDocument);
+              installFinalCardRuntime(gameDocument);
+            }, 250);
+            window.setTimeout(() => {
+              installFinalStyles(gameDocument);
+              installFinalCardRuntime(gameDocument);
+            }, 1000);
           }, { once: true });
         };
 
@@ -124,7 +139,11 @@
         progressionScript.addEventListener("error", loadPoolRules, { once: true });
 
         installFinalStyles(gameDocument);
-        window.setTimeout(() => installFinalStyles(gameDocument), 1500);
+        installFinalCardRuntime(gameDocument);
+        window.setTimeout(() => {
+          installFinalStyles(gameDocument);
+          installFinalCardRuntime(gameDocument);
+        }, 1500);
       });
     </script>
   </body>
