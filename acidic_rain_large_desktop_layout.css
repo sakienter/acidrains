@@ -1,0 +1,508 @@
+/*
+ * Large desktop battlefield.
+ * Base design target: roughly 1600 x 900 while remaining fluid down to the
+ * previous desktop width. Loaded last so all older 1280 x 720 constraints are
+ * intentionally replaced.
+ */
+:root {
+  --large-board-max: 1680px;
+  --large-control-rail: 188px;
+  --large-card-gap: 12px;
+}
+
+html,
+body {
+  min-width: 1280px;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
+.shell {
+  width: min(var(--large-board-max), calc(100vw - 24px)) !important;
+  max-width: none !important;
+  min-width: 1260px !important;
+  margin: 0 auto !important;
+  padding: 10px 0 22px !important;
+}
+
+.table-board {
+  width: 100% !important;
+  min-height: 880px !important;
+  margin-top: 8px !important;
+  padding: 16px 20px 18px !important;
+  border-radius: 34px !important;
+}
+
+.table-board::before {
+  inset: 112px 202px 16px 16px !important;
+  border-radius: 24px !important;
+}
+
+.table-board::after {
+  top: 112px !important;
+  right: 16px !important;
+  bottom: 16px !important;
+  width: 168px !important;
+  border-radius: 24px !important;
+}
+
+/* Header ------------------------------------------------------------------ */
+.board-tools {
+  min-height: 104px !important;
+}
+
+.board-tools::after {
+  top: 102px !important;
+  left: 24px !important;
+  right: 208px !important;
+}
+
+.score-stat {
+  top: 20px !important;
+  left: 26px !important;
+  width: 254px !important;
+  height: 64px !important;
+  padding: 8px 17px 9px !important;
+}
+
+.score-stat .hud-label {
+  font-size: .7rem !important;
+}
+
+.score-stat #scoreValue {
+  font-size: 1.68rem !important;
+}
+
+.inline-stat:has(#tavernTierValue) {
+  top: 32px !important;
+  left: 300px !important;
+  min-width: 162px !important;
+  height: 40px !important;
+  padding: 7px 13px !important;
+}
+
+.inline-stat:has(#tavernTierValue) .hud-label {
+  font-size: .7rem !important;
+}
+
+#tavernTierValue {
+  font-size: 1.08rem !important;
+}
+
+.board-meta {
+  top: 32px !important;
+  left: 482px !important;
+  right: auto !important;
+  width: 286px !important;
+  min-height: 40px !important;
+}
+
+#acidRainStatus {
+  min-height: 40px !important;
+  padding: 8px 14px !important;
+  font-size: .72rem !important;
+}
+
+#upgradeBtn,
+#rerollBtn,
+#freezeBtn {
+  top: 20px !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  padding: 9px 14px !important;
+}
+
+#upgradeBtn {
+  right: 500px !important;
+  width: 188px !important;
+}
+
+#rerollBtn {
+  right: 346px !important;
+  width: 142px !important;
+}
+
+#freezeBtn {
+  right: 208px !important;
+  width: 126px !important;
+}
+
+.hud-button-title {
+  font-size: .92rem !important;
+}
+
+.hud-button-detail {
+  margin-top: 5px !important;
+  font-size: .65rem !important;
+}
+
+.free-reroll-stat {
+  top: 83px !important;
+  right: 346px !important;
+  width: 142px !important;
+  min-height: 23px !important;
+  font-size: .65rem !important;
+}
+
+.board-status {
+  top: 82px !important;
+  left: 300px !important;
+  right: 700px !important;
+  min-height: 21px !important;
+  font-size: .68rem !important;
+  line-height: 21px !important;
+}
+
+/* Shared central lane ----------------------------------------------------- */
+#shopGrid.shop-grid,
+#boardSlots.board-slots,
+#handGrid.hand-grid,
+.market-gap,
+.board-hand-divider {
+  width: calc(100% - var(--large-control-rail)) !important;
+  margin-right: var(--large-control-rail) !important;
+}
+
+#shopGrid.shop-grid,
+#boardSlots.board-slots,
+#handGrid.hand-grid {
+  justify-content: center !important;
+  overflow: visible !important;
+}
+
+#shopGrid.shop-grid::before,
+#boardSlots.board-slots::before {
+  top: -18px !important;
+  left: 12px !important;
+  font-size: .7rem !important;
+}
+
+/* Tavern cards ------------------------------------------------------------ */
+#shopGrid.shop-grid {
+  gap: var(--large-card-gap) !important;
+  min-height: 224px !important;
+  margin-top: 20px !important;
+  padding: 8px 20px 6px !important;
+}
+
+#shopGrid.shop-grid > .shop-card {
+  flex: 0 1 176px !important;
+  width: 176px !important;
+  min-width: 148px !important;
+  max-width: 184px !important;
+  height: 210px !important;
+  min-height: 210px !important;
+  max-height: 210px !important;
+}
+
+#shopGrid .shop-card:not(.empty):not(.spell) {
+  grid-template-rows: 34px 24px 16px minmax(88px, 1fr) 31px !important;
+  row-gap: 3px !important;
+  padding: 13px 9px 8px !important;
+}
+
+#shopGrid .shop-card.spell:not(.empty) {
+  grid-template-rows: 35px 25px 16px minmax(120px, 1fr) !important;
+  row-gap: 3px !important;
+  padding: 13px 9px 9px !important;
+}
+
+#shopGrid .shop-card .card-emoji {
+  font-size: 32px !important;
+}
+
+#shopGrid .shop-card .card-name {
+  font-size: .93rem !important;
+}
+
+#shopGrid .shop-card .tagline {
+  font-size: .59rem !important;
+}
+
+#shopGrid .shop-card .card-text {
+  padding: 8px 9px 7px !important;
+  font-size: .73rem !important;
+  line-height: 1.34 !important;
+  -webkit-line-clamp: 7 !important;
+}
+
+#shopGrid .shop-card.spell .card-text {
+  font-size: .75rem !important;
+  -webkit-line-clamp: 8 !important;
+}
+
+#shopGrid .shop-card .stats {
+  height: 30px !important;
+  min-height: 30px !important;
+}
+
+#shopGrid .shop-card .stat-orb,
+#shopGrid .shop-card .stats > .atk,
+#shopGrid .shop-card .stats > .hp {
+  min-width: 39px !important;
+  height: 29px !important;
+  padding: 0 8px !important;
+  font-size: 1.02rem !important;
+}
+
+/* Divider ----------------------------------------------------------------- */
+.market-gap {
+  padding: 3px 20px 5px !important;
+}
+
+.judge-line {
+  height: 5px !important;
+  margin: 6px 0 10px !important;
+}
+
+.board-hand-divider {
+  min-height: 28px !important;
+  padding: 0 26px !important;
+  font-size: .68rem !important;
+}
+
+.board-hand-divider span::after {
+  font-size: .68rem !important;
+}
+
+/* Board cards ------------------------------------------------------------- */
+#boardSlots.board-slots {
+  gap: var(--large-card-gap) !important;
+  min-height: 232px !important;
+  margin-top: 8px !important;
+  padding: 15px 20px 5px !important;
+}
+
+#boardSlots.board-slots > .board-card {
+  flex: 0 1 178px !important;
+  width: 178px !important;
+  min-width: 148px !important;
+  max-width: 186px !important;
+  height: 214px !important;
+  min-height: 214px !important;
+  max-height: 214px !important;
+}
+
+#boardSlots .board-card:not(.empty) {
+  grid-template-rows: 34px 24px 15px minmax(87px, 1fr) 31px !important;
+  row-gap: 3px !important;
+  padding: 13px 9px 8px !important;
+}
+
+#boardSlots .board-card .card-emoji {
+  font-size: 32px !important;
+}
+
+#boardSlots .board-card .card-name {
+  font-size: .92rem !important;
+}
+
+#boardSlots .board-card .tagline {
+  font-size: .58rem !important;
+}
+
+#boardSlots .board-card .card-text {
+  padding: 8px 9px 7px !important;
+  font-size: .71rem !important;
+  line-height: 1.32 !important;
+  -webkit-line-clamp: 7 !important;
+}
+
+#boardSlots .board-card .stats {
+  height: 30px !important;
+  min-height: 30px !important;
+}
+
+#boardSlots .board-card .stat-orb,
+#boardSlots .board-card .stats > .atk,
+#boardSlots .board-card .stats > .hp {
+  min-width: 39px !important;
+  height: 29px !important;
+  padding: 0 8px !important;
+  font-size: 1.02rem !important;
+}
+
+/* Hand cards -------------------------------------------------------------- */
+#handGrid.hand-grid {
+  gap: 2px !important;
+  min-height: 205px !important;
+  height: 205px !important;
+  padding: 8px 32px 13px !important;
+}
+
+#handGrid.hand-grid .hand-card {
+  flex: 0 1 122px !important;
+  width: 122px !important;
+  min-width: 110px !important;
+  max-width: 128px !important;
+  height: 176px !important;
+  min-height: 176px !important;
+  max-height: 176px !important;
+}
+
+#handGrid .hand-card:not(.empty):not(.spell) {
+  grid-template-rows: 28px 21px 13px minmax(63px, 1fr) 27px !important;
+  row-gap: 2px !important;
+  padding: 10px 7px 6px !important;
+}
+
+#handGrid .hand-card.spell:not(.empty) {
+  grid-template-rows: 29px 21px 13px minmax(86px, 1fr) !important;
+  row-gap: 2px !important;
+  padding: 10px 7px 7px !important;
+}
+
+#handGrid .hand-card .card-emoji {
+  font-size: 25px !important;
+}
+
+#handGrid .hand-card .card-name {
+  font-size: .74rem !important;
+}
+
+#handGrid .hand-card .tagline {
+  font-size: .5rem !important;
+}
+
+#handGrid .hand-card .card-text {
+  padding: 6px 6px 5px !important;
+  font-size: .61rem !important;
+  line-height: 1.26 !important;
+  -webkit-line-clamp: 5 !important;
+}
+
+#handGrid .hand-card.spell .card-text {
+  -webkit-line-clamp: 6 !important;
+}
+
+#handGrid .hand-card .stats,
+#handGrid .hand-card .stat-orb,
+#handGrid .hand-card .stats > .atk,
+#handGrid .hand-card .stats > .hp {
+  height: 26px !important;
+  min-height: 26px !important;
+  font-size: .82rem !important;
+}
+
+/* Right control rail ------------------------------------------------------ */
+#endTurnBtn {
+  top: 234px !important;
+  right: 27px !important;
+  width: 136px !important;
+  min-height: 88px !important;
+  padding: 13px 15px !important;
+  border-radius: 20px !important;
+  font-size: 1.2rem !important;
+}
+
+.timer-stat {
+  top: 342px !important;
+  right: 23px !important;
+  width: 144px !important;
+  min-width: 144px !important;
+  min-height: 122px !important;
+  grid-template-rows: 27px 1fr !important;
+  padding: 11px 12px 13px !important;
+  border-radius: 22px !important;
+}
+
+.timer-stat .hud-label {
+  font-size: .74rem !important;
+}
+
+.timer-stat #turnTimerValue {
+  font-size: 3.15rem !important;
+}
+
+/* Readability controls ---------------------------------------------------- */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .tier-number-badge {
+  top: 7px !important;
+  left: 7px !important;
+  min-width: 31px !important;
+  height: 31px !important;
+  font-size: .86rem !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .cost {
+  top: 7px !important;
+  right: 7px !important;
+  min-height: 28px !important;
+  padding: 5px 8px !important;
+  font-size: .67rem !important;
+}
+
+.card-effect-label {
+  font-size: .51rem !important;
+}
+
+#cardEffectPreview {
+  width: min(390px, calc(100vw - 28px)) !important;
+  padding: 15px 16px 16px !important;
+}
+
+.card-effect-preview-name {
+  font-size: 1.08rem !important;
+}
+
+.card-effect-preview-meta {
+  font-size: .68rem !important;
+}
+
+.card-effect-preview-rule {
+  padding: 12px 13px !important;
+  font-size: 1rem !important;
+  line-height: 1.55 !important;
+}
+
+/* Discover cards ---------------------------------------------------------- */
+.discover-panel {
+  width: min(1360px, 96vw) !important;
+  min-height: 520px !important;
+  padding: 28px 36px 34px !important;
+}
+
+.discover-card-grid {
+  gap: clamp(20px, 2.6vw, 38px) !important;
+  min-height: 382px !important;
+}
+
+.discover-card-choice {
+  flex-basis: 310px !important;
+  width: min(310px, 29vw) !important;
+  min-width: 250px !important;
+  min-height: 366px !important;
+}
+
+#discoverOverlay .discover-card-choice .card-text {
+  min-height: 154px !important;
+  font-size: .88rem !important;
+  line-height: 1.45 !important;
+  -webkit-line-clamp: 9 !important;
+}
+
+/* Responsive desktop fallback -------------------------------------------- */
+@media (max-width: 1499px) {
+  :root {
+    --large-control-rail: 172px;
+    --large-card-gap: 9px;
+  }
+
+  .shell {
+    width: calc(100vw - 16px) !important;
+    min-width: 1260px !important;
+  }
+
+  #shopGrid.shop-grid > .shop-card,
+  #boardSlots.board-slots > .board-card {
+    min-width: 142px !important;
+    max-width: 166px !important;
+  }
+
+  #handGrid.hand-grid .hand-card {
+    min-width: 104px !important;
+    max-width: 118px !important;
+  }
+}
