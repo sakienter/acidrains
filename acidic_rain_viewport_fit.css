@@ -1,0 +1,206 @@
+/* Use the actual browser viewport instead of scaling a 1600x900 stage. */
+html, body {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+.shell {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 8px !important;
+}
+
+.table-board {
+  width: 100% !important;
+  height: calc(100vh - 16px) !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 12px 16px !important;
+  overflow: hidden !important;
+  border-radius: 28px !important;
+}
+
+.table-board::before {
+  inset: 96px 198px 12px 12px !important;
+}
+
+.table-board::after {
+  top: 96px !important;
+  right: 12px !important;
+  bottom: 12px !important;
+  width: 168px !important;
+}
+
+.board-tools {
+  min-height: 88px !important;
+}
+
+.board-tools::after {
+  top: 87px !important;
+  right: 202px !important;
+}
+
+#shopGrid.shop-grid,
+#boardSlots.board-slots,
+#handGrid.hand-grid,
+.market-gap,
+.board-hand-divider {
+  width: calc(100% - 184px) !important;
+  margin-right: 184px !important;
+}
+
+#shopGrid.shop-grid,
+#boardSlots.board-slots,
+#handGrid.hand-grid {
+  justify-content: center !important;
+  overflow: visible !important;
+}
+
+#shopGrid.shop-grid {
+  gap: 10px !important;
+  min-height: clamp(190px, 25vh, 214px) !important;
+  margin-top: 13px !important;
+  padding: 7px 18px 4px !important;
+}
+
+#boardSlots.board-slots {
+  gap: 10px !important;
+  min-height: clamp(190px, 25vh, 214px) !important;
+  margin-top: 4px !important;
+  padding: 7px 18px 3px !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty),
+#boardSlots.board-slots > .board-card:not(.empty) {
+  width: 172px !important;
+  min-width: 142px !important;
+  max-width: 180px !important;
+  height: clamp(178px, 23.5vh, 202px) !important;
+  min-height: 178px !important;
+  max-height: 202px !important;
+  padding: 8px 7px 7px !important;
+  row-gap: 3px !important;
+}
+
+#shopGrid.shop-grid > .shop-card:not(.empty):not(.spell),
+#boardSlots.board-slots > .board-card:not(.empty):not(.spell) {
+  grid-template-columns: minmax(0, 1fr) 54px !important;
+  grid-template-rows: 52px 26px minmax(57px, 1fr) 27px !important;
+}
+
+#shopGrid.shop-grid > .shop-card.spell:not(.empty),
+#boardSlots.board-slots > .board-card.spell:not(.empty) {
+  grid-template-columns: minmax(0, 1fr) 54px !important;
+  grid-template-rows: 52px 26px minmax(88px, 1fr) !important;
+}
+
+#shopGrid .card-emoji,
+#boardSlots .card-emoji {
+  padding: 2px 25px !important;
+  font-size: 35px !important;
+}
+
+#shopGrid .card-emoji img,
+#boardSlots .card-emoji img {
+  height: 47px !important;
+}
+
+#shopGrid .tier-number-badge,
+#boardSlots .tier-number-badge {
+  width: 43px !important;
+  min-width: 43px !important;
+  height: 53px !important;
+  padding-bottom: 12px !important;
+  font-size: 1.18rem !important;
+}
+
+#shopGrid .cost,
+#boardSlots .cost {
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  font-size: .84rem !important;
+}
+
+#shopGrid .card-name,
+#boardSlots .card-name,
+#shopGrid .tagline,
+#boardSlots .tagline {
+  height: 26px !important;
+  min-height: 26px !important;
+}
+
+#shopGrid .card-name,
+#boardSlots .card-name {
+  font-size: .63rem !important;
+}
+
+#shopGrid .tagline,
+#boardSlots .tagline {
+  width: 54px !important;
+  max-width: 54px !important;
+  font-size: .47rem !important;
+}
+
+#shopGrid .card-text,
+#boardSlots .card-text {
+  padding: 6px 7px 5px !important;
+  font-size: .57rem !important;
+  line-height: 1.22 !important;
+  -webkit-line-clamp: 5 !important;
+}
+
+#shopGrid .stats,
+#boardSlots .stats {
+  width: 70% !important;
+  height: 27px !important;
+  min-height: 27px !important;
+}
+
+.market-gap {
+  padding: 1px 18px 2px !important;
+}
+
+.judge-line {
+  height: 4px !important;
+  margin: 4px 0 7px !important;
+}
+
+#handGrid.hand-grid {
+  min-height: clamp(132px, 18vh, 158px) !important;
+  height: clamp(132px, 18vh, 158px) !important;
+  padding: 5px 28px 8px !important;
+}
+
+#handGrid.hand-grid > .hand-card {
+  width: 112px !important;
+  min-width: 100px !important;
+  max-width: 118px !important;
+  height: clamp(122px, 16.5vh, 146px) !important;
+  min-height: 122px !important;
+  max-height: 146px !important;
+}
+
+#endTurnBtn {
+  top: 201px !important;
+  right: 26px !important;
+  width: 134px !important;
+  min-height: 78px !important;
+}
+
+.timer-stat {
+  top: 294px !important;
+  right: 22px !important;
+  width: 142px !important;
+  min-width: 142px !important;
+  min-height: 106px !important;
+}
