@@ -51,10 +51,10 @@
     const artHeight = isHand
       ? clamp(height * 0.29, 40, 51)
       : clamp(height * 0.32, 65, 86);
-    const nameHeight = isHand ? 23 : clamp(height * 0.115, 28, 32);
-    const statHeight = isHand ? 23 : clamp(height * 0.12, 29, 33);
+    const nameHeight = isHand ? 23 : clamp(height * 0.12, 30, 34);
+    const statHeight = isHand ? 23 : clamp(height * 0.115, 28, 32);
     const effectHeight = Math.max(
-      isHand ? 48 : 72,
+      isHand ? 50 : 84,
       height - padding * 2 - gap * (isSpell ? 2 : 3) - artHeight - nameHeight - (isSpell ? 0 : statHeight)
     );
     const tribeWidth = isHand ? clamp(width * 0.36, 42, 48) : clamp(width * 0.3, 54, 68);
@@ -79,6 +79,10 @@
     set(card, 'padding', `${px(padding)} ${px(isHand ? 6 : 8)} ${px(isHand ? 6 : 8)}`);
     set(card, 'overflow', 'visible');
     set(card, 'flex', `0 0 ${px(width)}`);
+
+    card.querySelectorAll('.card-effect-label').forEach(label => {
+      set(label, 'display', 'none');
+    });
 
     const art = card.querySelector(':scope > .card-emoji');
     if (art) {
@@ -138,9 +142,9 @@
       set(effect, 'min-height', px(effectHeight));
       set(effect, 'max-height', 'none');
       set(effect, 'align-self', 'stretch');
-      set(effect, 'padding', isHand ? '5px' : `${px(clamp(width * 0.042, 7, 10))} ${px(clamp(width * 0.046, 8, 11))}`);
-      set(effect, 'font-size', px(isHand ? clamp(width * 0.064, 7.5, 8.8) : clamp(width * 0.061, 10.5, 13.4)));
-      set(effect, 'line-height', isHand ? '1.2' : '1.32');
+      set(effect, 'padding', isHand ? '5px' : '10px 11px 9px');
+      set(effect, 'font-size', px(isHand ? clamp(width * 0.064, 7.5, 8.8) : clamp(width * 0.06, 10.5, 13.2)));
+      set(effect, 'line-height', isHand ? '1.2' : '1.34');
       set(effect, '-webkit-line-clamp', isHand ? '5' : isSpell ? '9' : '7');
       set(effect, '-webkit-box-orient', 'vertical');
       set(effect, 'overflow', 'hidden');
