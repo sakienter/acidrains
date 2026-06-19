@@ -1,0 +1,142 @@
+/* Smooth, lightweight card motion without changing gameplay hit boxes. */
+:root {
+  --card-motion-fast: 140ms;
+  --card-motion-normal: 220ms;
+  --card-motion-slow: 300ms;
+  --card-motion-ease: cubic-bezier(.2, .82, .25, 1);
+  --card-motion-spring: cubic-bezier(.18, .9, .28, 1.18);
+}
+
+:is(.shop-card, .board-card, .hand-card) {
+  will-change: translate, scale, opacity, filter;
+  transform-origin: center bottom;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    translate var(--card-motion-normal) var(--card-motion-ease),
+    scale var(--card-motion-normal) var(--card-motion-spring),
+    opacity var(--card-motion-fast) ease,
+    filter var(--card-motion-fast) ease,
+    border-color var(--card-motion-fast) ease,
+    box-shadow var(--card-motion-normal) ease !important;
+}
+
+:is(.shop-card.can-buy, .board-card:not(.empty), .hand-card:not(.empty)):hover {
+  translate: 0 -5px;
+  scale: 1.025;
+  filter: brightness(1.055) saturate(1.035);
+  z-index: 900 !important;
+}
+
+:is(.shop-card.can-buy, .board-card:not(.empty), .hand-card:not(.empty)):active {
+  translate: 0 -1px;
+  scale: .988;
+  transition-duration: 75ms !important;
+}
+
+:is(.shop-card, .board-card, .hand-card).drop-target,
+.board-card.reorder-target,
+.targeting-valid,
+.targeting-hover {
+  transition:
+    translate 120ms var(--card-motion-ease),
+    scale 120ms var(--card-motion-spring),
+    outline-color 120ms ease,
+    box-shadow 150ms ease,
+    filter 120ms ease !important;
+}
+
+:is(.shop-card, .board-card, .hand-card).drop-target,
+.board-card.reorder-target,
+.targeting-hover {
+  translate: 0 -3px;
+  scale: 1.035;
+}
+
+.card-motion-enter-shop {
+  animation: card-motion-enter-shop var(--card-motion-slow) var(--card-motion-ease) both;
+}
+
+.card-motion-enter-board {
+  animation: card-motion-enter-board var(--card-motion-slow) var(--card-motion-spring) both;
+}
+
+.card-motion-enter-hand {
+  animation: card-motion-enter-hand var(--card-motion-slow) var(--card-motion-spring) both;
+}
+
+@keyframes card-motion-enter-shop {
+  0% { opacity: 0; translate: 0 -13px; scale: .94; filter: blur(2px) brightness(1.18); }
+  65% { opacity: 1; translate: 0 2px; scale: 1.018; filter: blur(0) brightness(1.06); }
+  100% { opacity: 1; translate: 0 0; scale: 1; filter: none; }
+}
+
+@keyframes card-motion-enter-board {
+  0% { opacity: 0; translate: 0 22px; scale: .9; filter: blur(2px) brightness(1.2); }
+  70% { opacity: 1; translate: 0 -3px; scale: 1.025; filter: blur(0) brightness(1.08); }
+  100% { opacity: 1; translate: 0 0; scale: 1; filter: none; }
+}
+
+@keyframes card-motion-enter-hand {
+  0% { opacity: 0; translate: 0 25px; scale: .9; filter: blur(2px); }
+  72% { opacity: 1; translate: 0 -2px; scale: 1.02; filter: blur(0); }
+  100% { opacity: 1; translate: 0 0; scale: 1; filter: none; }
+}
+
+.card-motion-ghost {
+  position: fixed !important;
+  z-index: 4500 !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+  transform: none !important;
+  translate: 0 0 !important;
+  scale: 1 !important;
+  contain: layout paint style;
+}
+
+.dragging-card {
+  z-index: 5000 !important;
+  opacity: .96 !important;
+  cursor: grabbing !important;
+  will-change: left, top, translate, scale !important;
+  transition:
+    left 42ms linear,
+    top 42ms linear,
+    scale 110ms var(--card-motion-spring),
+    opacity 110ms ease,
+    box-shadow 140ms ease !important;
+  scale: 1.035 !important;
+  filter: brightness(1.08) saturate(1.05) !important;
+  box-shadow:
+    0 26px 50px rgba(0, 0, 0, .48),
+    0 0 24px rgba(125, 211, 255, .18) !important;
+}
+
+.is-card-drag-source,
+.is-native-card-drag-source {
+  opacity: .28 !important;
+  scale: .965 !important;
+  filter: saturate(.72) brightness(.85) !important;
+}
+
+.card-native-drag-preview {
+  position: fixed !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  pointer-events: none !important;
+  transform: none !important;
+  translate: 0 0 !important;
+  opacity: .96 !important;
+  z-index: -1 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.shop-card, .board-card, .hand-card),
+  .dragging-card,
+  .card-motion-enter-shop,
+  .card-motion-enter-board,
+  .card-motion-enter-hand {
+    animation: none !important;
+    transition-duration: 1ms !important;
+  }
+}
