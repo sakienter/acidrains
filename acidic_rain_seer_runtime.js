@@ -185,6 +185,14 @@
     document.head.appendChild(link);
   }
 
+  if (!document.querySelector('link[data-acid-large-desktop-layout]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './acidic_rain_large_desktop_layout.css';
+    link.dataset.acidLargeDesktopLayout = 'true';
+    document.head.appendChild(link);
+  }
+
   if (!document.querySelector('script[data-acid-card-readability]')) {
     const script = document.createElement('script');
     script.src = './acidic_rain_card_readability.js';
