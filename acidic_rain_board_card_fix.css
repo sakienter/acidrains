@@ -1,0 +1,37 @@
+/* Board-only corrections after a minion is played from hand. */
+#boardSlots .board-card:not(.empty) {
+  overflow: visible !important;
+}
+
+/* Keep the decorative crest below the stat plaque instead of covering '/'. */
+#boardSlots .board-card:not(.empty)::after {
+  bottom: -10px !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+
+#boardSlots .board-card:not(.empty) > .stats {
+  position: relative !important;
+  z-index: 4 !important;
+  margin: 0 !important;
+}
+
+/* The original slash is a text node between atk and hp; do not add a second. */
+#boardSlots .board-card:not(.empty) > .stats > .hp::before,
+#boardSlots .board-card:not(.empty) > .stats > .hp-orb::before {
+  content: none !important;
+  margin: 0 !important;
+}
+
+/* Board cards have no purchase cost; give the artwork balanced side padding. */
+#boardSlots .board-card:not(.empty) > .card-emoji {
+  padding-left: 22px !important;
+  padding-right: 22px !important;
+}
+
+/* Long board effects should clip inside the parchment, never push stats out. */
+#boardSlots .board-card:not(.empty) > .card-text {
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
