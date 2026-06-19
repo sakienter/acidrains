@@ -33,13 +33,13 @@
     <div id="stage">
       <iframe
         id="game"
-        src="./acidic_rain_battleground.html?v=20260620-4"
+        src="./acidic_rain_battleground.html?v=20260620-5"
         title="Acidic Rain Battleground"
       ></iframe>
     </div>
 
     <script>
-      const ASSET_VERSION = "20260620-4";
+      const ASSET_VERSION = "20260620-5";
       const game = document.querySelector("#game");
 
       function appendStyle(documentRef, href, marker) {
@@ -73,7 +73,8 @@
             "link[data-acid-card-layout-fix], " +
             'link[data-index-style="card-frame"], ' +
             'link[data-index-style="card-layout-fix"], ' +
-            'link[data-index-style="viewport-fit"]'
+            'link[data-index-style="viewport-fit"], ' +
+            'link[data-index-style="card-polish"]'
           )
           .forEach(node => node.remove());
 
@@ -91,6 +92,11 @@
           documentRef,
           "./acidic_rain_viewport_fit.css",
           "viewport-fit"
+        );
+        appendStyle(
+          documentRef,
+          "./acidic_rain_card_polish.css",
+          "card-polish"
         );
       }
 
