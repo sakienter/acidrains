@@ -177,6 +177,14 @@
     document.head.appendChild(link);
   }
 
+  if (!document.querySelector('link[data-acid-discover-card-readability-style]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './acidic_rain_discover_card_readability.css';
+    link.dataset.acidDiscoverCardReadabilityStyle = 'true';
+    document.head.appendChild(link);
+  }
+
   if (!document.querySelector('script[data-acid-card-readability]')) {
     const script = document.createElement('script');
     script.src = './acidic_rain_card_readability.js';
