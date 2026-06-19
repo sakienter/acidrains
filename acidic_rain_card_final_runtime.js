@@ -35,7 +35,7 @@
 
     if (kind === 'board') {
       const width = clamp(rawWidth, 158, 208);
-      return { width, height: clamp(width * 1.16, 196, 232), gap };
+      return { width, height: clamp(width * 1.18, 200, 246), gap };
     }
 
     const width = clamp(rawWidth, 164, 220);
@@ -45,6 +45,7 @@
   function fitCard(card, metrics, kind) {
     const { width, height } = metrics;
     const isHand = kind === 'hand';
+    const isBoard = kind === 'board';
     const isSpell = card.classList.contains('spell');
     const padding = isHand ? 6 : 9;
     const gap = isHand ? 3 : 5;
@@ -53,12 +54,13 @@
       : clamp(height * 0.32, 65, 86);
     const nameHeight = isHand ? 23 : clamp(height * 0.12, 30, 34);
     const statHeight = isHand ? 23 : clamp(height * 0.115, 28, 32);
-    const effectHeight = Math.max(
-      isHand ? 50 : 84,
-      height - padding * 2 - gap * (isSpell ? 2 : 3) - artHeight - nameHeight - (isSpell ? 0 : statHeight)
-    );
+    const availableEffectHeight =
+      height - padding * 2 - gap * (isSpell ? 2 : 3) - artHeight - nameHeight - (isSpell ? 0 : statHeight);
+    const minimumEffectHeight = isHand ? 50 : isBoard ? 40 : 84;
+    const effectHeight = Math.max(minimumEffectHeight, availableEffectHeight);
     const tribeWidth = isHand ? clamp(width * 0.36, 42, 48) : clamp(width * 0.3, 54, 68);
 
+    card.dataset.finalCardKind = kind;
     set(card, 'display', 'grid');
     set(card, 'grid-template-columns', `minmax(0, 1fr) ${px(tribeWidth)}`);
     set(
@@ -142,10 +144,20 @@
       set(effect, 'min-height', px(effectHeight));
       set(effect, 'max-height', 'none');
       set(effect, 'align-self', 'stretch');
-      set(effect, 'padding', isHand ? '5px' : '10px 11px 9px');
-      set(effect, 'font-size', px(isHand ? clamp(width * 0.064, 7.5, 8.8) : clamp(width * 0.06, 10.5, 13.2)));
-      set(effect, 'line-height', isHand ? '1.2' : '1.34');
-      set(effect, '-webkit-line-clamp', isHand ? '5' : isSpell ? '9' : '7');
+      set(effect, 'padding', isHand ? '5px' : isBoard ? '8px 9px 7px' : '10px 11px 9px');
+      set(
+        effect,
+        'font-size',
+        px(
+          isHand
+            ? clamp(width * 0.064, 7.5, 8.8)
+            : isBoard
+              ? clamp(width * 0.057, 9.5, 12.2)
+              : clamp(width * 0.06, 10.5, 13.2)
+        )
+      );
+      set(effect, 'line-height', isHand ? '1.2' : isBoard ? '1.28' : '1.34');
+      set(effect, '-webkit-line-clamp', isHand ? '5' : isBoard ? (isSpell ? '8' : '6') : (isSpell ? '9' : '7'));
       set(effect, '-webkit-box-orient', 'vertical');
       set(effect, 'overflow', 'hidden');
     }
@@ -158,7 +170,7 @@
         set(stats, 'display', 'flex');
         set(stats, 'grid-column', '1 / -1');
         set(stats, 'grid-row', '4');
-        set(stats, 'width', isHand ? '74%' : '70%');
+        set(stats, 'width', isHand ? '74%' : isBoard ? '68%' : '70%');
         set(stats, 'height', px(statHeight));
         set(stats, 'min-height', px(statHeight));
         set(stats, 'justify-self', 'center');
@@ -166,6 +178,7 @@
         set(stats, 'align-items', 'center');
         set(stats, 'justify-content', 'center');
         set(stats, 'gap', isHand ? '5px' : '8px');
+        if (isBoard) set(stats, 'transform', 'translateY(-2px)');
         stats.querySelectorAll(':scope > .atk, :scope > .hp, :scope > .stat-orb').forEach(stat => {
           set(stat, 'min-width', '0');
           set(stat, 'width', 'auto');
@@ -215,8 +228,8 @@
       set(container, 'min-height', px(metrics.height + 24));
       set(container, 'height', px(metrics.height + 24));
     } else if (kind === 'board') {
-      set(container, 'min-height', px(metrics.height + 18));
-      set(container, 'height', px(metrics.height + 18));
+      set(container, 'min-height', px(metrics.height + 20));
+      set(container, 'height', px(metrics.height + 20));
     } else {
       set(container, 'min-height', px(metrics.height + 10));
       set(container, 'height', px(metrics.height + 10));
