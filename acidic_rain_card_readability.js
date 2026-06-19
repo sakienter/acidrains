@@ -76,6 +76,16 @@
       node.prepend(badge);
     }
     badge.textContent = String(Math.max(0, Number(card?.tier || 0)));
+    badge.setAttribute('aria-label', `ティア${Math.max(0, Number(card?.tier || 0))}`);
+  }
+
+  function ensureCostBadge(node, card) {
+    const cost = node.querySelector(':scope > .cost');
+    if (!cost) return;
+    const value = Math.max(0, Number(card?.cost || 0));
+    cost.textContent = `${value}c`;
+    cost.title = `コスト ${value}`;
+    cost.setAttribute('aria-label', `コスト${value}`);
   }
 
   function ensureTagline(node, card) {
@@ -87,8 +97,7 @@
       if (name) name.insertAdjacentElement('afterend', tagline);
       else node.appendChild(tagline);
     }
-    const type = card?.type === 'spell' ? 'スペル' : (card?.tribe || 'なし');
-    tagline.textContent = `グレード ${Number(card?.tier || 0)} / ${type}`;
+    tagline.textContent = card?.type === 'spell' ? 'スペル' : (card?.tribe || 'なし');
   }
 
   function decorateCard(node, card) {
@@ -100,6 +109,7 @@
     node.classList.add(tribeClass(card.tribe));
 
     ensureTierBadge(node, card);
+    ensureCostBadge(node, card);
     ensureTagline(node, card);
 
     const effect = String(card.text || '効果なし。');
