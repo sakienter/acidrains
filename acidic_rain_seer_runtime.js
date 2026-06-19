@@ -169,6 +169,22 @@
     document.body.appendChild(script);
   }
 
+  if (!document.querySelector('link[data-acid-card-readability-style]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './acidic_rain_card_readability.css';
+    link.dataset.acidCardReadabilityStyle = 'true';
+    document.head.appendChild(link);
+  }
+
+  if (!document.querySelector('script[data-acid-card-readability]')) {
+    const script = document.createElement('script');
+    script.src = './acidic_rain_card_readability.js';
+    script.async = false;
+    script.dataset.acidCardReadability = 'true';
+    document.body.appendChild(script);
+  }
+
   if (!document.querySelector('script[data-acid-tauren-runtime]')) {
     const script = document.createElement('script');
     script.src = './acidic_rain_tauren_runtime.js';
