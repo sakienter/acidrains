@@ -1,0 +1,426 @@
+/*
+ * Readability-first card redesign.
+ *
+ * The tribe colour remains on the frame and illustration area, while the rules
+ * text gets its own high-contrast paper panel. This file is loaded last so it
+ * intentionally overrides the older ornamental card themes.
+ */
+:root {
+  --card-paper: #f4ead7;
+  --card-paper-deep: #dfd0b4;
+  --card-paper-ink: #24201a;
+  --card-paper-muted: #625947;
+  --card-frame-dark: rgba(12, 15, 18, .96);
+  --card-frame-line: rgba(255, 240, 205, .3);
+  --card-effect-shadow: 0 3px 10px rgba(0, 0, 0, .28);
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card):not(.empty) {
+  --card-radius: 17px;
+  overflow: hidden !important;
+  border-width: 2px !important;
+  border-radius: var(--card-radius) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .11), transparent 23%),
+    radial-gradient(circle at 50% 19%, var(--tribe-hi), var(--tribe-mid) 48%, var(--tribe-deep) 76%) !important;
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, .36),
+    inset 0 1px 0 rgba(255, 255, 255, .17),
+    inset 0 -1px 0 rgba(0, 0, 0, .42) !important;
+  color: #fff7e4 !important;
+  isolation: isolate;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card):not(.empty)::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 42%;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255,255,255,.15), transparent 38%),
+    linear-gradient(180deg, transparent, rgba(0,0,0,.16));
+  pointer-events: none;
+}
+
+/* Information layout ------------------------------------------------------ */
+#shopGrid .shop-card:not(.empty):not(.spell) {
+  grid-template-rows: 28px 19px 13px minmax(57px, 1fr) 26px !important;
+  row-gap: 2px !important;
+  padding: 11px 7px 6px !important;
+}
+
+#shopGrid .shop-card.spell:not(.empty) {
+  grid-template-rows: 29px 20px 13px minmax(78px, 1fr) !important;
+  row-gap: 2px !important;
+  padding: 11px 7px 7px !important;
+}
+
+#boardSlots .board-card:not(.empty) {
+  grid-template-rows: 28px 20px 12px minmax(56px, 1fr) 26px !important;
+  row-gap: 2px !important;
+  padding: 11px 7px 6px !important;
+}
+
+#handGrid .hand-card:not(.empty):not(.spell) {
+  grid-template-rows: 23px 18px 11px minmax(45px, 1fr) 23px !important;
+  row-gap: 2px !important;
+  padding: 9px 6px 5px !important;
+}
+
+#handGrid .hand-card.spell:not(.empty) {
+  grid-template-rows: 24px 18px 11px minmax(57px, 1fr) !important;
+  row-gap: 2px !important;
+  padding: 9px 6px 6px !important;
+}
+
+/* Tier and cost ----------------------------------------------------------- */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .tier-number-badge {
+  top: 5px !important;
+  left: 6px !important;
+  right: auto !important;
+  transform: none !important;
+  min-width: 27px !important;
+  height: 27px !important;
+  padding: 0 7px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(255, 230, 153, .78) !important;
+  border-radius: 9px !important;
+  background: linear-gradient(180deg, #a82968, #64133f) !important;
+  color: #ffe9a6 !important;
+  font-size: .78rem !important;
+  line-height: 1 !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,.42) !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .cost {
+  top: 5px !important;
+  right: 6px !important;
+  max-width: calc(100% - 43px) !important;
+  min-height: 25px !important;
+  padding: 4px 7px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 229, 162, .28) !important;
+  border-radius: 8px !important;
+  background: rgba(13, 16, 20, .88) !important;
+  color: #ffe19a !important;
+  font-size: .62rem !important;
+  line-height: 1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,.34) !important;
+}
+
+#handGrid .hand-card:not(.spell) .cost,
+#boardSlots .board-card .cost {
+  opacity: .72 !important;
+}
+
+/* Illustration and name --------------------------------------------------- */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .card-emoji {
+  align-self: center !important;
+  margin: 0 !important;
+  font-size: 25px !important;
+  line-height: 1 !important;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,.42)) drop-shadow(0 0 7px var(--tribe-glow)) !important;
+}
+
+#handGrid .hand-card .card-emoji {
+  font-size: 21px !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .card-name {
+  width: calc(100% + 2px) !important;
+  min-height: 0 !important;
+  margin: 0 -1px !important;
+  padding: 2px 5px 3px !important;
+  align-self: center !important;
+  overflow: hidden !important;
+  border-top: 1px solid rgba(255,255,255,.08) !important;
+  border-bottom: 1px solid rgba(0,0,0,.28) !important;
+  background: linear-gradient(90deg, rgba(8,11,14,.55), rgba(8,11,14,.9) 20% 80%, rgba(8,11,14,.55)) !important;
+  color: #fff8e8 !important;
+  font-size: .79rem !important;
+  font-weight: 950 !important;
+  line-height: 1.1 !important;
+  text-align: center !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,.9) !important;
+}
+
+#handGrid .hand-card .card-name {
+  font-size: .66rem !important;
+}
+
+/* Tribe/type strip -------------------------------------------------------- */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .tagline {
+  width: max-content !important;
+  max-width: 92% !important;
+  justify-self: center !important;
+  align-self: center !important;
+  margin: 0 !important;
+  padding: 1px 7px 2px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.15) !important;
+  border-radius: 999px !important;
+  background: rgba(9, 13, 17, .58) !important;
+  color: rgba(255, 244, 221, .9) !important;
+  font-size: .51rem !important;
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7) !important;
+}
+
+#handGrid .hand-card .tagline {
+  font-size: .46rem !important;
+  padding-inline: 5px !important;
+}
+
+/* Rules text: the primary visual element --------------------------------- */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .card-text {
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 6px 7px 5px !important;
+  align-self: stretch !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  border: 1px solid rgba(68, 55, 34, .3) !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.48), transparent 24%),
+    linear-gradient(180deg, var(--card-paper), var(--card-paper-deep)) !important;
+  color: var(--card-paper-ink) !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif !important;
+  font-size: .64rem !important;
+  font-weight: 720 !important;
+  line-height: 1.28 !important;
+  text-align: left !important;
+  text-shadow: none !important;
+  overflow-wrap: anywhere !important;
+  box-shadow: var(--card-effect-shadow), inset 0 1px 0 rgba(255,255,255,.58) !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 5 !important;
+}
+
+#boardSlots .board-card .card-text {
+  font-size: .63rem !important;
+  -webkit-line-clamp: 5 !important;
+}
+
+#handGrid .hand-card .card-text {
+  padding: 5px 5px 4px !important;
+  font-size: .55rem !important;
+  line-height: 1.22 !important;
+  -webkit-line-clamp: 4 !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card).spell .card-text {
+  border-color: rgba(91, 63, 112, .32) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.44), transparent 23%),
+    linear-gradient(180deg, #f0e6f6, #d8c8e2) !important;
+  color: #261b2c !important;
+}
+
+.card-effect-label {
+  display: inline-block;
+  margin: 0 5px 2px 0;
+  color: var(--card-paper-muted);
+  font-size: .46rem;
+  font-weight: 950;
+  letter-spacing: .08em;
+  vertical-align: .08em;
+}
+
+.card-keyword {
+  color: #862a27;
+  font-weight: 1000;
+}
+
+.spell .card-keyword {
+  color: #64317b;
+}
+
+.card-value {
+  color: #155979;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+/* Stats ------------------------------------------------------------------- */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stats {
+  position: static !important;
+  width: 100% !important;
+  height: 25px !important;
+  min-height: 25px !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 7px !important;
+  overflow: visible !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stat-orb,
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stats > .atk,
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stats > .hp {
+  min-width: 31px !important;
+  height: 24px !important;
+  padding: 0 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid rgba(255,255,255,.62) !important;
+  border-radius: 999px !important;
+  background: rgba(8, 12, 16, .9) !important;
+  color: #fff !important;
+  font-size: .88rem !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.8) !important;
+  box-shadow: 0 3px 7px rgba(0,0,0,.38) !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stats > .atk,
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .atk-orb {
+  border-color: rgba(255, 145, 98, .85) !important;
+  color: #ffd0b7 !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .stats > .hp,
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card) .hp-orb {
+  border-color: rgba(112, 220, 139, .86) !important;
+  color: #c5f7d1 !important;
+}
+
+#handGrid .hand-card .stats,
+#handGrid .hand-card .stat-orb,
+#handGrid .hand-card .stats > .atk,
+#handGrid .hand-card .stats > .hp {
+  height: 22px !important;
+  min-height: 22px !important;
+  font-size: .73rem !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card).spell .stats {
+  display: none !important;
+}
+
+/* States ------------------------------------------------------------------ */
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card).awakened-card {
+  border-color: rgba(255, 222, 95, .95) !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 215, 73, .18),
+    0 0 22px rgba(255, 201, 48, .38),
+    0 12px 24px rgba(0,0,0,.38) !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card).frozen {
+  filter: saturate(.8) brightness(1.04) !important;
+}
+
+:is(#shopGrid .shop-card, #boardSlots .board-card, #handGrid .hand-card).frozen .card-text {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.52), transparent 23%),
+    linear-gradient(180deg, #edf8fb, #c9e0e5) !important;
+}
+
+/* Full effect preview ----------------------------------------------------- */
+#cardEffectPreview {
+  position: fixed;
+  z-index: 11800;
+  width: min(330px, calc(100vw - 24px));
+  padding: 13px 14px 14px;
+  pointer-events: none;
+  opacity: 0;
+  translate: 0 7px;
+  scale: .97;
+  border: 1px solid rgba(255, 226, 155, .36);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(38, 30, 22, .98), rgba(17, 18, 20, .99));
+  color: #fff3d0;
+  box-shadow:
+    0 24px 55px rgba(0,0,0,.58),
+    0 0 25px rgba(255, 201, 80, .1),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  transition: opacity 130ms ease, translate 160ms ease, scale 160ms ease;
+}
+
+#cardEffectPreview.show {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+}
+
+.card-effect-preview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.card-effect-preview-name {
+  color: #fff5d8;
+  font-size: .98rem;
+  font-weight: 1000;
+  line-height: 1.2;
+}
+
+.card-effect-preview-meta {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border: 1px solid rgba(132, 219, 237, .22);
+  border-radius: 999px;
+  background: rgba(19, 47, 54, .62);
+  color: #c8f2fa;
+  font-size: .62rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.card-effect-preview-rule {
+  padding: 10px 11px;
+  border: 1px solid rgba(78, 61, 38, .32);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f5ebd8, #dfcfb2);
+  color: #262019;
+  font-size: .9rem;
+  font-weight: 720;
+  line-height: 1.48;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+.card-effect-preview-stats {
+  margin-top: 8px;
+  color: rgba(255, 239, 203, .72);
+  font-size: .72rem;
+  font-weight: 850;
+  text-align: right;
+}
+
+@media (max-width: 760px), (hover: none) {
+  #cardEffectPreview {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cardEffectPreview {
+    transition: none !important;
+  }
+}
