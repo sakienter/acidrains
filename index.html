@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Acidic Rain Battleground</title>
     <style>
-      :root {
-        --game-width: 1600px;
-        --game-height: 900px;
-      }
-
       html,
       body {
         width: 100%;
@@ -20,17 +15,15 @@
       }
 
       #stage {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: var(--game-width);
-        height: var(--game-height);
-        transform-origin: center center;
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
       }
 
       iframe {
-        width: var(--game-width);
-        height: var(--game-height);
+        width: 100%;
+        height: 100%;
         border: 0;
         display: block;
       }
@@ -40,31 +33,14 @@
     <div id="stage">
       <iframe
         id="game"
-        src="./acidic_rain_battleground.html?v=20260620-2"
+        src="./acidic_rain_battleground.html?v=20260620-3"
         title="Acidic Rain Battleground"
       ></iframe>
     </div>
 
     <script>
-      const BASE_WIDTH = 1600;
-      const BASE_HEIGHT = 900;
-      const VIEWPORT_PADDING = 12;
-      const ASSET_VERSION = "20260620-2";
-
-      const stage = document.querySelector("#stage");
+      const ASSET_VERSION = "20260620-3";
       const game = document.querySelector("#game");
-
-      function fitStage() {
-        const availableWidth = Math.max(1, window.innerWidth - VIEWPORT_PADDING * 2);
-        const availableHeight = Math.max(1, window.innerHeight - VIEWPORT_PADDING * 2);
-        const scale = Math.min(
-          availableWidth / BASE_WIDTH,
-          availableHeight / BASE_HEIGHT,
-          1
-        );
-
-        stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
-      }
 
       function appendStyle(documentRef, href, marker) {
         const old = documentRef.querySelector(`link[data-index-style="${marker}"]`);
@@ -90,11 +66,14 @@
         return script;
       }
 
-      function installFinalCardStyles(documentRef) {
+      function installFinalStyles(documentRef) {
         documentRef
           .querySelectorAll(
-            "link[data-acid-card-rough-layout], link[data-acid-card-layout-fix], " +
-            'link[data-index-style="card-frame"], link[data-index-style="card-layout-fix"]'
+            "link[data-acid-card-rough-layout], " +
+            "link[data-acid-card-layout-fix], " +
+            'link[data-index-style="card-frame"], ' +
+            'link[data-index-style="card-layout-fix"], ' +
+            'link[data-index-style="viewport-fit"]'
           )
           .forEach(node => node.remove());
 
@@ -107,6 +86,11 @@
           documentRef,
           "./acidic_rain_card_layout_fix.css",
           "card-layout-fix"
+        );
+        appendStyle(
+          documentRef,
+          "./acidic_rain_viewport_fit.css",
+          "viewport-fit"
         );
       }
 
@@ -130,23 +114,18 @@
           );
 
           poolScript.addEventListener("load", () => {
-            installFinalCardStyles(gameDocument);
-            window.setTimeout(() => installFinalCardStyles(gameDocument), 250);
-            window.setTimeout(() => installFinalCardStyles(gameDocument), 1000);
+            installFinalStyles(gameDocument);
+            window.setTimeout(() => installFinalStyles(gameDocument), 250);
+            window.setTimeout(() => installFinalStyles(gameDocument), 1000);
           }, { once: true });
         };
 
         progressionScript.addEventListener("load", loadPoolRules, { once: true });
         progressionScript.addEventListener("error", loadPoolRules, { once: true });
 
-        // Ensure the final card CSS is present even when a cached script fails to
-        // emit a load event or another runtime appends legacy styles afterward.
-        installFinalCardStyles(gameDocument);
-        window.setTimeout(() => installFinalCardStyles(gameDocument), 1500);
+        installFinalStyles(gameDocument);
+        window.setTimeout(() => installFinalStyles(gameDocument), 1500);
       });
-
-      window.addEventListener("resize", fitStage);
-      fitStage();
     </script>
   </body>
 </html>
