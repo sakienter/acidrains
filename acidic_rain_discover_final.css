@@ -1,0 +1,458 @@
+/*
+ * Final Discover UI polish.
+ * The previous Discover screen inherited card styles intended for the shop,
+ * which made choices look pixelated and split the stat plaque away from the
+ * card body. This file gives Discover its own presentation size.
+ */
+
+#discoverOverlay {
+  --discover-card-width: clamp(260px, 18vw, 340px);
+  --discover-card-height: clamp(440px, 58vh, 560px);
+  --discover-gap: clamp(28px, 3vw, 58px);
+}
+
+#discoverOverlay:has(.discover-card-choice) {
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#discoverOverlay [class*="discover"] {
+  box-sizing: border-box !important;
+}
+
+#discoverOverlay :is(
+  .discover-card-row,
+  .discover-card-list,
+  .discover-card-grid,
+  .discover-choices,
+  .discover-options,
+  .discover-choice-list,
+  .discover-options-row
+) {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: var(--discover-gap) !important;
+  width: 100% !important;
+  max-width: min(1260px, calc(100vw - 180px)) !important;
+  margin-inline: auto !important;
+}
+
+#discoverOverlay .discover-card-choice {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) clamp(72px, 5.4vw, 94px) !important;
+  grid-template-rows: 124px 42px minmax(176px, 1fr) 42px !important;
+  width: var(--discover-card-width) !important;
+  min-width: var(--discover-card-width) !important;
+  max-width: var(--discover-card-width) !important;
+  height: var(--discover-card-height) !important;
+  min-height: var(--discover-card-height) !important;
+  max-height: var(--discover-card-height) !important;
+  padding: 14px 13px 13px !important;
+  column-gap: 0 !important;
+  row-gap: 8px !important;
+  overflow: visible !important;
+  border: 2px solid #080a0b !important;
+  border-radius: 28px !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.14), transparent 18% 76%, rgba(0,0,0,.32)),
+    linear-gradient(180deg, #3b352d 0%, #24211c 46%, #111416 100%) !important;
+  box-shadow:
+    0 20px 38px rgba(0, 0, 0, .52),
+    0 0 0 1px rgba(255,236,183,.24),
+    inset 0 0 0 2px rgba(0,0,0,.72),
+    inset 0 0 0 5px #6c4a25,
+    inset 0 0 0 6px rgba(248,224,153,.28) !important;
+  transform: none !important;
+  opacity: 1 !important;
+  isolation: isolate !important;
+}
+
+#discoverOverlay .discover-card-choice::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 7px !important;
+  z-index: 0 !important;
+  border: 1px solid rgba(255,230,165,.42) !important;
+  border-radius: 21px !important;
+  background:
+    linear-gradient(90deg, transparent 0 5%, rgba(255,255,255,.09) 6%, transparent 7% 93%, rgba(255,255,255,.07) 94%, transparent 95%),
+    linear-gradient(180deg, rgba(255,255,255,.08), transparent 28% 78%, rgba(0,0,0,.2)) !important;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55) !important;
+  pointer-events: none !important;
+}
+
+#discoverOverlay .discover-card-choice::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom: -10px !important;
+  z-index: 8 !important;
+  width: 24px !important;
+  height: 24px !important;
+  border: 2px solid #0b0d0e !important;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,.42) 0 10%, transparent 11%),
+    linear-gradient(135deg, #f6e1a1, #d2a95a 45%, #835322 60%, #f5d27d) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,245,208,.35), 0 4px 7px rgba(0,0,0,.44) !important;
+  transform: translateX(-50%) rotate(45deg) !important;
+  pointer-events: none !important;
+}
+
+#discoverOverlay .discover-card-choice > * {
+  position: relative !important;
+  z-index: 2 !important;
+  min-width: 0 !important;
+}
+
+#discoverOverlay .discover-card-choice .card-emoji {
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 4px 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  border: 3px solid #0b0d0f !important;
+  border-radius: 46% 46% 14px 14px / 24% 24% 14px 14px !important;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255,255,255,.36), transparent 25%),
+    radial-gradient(circle at 50% 114%, rgba(0,0,0,.42), transparent 49%),
+    radial-gradient(circle at 50% 50%, var(--tribe-hi, #7fcddd), var(--tribe-mid, #3f7d87) 55%, var(--tribe-deep, #182e34) 100%) !important;
+  color: #fff !important;
+  font-size: 68px !important;
+  line-height: 1 !important;
+  text-shadow: 0 4px 7px rgba(0,0,0,.52) !important;
+  box-shadow:
+    0 0 0 1px #b48641,
+    inset 0 0 0 2px rgba(255,247,210,.24),
+    inset 0 -16px 22px rgba(0,0,0,.38),
+    0 5px 10px rgba(0,0,0,.38) !important;
+  filter: none !important;
+}
+
+#discoverOverlay .discover-card-choice .card-emoji img {
+  width: auto !important;
+  height: 112px !important;
+  max-width: 92% !important;
+  max-height: 94% !important;
+  object-fit: contain !important;
+  image-rendering: auto !important;
+  filter: drop-shadow(0 4px 5px rgba(0,0,0,.48)) drop-shadow(0 0 10px var(--tribe-glow, rgba(110,210,230,.38))) !important;
+}
+
+#discoverOverlay .discover-card-choice .tier-number-badge {
+  position: absolute !important;
+  top: -12px !important;
+  left: -9px !important;
+  z-index: 12 !important;
+  width: 76px !important;
+  min-width: 76px !important;
+  height: 91px !important;
+  padding: 0 0 21px !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  clip-path: polygon(16% 0, 84% 0, 100% 15%, 83% 72%, 50% 100%, 17% 72%, 0 15%) !important;
+  background: linear-gradient(145deg, #f2d991 0 8%, #40301d 9% 17%, #110f0e 18% 82%, #7b5c2e 83% 91%, #f6dfa0 92%) !important;
+  color: #f8fbff !important;
+  font-family: Georgia, "Hiragino Mincho ProN", serif !important;
+  font-size: 2.2rem !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-shadow: 0 2px 0 #08263e, 0 0 5px rgba(132,225,255,.7) !important;
+  transform: none !important;
+  filter: drop-shadow(0 4px 4px rgba(0,0,0,.48)) !important;
+}
+
+#discoverOverlay .discover-card-choice .tier-number-badge::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 6px 8px 9px !important;
+  z-index: -2 !important;
+  clip-path: polygon(8% 0, 92% 0, 100% 12%, 81% 70%, 50% 100%, 19% 70%, 0 12%) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.72), transparent 26%),
+    linear-gradient(180deg, #79ddff, #187fc6 48%, #083c76) !important;
+}
+
+#discoverOverlay .discover-card-choice .cost {
+  position: absolute !important;
+  top: 9px !important;
+  right: 9px !important;
+  z-index: 12 !important;
+  width: 66px !important;
+  min-width: 66px !important;
+  max-width: 66px !important;
+  height: 66px !important;
+  min-height: 66px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border: 3px solid #17130e !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255,255,255,.95) 0 9%, transparent 10%),
+    radial-gradient(circle at 42% 36%, #fff6c2, #e3b457 46%, #c28525 72%, #704214 100%) !important;
+  color: #2a1b08 !important;
+  font-family: Georgia, "Hiragino Mincho ProN", serif !important;
+  font-size: 1.42rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.58) !important;
+  box-shadow: 0 0 0 2px #f4cf73, 0 0 0 4px #1d1710, inset 0 0 0 2px rgba(255,245,208,.45), 0 5px 8px rgba(0,0,0,.42) !important;
+}
+
+#discoverOverlay .discover-card-choice .card-name,
+#discoverOverlay .discover-card-choice .tagline {
+  height: 42px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  border-color: #2a1d10 !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.78), transparent 34%),
+    linear-gradient(180deg, #fff8e8, #efddb9 62%, #d8bb86) !important;
+  color: #1c1711 !important;
+  font-family: Georgia, "Hiragino Mincho ProN", "Yu Mincho", serif !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.58) !important;
+  box-shadow: inset 0 0 0 1px rgba(132,91,38,.28), inset 0 1px 0 rgba(255,255,255,.86), 0 2px 4px rgba(0,0,0,.25) !important;
+}
+
+#discoverOverlay .discover-card-choice .card-name {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  justify-content: center !important;
+  padding: 0 8px 0 12px !important;
+  border-width: 2px 0 2px 2px !important;
+  border-radius: 10px 0 0 10px !important;
+  font-size: clamp(1rem, 1.08vw, 1.24rem) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: -.025em !important;
+  text-align: center !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+#discoverOverlay .discover-card-choice .tagline {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  width: auto !important;
+  max-width: none !important;
+  justify-content: center !important;
+  padding: 0 9px 0 5px !important;
+  border-width: 2px 2px 2px 0 !important;
+  border-radius: 0 10px 10px 0 !important;
+  color: #4c3c2b !important;
+  font-size: clamp(.74rem, .82vw, .92rem) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: -.02em !important;
+  text-align: center !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+#discoverOverlay .discover-card-choice .tagline::before {
+  content: "" !important;
+  flex: 0 0 auto !important;
+  width: 1px !important;
+  height: 58% !important;
+  margin: 0 7px 0 0 !important;
+  background: linear-gradient(180deg, transparent, rgba(84,57,25,.7), transparent) !important;
+}
+
+#discoverOverlay .discover-card-choice .card-text {
+  grid-column: 1 / -1 !important;
+  grid-row: 3 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 14px 15px 13px !important;
+  display: -webkit-box !important;
+  overflow: hidden !important;
+  border: 2px solid #2b1d10 !important;
+  border-radius: 11px !important;
+  background:
+    radial-gradient(circle at 14% 12%, rgba(255,255,255,.48), transparent 26%),
+    radial-gradient(circle at 87% 84%, rgba(126,88,37,.07), transparent 24%),
+    linear-gradient(135deg, rgba(255,255,255,.16), transparent 25% 74%, rgba(105,73,30,.05)),
+    linear-gradient(180deg, #fff9eb, #f1dfbd 64%, #dfc394) !important;
+  color: #211a13 !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif !important;
+  font-size: clamp(.88rem, .88vw, 1.04rem) !important;
+  font-weight: 650 !important;
+  line-height: 1.38 !important;
+  text-align: left !important;
+  text-shadow: none !important;
+  overflow-wrap: anywhere !important;
+  box-shadow: inset 0 0 0 1px rgba(143,99,42,.28), inset 0 1px 0 rgba(255,255,255,.86), 0 3px 7px rgba(0,0,0,.28) !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 8 !important;
+}
+
+#discoverOverlay .discover-card-choice.spell .card-text {
+  background:
+    radial-gradient(circle at 14% 12%, rgba(255,255,255,.48), transparent 26%),
+    radial-gradient(circle at 87% 84%, rgba(105,67,132,.08), transparent 25%),
+    linear-gradient(180deg, #fcf5ff, #ead9f1 64%, #d8c0e2) !important;
+  color: #2b2030 !important;
+}
+
+#discoverOverlay .discover-card-choice .stats {
+  grid-column: 1 / -1 !important;
+  grid-row: 4 !important;
+  position: relative !important;
+  inset: auto !important;
+  width: 68% !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  justify-self: center !important;
+  align-self: center !important;
+  gap: 10px !important;
+  border: 2px solid #15120e !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.62), transparent 34%),
+    linear-gradient(180deg, #fff8e4, #ebd5ab 62%, #c9a16d) !important;
+  color: #17130e !important;
+  box-shadow: 0 0 0 1px #b48744, inset 0 0 0 1px rgba(122,80,27,.28), inset 0 1px 0 rgba(255,255,255,.84), 0 4px 7px rgba(0,0,0,.38) !important;
+}
+
+#discoverOverlay .discover-card-choice .stats::before,
+#discoverOverlay .discover-card-choice .stats::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 50% !important;
+  width: 13px !important;
+  height: 13px !important;
+  border: 2px solid #15120e !important;
+  background: linear-gradient(135deg, #fff0ad, #7a4a18) !important;
+  transform: translateY(-50%) rotate(45deg) !important;
+}
+
+#discoverOverlay .discover-card-choice .stats::before { left: -9px !important; }
+#discoverOverlay .discover-card-choice .stats::after { right: -9px !important; }
+
+#discoverOverlay .discover-card-choice .stat-orb,
+#discoverOverlay .discover-card-choice .stats > .atk,
+#discoverOverlay .discover-card-choice .stats > .hp {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #17130e !important;
+  font-family: Georgia, "Hiragino Mincho ProN", serif !important;
+  font-size: 1.45rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+#discoverOverlay .discover-card-choice .stats > .atk,
+#discoverOverlay .discover-card-choice .atk-orb { color: #5b2619 !important; }
+#discoverOverlay .discover-card-choice .stats > .hp,
+#discoverOverlay .discover-card-choice .hp-orb { color: #1c4e2e !important; }
+
+#discoverOverlay .discover-card-choice .stats > .hp::before,
+#discoverOverlay .discover-card-choice .hp-orb::before {
+  content: none !important;
+  margin: 0 !important;
+}
+
+#discoverOverlay .discover-card-choice.spell .stats {
+  display: none !important;
+}
+
+#discoverOverlay .card-effect-label {
+  display: none !important;
+}
+
+#discoverOverlay :is(.discover-pick-button, .discover-select-button, .discover-choice-button, .choice-select, button.select, .select-button) {
+  min-width: 144px !important;
+  min-height: 42px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, #f5cf6b, #d39b34) !important;
+  color: #2a1a07 !important;
+  font-weight: 900 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 6px 14px rgba(0,0,0,.34) !important;
+}
+
+@media (max-height: 820px) {
+  #discoverOverlay {
+    --discover-card-width: clamp(238px, 17vw, 300px);
+    --discover-card-height: clamp(380px, 55vh, 460px);
+  }
+
+  #discoverOverlay .discover-card-choice {
+    grid-template-rows: 96px 36px minmax(140px, 1fr) 36px !important;
+    padding: 12px 11px 11px !important;
+    row-gap: 6px !important;
+  }
+
+  #discoverOverlay .discover-card-choice .tier-number-badge {
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 77px !important;
+    font-size: 1.8rem !important;
+  }
+
+  #discoverOverlay .discover-card-choice .cost {
+    width: 56px !important;
+    min-width: 56px !important;
+    max-width: 56px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    font-size: 1.2rem !important;
+  }
+
+  #discoverOverlay .discover-card-choice .card-emoji {
+    padding-inline: 42px !important;
+    font-size: 54px !important;
+  }
+
+  #discoverOverlay .discover-card-choice .card-emoji img {
+    height: 86px !important;
+  }
+
+  #discoverOverlay .discover-card-choice .card-name,
+  #discoverOverlay .discover-card-choice .tagline {
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
+  #discoverOverlay .discover-card-choice .card-text {
+    padding: 10px 12px !important;
+    font-size: .8rem !important;
+    line-height: 1.3 !important;
+    -webkit-line-clamp: 7 !important;
+  }
+
+  #discoverOverlay .discover-card-choice .stats {
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+}
