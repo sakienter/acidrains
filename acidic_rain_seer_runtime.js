@@ -2,6 +2,8 @@
   if (window.__acidSeerRuntimeApplied) return;
   window.__acidSeerRuntimeApplied = true;
 
+  const ASSET_VERSION = '20260710-2';
+  const versioned = path => `${path}?v=${ASSET_VERSION}`;
   const numberValue = value => Number(value || 0);
   const pending = () => Math.max(0, numberValue(state.nextFreeSpellPurchases)) > 0;
 
@@ -156,14 +158,14 @@
   if (!document.querySelector('link[data-acid-card-motion-style]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './acidic_rain_card_motion.css';
+    link.href = versioned('./acidic_rain_card_motion.css');
     link.dataset.acidCardMotionStyle = 'true';
     document.head.appendChild(link);
   }
 
   if (!document.querySelector('script[data-acid-card-motion]')) {
     const script = document.createElement('script');
-    script.src = './acidic_rain_card_motion.js';
+    script.src = versioned('./acidic_rain_card_motion.js');
     script.async = false;
     script.dataset.acidCardMotion = 'true';
     document.body.appendChild(script);
