@@ -34,12 +34,24 @@
     }
 
     if (kind === 'board') {
-      const width = clamp(rawWidth, 158, 208);
-      return { width, height: clamp(width * 1.18, 200, 246), gap };
+      const width = clamp(rawWidth, 150, 208);
+      return { width, height: clamp(width * 1.18, 196, 246), gap };
     }
 
     const width = clamp(rawWidth, 164, 220);
     return { width, height: clamp(width * 1.23, 212, 270), gap };
+  }
+
+  function applySlotShell(card, metrics) {
+    const { width, height } = metrics;
+    set(card, 'width', px(width));
+    set(card, 'min-width', px(width));
+    set(card, 'max-width', px(width));
+    set(card, 'height', px(height));
+    set(card, 'min-height', px(height));
+    set(card, 'max-height', px(height));
+    set(card, 'flex', `0 0 ${px(width)}`);
+    set(card, 'overflow', 'visible');
   }
 
   function fitCard(card, metrics, kind) {
@@ -213,11 +225,16 @@
   function fitContainer(id, selector, kind) {
     const container = document.getElementById(id);
     if (!container) return;
-    const cards = [...container.querySelectorAll(`:scope > ${selector}`)]
-      .filter(card => !card.classList.contains('empty'));
-    if (!cards.length) return;
+    const nodes = [...container.querySelectorAll(`:scope > ${selector}`)];
+    if (!nodes.length) return;
 
-    const metrics = cardMetrics(container, cards.length, kind);
+    const layoutNodes = kind === 'hand'
+      ? nodes.filter(card => !card.classList.contains('empty'))
+      : nodes;
+    const playableCards = nodes.filter(card => !card.classList.contains('empty'));
+    const metricCount = Math.max(1, layoutNodes.length || playableCards.length);
+
+    const metrics = cardMetrics(container, metricCount, kind);
     set(container, 'display', 'flex');
     set(container, 'align-items', kind === 'hand' ? 'flex-end' : 'flex-start');
     set(container, 'justify-content', 'center');
@@ -235,7 +252,8 @@
       set(container, 'height', px(metrics.height + 10));
     }
 
-    cards.forEach(card => fitCard(card, metrics, kind));
+    layoutNodes.forEach(card => applySlotShell(card, metrics));
+    playableCards.forEach(card => fitCard(card, metrics, kind));
   }
 
   let scheduled = false;
