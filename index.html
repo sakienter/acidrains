@@ -33,13 +33,13 @@
     <div id="stage">
       <iframe
         id="game"
-        src="./acidic_rain_battleground.html?v=20260620-6"
+        src="./acidic_rain_battleground.html?v=20260710-1"
         title="Acidic Rain Battleground"
       ></iframe>
     </div>
 
     <script>
-      const ASSET_VERSION = "20260620-6";
+      const ASSET_VERSION = "20260710-1";
       const game = document.querySelector("#game");
 
       function appendStyle(documentRef, href, marker) {
@@ -75,7 +75,8 @@
             'link[data-index-style="card-layout-fix"], ' +
             'link[data-index-style="viewport-fit"], ' +
             'link[data-index-style="card-polish"], ' +
-            'link[data-index-style="board-card-fix"]'
+            'link[data-index-style="board-card-fix"], ' +
+            'link[data-index-style="discover-final"]'
           )
           .forEach(node => node.remove());
 
@@ -104,6 +105,11 @@
           "./acidic_rain_board_card_fix.css",
           "board-card-fix"
         );
+        appendStyle(
+          documentRef,
+          "./acidic_rain_discover_final.css",
+          "discover-final"
+        );
       }
 
       function installFinalCardRuntime(documentRef) {
@@ -111,6 +117,11 @@
           documentRef,
           "./acidic_rain_card_final_runtime.js",
           "final-card-runtime"
+        );
+        appendScript(
+          documentRef,
+          "./acidic_rain_discover_final_runtime.js",
+          "discover-final-runtime"
         );
       }
 
