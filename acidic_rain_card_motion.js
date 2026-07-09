@@ -1,7 +1,9 @@
 /*
- * FLIP-based motion for cards. Cards keep a small instance id as they move from
- * the tavern to the hand and from the hand to the board, so full DOM re-renders
- * no longer look like abrupt teleportation.
+ * Lightweight card motion.
+ *
+ * Shop and board cards are kept visually fixed during normal renders so buying,
+ * playing, selling, and resolving effects do not make the tavern/board shift.
+ * Drag feedback and hand-only motion are still allowed.
  */
 window.addEventListener('load', () => {
   if (window.__acidCardMotionInstalled) return;
@@ -32,6 +34,10 @@ window.addEventListener('load', () => {
     if (node.closest('#shopGrid')) return 'shop';
     if (node.closest('#boardSlots')) return 'board';
     return 'hand';
+  }
+
+  function isStableZone(zone) {
+    return zone === 'shop' || zone === 'board';
   }
 
   function motionNodes() {
@@ -85,7 +91,8 @@ window.addEventListener('load', () => {
   }
 
   function animateMove(node, from, to, statChanged) {
-    if (reduceMotion || typeof node.animate !== 'function') return;
+    const currentZone = zoneOf(node);
+    if (reduceMotion || isStableZone(currentZone) || isStableZone(from.zone) || typeof node.animate !== 'function') return;
     const dx = from.left - to.left;
     const dy = from.top - to.top;
     const scaleX = to.width > 0 ? from.width / to.width : 1;
@@ -125,7 +132,7 @@ window.addEventListener('load', () => {
   }
 
   function animateEntry(node, zone) {
-    if (reduceMotion) return;
+    if (reduceMotion || isStableZone(zone)) return;
     const className = `card-motion-enter-${zone}`;
     node.classList.add(className);
     const clear = () => node.classList.remove(className);
@@ -134,7 +141,7 @@ window.addEventListener('load', () => {
   }
 
   function animateExit(snapshot) {
-    if (reduceMotion || !snapshot?.clone || typeof snapshot.clone.animate !== 'function') return;
+    if (reduceMotion || isStableZone(snapshot?.zone) || !snapshot?.clone || typeof snapshot.clone.animate !== 'function') return;
     const ghost = snapshot.clone;
     const rect = snapshot.rect;
     ghost.classList.remove(
